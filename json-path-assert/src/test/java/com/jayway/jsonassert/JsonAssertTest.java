@@ -1,19 +1,38 @@
+/*
+ * Copyright 2012 the original author or authors.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.jayway.jsonassert;
 
-import org.junit.Test;
+import static com.jayway.jsonassert.JsonAssert.collectionWithSize;
+import static com.jayway.jsonassert.JsonAssert.emptyCollection;
+import static com.jayway.jsonassert.JsonAssert.mapContainingKey;
+import static com.jayway.jsonassert.JsonAssert.mapContainingValue;
+import static com.jayway.jsonassert.JsonAssert.with;
+import static org.hamcrest.Matchers.endsWith;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasEntry;
+import static org.hamcrest.Matchers.hasItems;
+import static org.hamcrest.Matchers.is;
 
 import java.io.InputStream;
 
-import static com.jayway.jsonassert.JsonAssert.*;
-import static org.hamcrest.Matchers.*;
+import org.hamcrest.Matchers;
+import org.junit.Test;
 
-/**
- * User: kalle stenflo
- * Date: 1/21/11
- * Time: 4:04 PM
- */
 public class JsonAssertTest {
 
+    // @formatter:off
     public final static String JSON =
             "{ \"store\": {\n" +
                     "    \"book\": [ \n" +
@@ -47,8 +66,7 @@ public class JsonAssertTest {
                     "    }\n" +
                     "  }\n" +
                     "}";
-
-
+    // @formatter:on
 
     @Test(expected = AssertionError.class)
     public void failed_error_message() throws Exception {
@@ -57,15 +75,16 @@ public class JsonAssertTest {
 
     @Test
     public void links_document() throws Exception {
-
-        with(getResourceAsStream("links.json")).assertEquals("count", 2)
+        // @formatter:off
+        with(getResourceAsStream("links.json"))
+                .assertEquals("count", 2)
                 .assertThat("links.gc:this.href", endsWith("?pageNumber=1&pageSize=2"))
                 .assertNotDefined("links.gc:prev")
                 .assertNotDefined("links.gc:next")
                 .assertThat("rows", collectionWithSize(equalTo(2)));
+        // @formatter:on
 
     }
-
 
     @Test
     public void a_document_can_be_expected_not_to_contain_a_path() throws Exception {
@@ -85,8 +104,7 @@ public class JsonAssertTest {
     @Test
     public void a_path_can_be_asserted_with_matcher() throws Exception {
 
-        with(JSON).assertThat("$.store.bicycle.color", equalTo("red"))
-                .assertThat("$.store.bicycle.price", equalTo(19.95D));
+        with(JSON).assertThat("$.store.bicycle.color", equalTo("red")).assertThat("$.store.bicycle.price", equalTo(19.95D));
     }
 
     @Test
@@ -94,10 +112,11 @@ public class JsonAssertTest {
 
         with(JSON).assertThat("$..book[*].author", hasItems("Nigel Rees", "Evelyn Waugh", "Herman Melville", "J. R. R. Tolkien"));
 
-        with(JSON).assertThat("$..author", hasItems("Nigel Rees", "Evelyn Waugh", "Herman Melville", "J. R. R. Tolkien"))
-                .assertThat("$..author", is(collectionWithSize(equalTo(4))));
+        with(JSON).assertThat("$..author", hasItems("Nigel Rees", "Evelyn Waugh", "Herman Melville", "J. R. R. Tolkien")).assertThat("$..author",
+                is(collectionWithSize(equalTo(4))));
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void list_content_can_be_asserted_with_nested_matcher() throws Exception {
         with(JSON).assertThat("$..book[*]", hasItems(hasEntry("author", "Nigel Rees"), hasEntry("author", "Evelyn Waugh")));
@@ -105,7 +124,7 @@ public class JsonAssertTest {
 
     @Test
     public void map_content_can_be_asserted_with_matcher() throws Exception {
-
+        // @formatter:off
         with(JSON).assertThat("$.store.book[0]", hasEntry("category", "reference"))
                 .assertThat("$.store.book[0]", hasEntry("title", "Sayings of the Century"))
                 .and()
@@ -123,6 +142,7 @@ public class JsonAssertTest {
                 .assertThat("$.['store'].['book'][0]", mapContainingKey(equalTo("category")))
                 .and()
                 .assertThat("$.['store'].['book'][0]", mapContainingValue(equalTo("reference")));
+        // @formatter:on
     }
 
     @Test
@@ -132,20 +152,16 @@ public class JsonAssertTest {
 
     @Test
     public void a_path_can_be_asserted_equal_to() throws Exception {
+        // @formatter:off
+        with(JSON)
+            .assertEquals("$.store.book[0].title", "Sayings of the Century")
+            .assertThat("$.store.book[0].title", equalTo("Sayings of the Century"));
 
-        with(JSON).assertEquals("$.store.book[0].title", "Sayings of the Century")
-                .assertThat("$.store.book[0].title", equalTo("Sayings of the Century"));
-
-        with(JSON).assertEquals("$['store']['book'][0].['title']", "Sayings of the Century")
-                .assertThat("$['store'].book[0].title", equalTo("Sayings of the Century"));
+        with(JSON)
+            .assertEquals("$['store']['book'][0].['title']", "Sayings of the Century")
+            .assertThat("$['store'].book[0].title", equalTo("Sayings of the Century"));
+        // @formatter:on
     }
-
-    /*
-    @Test
-    public void no_hit_returns_null() throws Exception {
-        with(JSON).assertThat("$.store.book[1000].title", Matchers.<Object>nullValue());
-    }
-    */
 
     @Test
     public void invalid_path() throws Exception {
@@ -156,7 +172,6 @@ public class JsonAssertTest {
     public void path_including_wildcard_path_followed_by_another_path_concatenates_results_to_list() throws Exception {
         with(getResourceAsStream("lotto.json")).assertThat("lotto.winners[*].winnerId", hasItems(23, 54));
     }
-
 
     private InputStream getResourceAsStream(String resourceName) {
         return getClass().getClassLoader().getResourceAsStream(resourceName);

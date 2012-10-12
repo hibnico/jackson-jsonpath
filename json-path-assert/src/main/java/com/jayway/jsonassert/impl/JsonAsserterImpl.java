@@ -1,3 +1,17 @@
+/*
+ * Copyright 2012 the original author or authors.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.jayway.jsonassert.impl;
 
 import static java.lang.String.format;
@@ -13,9 +27,6 @@ import com.jayway.jsonpath.InvalidPathException;
 import com.jayway.jsonpath.JsonNodeUtil;
 import com.jayway.jsonpath.JsonPath;
 
-/**
- * User: kalle stenflo Date: 1/21/11 Time: 3:43 PM
- */
 public class JsonAsserterImpl implements JsonAsserter {
 
     private final JsonNode jsonObject;
@@ -29,9 +40,7 @@ public class JsonAsserterImpl implements JsonAsserter {
         this.jsonObject = jsonObject;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    @Override
     public <T> JsonAsserter assertThat(String path, Matcher<T> matcher) {
         JsonNode node = JsonPath.read(jsonObject, path);
         Object obj = JsonNodeUtil.asJava(node);
@@ -41,16 +50,12 @@ public class JsonAsserterImpl implements JsonAsserter {
         return this;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    @Override
     public <T> JsonAsserter assertEquals(String path, T expected) {
         return assertThat(path, equalTo(expected));
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    @Override
     public JsonAsserter assertNotDefined(String path) {
         try {
             JsonPath.read(jsonObject, path);
@@ -60,23 +65,17 @@ public class JsonAsserterImpl implements JsonAsserter {
         return this;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    @Override
     public JsonAsserter assertNull(String path) {
         return assertThat(path, nullValue());
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    @Override
     public <T> JsonAsserter assertNotNull(String path) {
         return assertThat(path, notNullValue());
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    @Override
     public JsonAsserter and() {
         return this;
     }

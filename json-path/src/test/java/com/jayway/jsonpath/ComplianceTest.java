@@ -1,3 +1,17 @@
+/*
+ * Copyright 2012 the original author or authors.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.jayway.jsonpath;
 
 import static org.hamcrest.Matchers.allOf;
@@ -38,11 +52,11 @@ public class ComplianceTest {
         checkList(json, "$['*']", hasItems("a", "b", "e"));
         assertThat(JsonPath.read(json, "$['a']").asText(), equalTo("a"));
 
-        // assertThat(JsonPath.<String>read(json, "$.'c d'"), is(equalTo("e"))); //low
-        // assertThat(JsonPath.<List<String>>read(json, "$[*]"), hasItems("a", "b", "e")); //low
-
+        // FIXME assertThat(JsonPath.read(json, "$.'c d'").asText(), is(equalTo("e")));
+        // FIXME checkList(json, "$[*]", hasItems("a", "b", "e"));
     }
 
+    @SuppressWarnings("rawtypes")
     @Test
     public void test_two() throws Exception {
         String json = "[ 1, \"2\", 3.14, true, null ]";
@@ -83,10 +97,9 @@ public class ComplianceTest {
 
         assertThat(JsonPath.read(json, "$.points[(@.length - 1)].id").asText(), equalTo("i6"));
 
-        // assertThat(JsonPath.<List<Integer>>read(json, "$['points'][?(@.x * @.x + @.y * @.y > 50)].id"), hasItems(?)); //low
+        // FIXME checkList(json, "$['points'][?(@.x * @.x + @.y * @.y > 50)].id", hasItems("?"));
     }
 
-    @SuppressWarnings("UnusedAssignment")
     @Test
     public void test_four() throws Exception {
         // @formatter:off
@@ -120,11 +133,10 @@ public class ComplianceTest {
                 "             }";
         // @formatter:on
 
-        // assertThat(JsonPath.<List<String>>read(json, "$.menu.items[?(@ && @.id && !@.label)].id"), hasItems("?")); //low
-        // assertThat(JsonPath.<List<String>>read(json, "$.menu.items[?(@ && @.label && /SVG/.test(@.label))].id"), hasItems("?")); //low
-        // assertThat(JsonPath.<List<String>>read(json, "$.menu.items[?(!@)]"), hasItems("?")); //low
-        // assertThat(JsonPath.<List<String>>read(json, "$..[0]"), hasItems("?")); //low
-
+        // FIXME checkList(json, "$.menu.items[?(@ && @.id && !@.label)].id", hasItems("?"));
+        // FIXME checkList(json, "$.menu.items[?(@ && @.label && /SVG/.test(@.label))].id", hasItems("?"));
+        // FIXME checkList(json, "$.menu.items[?(!@)]", hasItems("?"));
+        // FIXME checkList(json, "$..[0]", hasItems("?"));
     }
 
     // @formatter:off

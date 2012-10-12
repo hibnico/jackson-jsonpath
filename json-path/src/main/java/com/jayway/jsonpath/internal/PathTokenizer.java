@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 the original author or authors.
+ * Copyright 2012 the original author or authors.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -20,9 +20,6 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
-/**
- * @author Kalle Stenflo
- */
 public class PathTokenizer implements Iterable<PathToken> {
 
     private List<PathToken> pathTokens = new LinkedList<PathToken>();
@@ -50,15 +47,15 @@ public class PathTokenizer implements Iterable<PathToken> {
         return fragments;
     }
 
-    public int size(){
+    public int size() {
         return pathTokens.size();
     }
 
     public String getPath() {
         return new String(pathChars);
     }
-    
-    public LinkedList<PathToken> getPathTokens(){
+
+    public LinkedList<PathToken> getPathTokens() {
         return new LinkedList<PathToken>(pathTokens);
     }
 
@@ -66,19 +63,19 @@ public class PathTokenizer implements Iterable<PathToken> {
         return pathTokens.iterator();
     }
 
-    public PathToken removeLastPathToken(){
+    public PathToken removeLastPathToken() {
         PathToken lastPathToken = pathTokens.get(pathTokens.size() - 1);
 
-        //TODO: this should also trim the pathChars
+        // TODO: this should also trim the pathChars
         pathTokens.remove(pathTokens.size() - 1);
         return lastPathToken;
-    } 
+    }
 
-    //--------------------------------------------
+    // --------------------------------------------
     //
     // Split path
     //
-    //--------------------------------------------
+    // --------------------------------------------
     private boolean isEmpty() {
         return index == pathChars.length;
     }
@@ -108,7 +105,7 @@ public class PathTokenizer implements Iterable<PathToken> {
 
                 case '.':
                     poll();
-	                if (!isEmpty() && peek() == '.') {
+                    if (!isEmpty() && peek() == '.') {
                         poll();
                         fragments.add("..");
 
@@ -127,9 +124,7 @@ public class PathTokenizer implements Iterable<PathToken> {
         return fragments;
     }
 
-
     private String extract(boolean includeSopChar, char... stopChars) {
-
 
         StringBuilder sb = new StringBuilder();
         while (!isEmpty() && (!isStopChar(peek(), stopChars))) {

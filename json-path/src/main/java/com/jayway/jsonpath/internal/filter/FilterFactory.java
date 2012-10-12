@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 the original author or authors.
+ * Copyright 2012 the original author or authors.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -14,9 +14,6 @@
  */
 package com.jayway.jsonpath.internal.filter;
 
-/**
- * @author Kalle Stenflo
- */
 public class FilterFactory {
 
     private final static PathTokenFilter DOCUMENT_FILTER = new PassthroughFilter("$", false);
@@ -27,11 +24,11 @@ public class FilterFactory {
 
     public static PathTokenFilter createFilter(String pathFragment) {
 
-        if (DOCUMENT_FILTER.getCondition().equals(pathFragment)) {     //"$"
+        if (DOCUMENT_FILTER.getCondition().equals(pathFragment)) { // "$"
 
             return DOCUMENT_FILTER;
 
-        } else if (ALL_ARRAY_ITEMS_FILTER.getCondition().equals(pathFragment)) {   //"[*]"
+        } else if (ALL_ARRAY_ITEMS_FILTER.getCondition().equals(pathFragment)) { // "[*]"
 
             return ALL_ARRAY_ITEMS_FILTER;
 
@@ -39,12 +36,12 @@ public class FilterFactory {
 
             return WILDCARD_FILTER;
 
-        //} else if (pathFragment.contains("..")) {
+            // } else if (pathFragment.contains("..")) {
         } else if (SCAN_FILTER.getCondition().equals(pathFragment)) {
 
             return SCAN_FILTER;
 
-        } else if (ARRAY_QUERY_FILTER.getCondition().equals(pathFragment)) { //"[?]"
+        } else if (ARRAY_QUERY_FILTER.getCondition().equals(pathFragment)) { // "[?]"
 
             return ARRAY_QUERY_FILTER;
 
@@ -56,17 +53,17 @@ public class FilterFactory {
 
             if (pathFragment.startsWith("[?")) {
                 if (!pathFragment.contains("=") && !pathFragment.contains("<") && !pathFragment.contains(">")) {
-                    //[?(@.isbn)]
+                    // [?(@.isbn)]
                     return new HasFieldFilter(pathFragment);
                 } else {
-                    //[?(@.name='foo')]
+                    // [?(@.name='foo')]
                     return new ArrayEvalFilter(pathFragment);
                 }
             } else {
-                //[0]
-                //[0,1, ...]
-                //[-1:]
-                //[:1]
+                // [0]
+                // [0,1, ...]
+                // [-1:]
+                // [:1]
                 return new ArrayIndexFilter(pathFragment);
             }
         }
@@ -74,6 +71,5 @@ public class FilterFactory {
         throw new UnsupportedOperationException("can not find filter for path fragment " + pathFragment);
 
     }
-
 
 }

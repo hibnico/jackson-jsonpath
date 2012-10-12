@@ -1,4 +1,18 @@
 /*
+ * Copyright 2012 the original author or authors.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+/*
 BSD License
 
 Copyright (c) 2000-2006, www.hamcrest.org
@@ -26,7 +40,7 @@ BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
 CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY
 WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
 DAMAGE.
-*/
+ */
 package com.jayway.jsonassert.impl.matcher;
 
 import org.hamcrest.Description;
@@ -37,7 +51,7 @@ import java.util.Map;
 
 import static org.hamcrest.core.IsEqual.equalTo;
 
-public class IsMapContainingKey<K> extends MapTypeSafeMatcher<Map<K,?>> {
+public class IsMapContainingKey<K> extends MapTypeSafeMatcher<Map<K, ? >> {
     private final Matcher<K> keyMatcher;
 
     public IsMapContainingKey(Matcher<K> keyMatcher) {
@@ -45,7 +59,7 @@ public class IsMapContainingKey<K> extends MapTypeSafeMatcher<Map<K,?>> {
     }
 
     @Override
-    public boolean matchesSafely(Map<K, ?> item) {
+    public boolean matchesSafely(Map<K, ? > item) {
         for (K key : item.keySet()) {
             if (keyMatcher.matches(key)) {
                 return true;
@@ -55,17 +69,16 @@ public class IsMapContainingKey<K> extends MapTypeSafeMatcher<Map<K,?>> {
     }
 
     public void describeTo(Description description) {
-        description.appendText("map with key ")
-                   .appendDescriptionOf(keyMatcher);
+        description.appendText("map with key ").appendDescriptionOf(keyMatcher);
     }
 
     @Factory
-    public static <K> Matcher<Map<K,?>> hasKey(K key) {
+    public static <K> Matcher<Map<K, ? >> hasKey(K key) {
         return hasKey(equalTo(key));
     }
 
     @Factory
-    public static <K> Matcher<Map<K,?>> hasKey(Matcher<K> keyMatcher) {
+    public static <K> Matcher<Map<K, ? >> hasKey(Matcher<K> keyMatcher) {
         return new IsMapContainingKey<K>(keyMatcher);
     }
 }

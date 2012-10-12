@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 the original author or authors.
+ * Copyright 2012 the original author or authors.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -28,9 +28,6 @@ import java.util.regex.Pattern;
 
 import org.codehaus.jackson.JsonNode;
 
-/**
- * @author Kalle Stenflo
- */
 public class Criteria {
 
     private enum CriteriaType {
@@ -464,18 +461,20 @@ public class Criteria {
      * 
      * @param criteria
      */
-    /*
-     * public Criteria orOperator(Criteria... criteria) { criteriaChain.add(new Criteria("$or").is(asList(criteria))); return this; }
-     */
+    public Criteria orOperator(Criteria... criteria) {
+        criteriaChain.add(new Criteria("$or").is(asList(criteria)));
+        return this;
+    }
 
     /**
      * Creates a 'nor' criteria using the $nor operator for all of the provided criteria
      * 
      * @param criteria
      */
-    /*
-     * public Criteria norOperator(Criteria... criteria) { criteriaChain.add(new Criteria("$nor").is(asList(criteria))); return this; }
-     */
+    public Criteria norOperator(Criteria... criteria) {
+        criteriaChain.add(new Criteria("$nor").is(asList(criteria)));
+        return this;
+    }
 
     /**
      * Creates an 'and' criteria using the $and operator for all of the provided criteria
