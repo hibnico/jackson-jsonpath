@@ -14,13 +14,12 @@
  */
 package com.jayway.jsonpath.internal.filter;
 
-import com.jayway.jsonpath.spi.JsonProvider;
+import org.codehaus.jackson.JsonNode;
 
 /**
  * @author Kalle Stenflo
  */
 public class PassthroughFilter extends PathTokenFilter {
-
 
     private boolean isArrayFilter;
 
@@ -29,13 +28,13 @@ public class PassthroughFilter extends PathTokenFilter {
         this.isArrayFilter = isArrayFilter;
     }
 
-    public Object filter(Object obj, JsonProvider jsonProvider) {
-        return obj;
+    public JsonNode filter(JsonNode node) {
+        return node;
     }
 
     @Override
-    public Object getRef(Object obj, JsonProvider jsonProvider) {
-        return obj;
+    public JsonNode getRef(JsonNode node) {
+        return node;
     }
 
     @Override

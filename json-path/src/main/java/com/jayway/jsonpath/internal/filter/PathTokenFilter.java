@@ -14,10 +14,11 @@
  */
 package com.jayway.jsonpath.internal.filter;
 
-import com.jayway.jsonpath.Filter;
-import com.jayway.jsonpath.spi.JsonProvider;
-
 import java.util.LinkedList;
+
+import org.codehaus.jackson.JsonNode;
+
+import com.jayway.jsonpath.Filter;
 
 /**
  * @author Kalle Stenflo
@@ -46,13 +47,13 @@ public abstract class PathTokenFilter {
         return res;
     }
 
-    public Object filter(Object obj, JsonProvider jsonProvider, LinkedList<Filter> filters, boolean inArrayContext){
-        return filter(obj, jsonProvider);
+    public JsonNode filter(JsonNode node, LinkedList<Filter> filters, boolean inArrayContext) {
+        return filter(node);
     }
 
-    public abstract Object filter(Object obj, JsonProvider jsonProvider);
+    public abstract JsonNode filter(JsonNode node);
 
-    public abstract Object getRef(Object obj, JsonProvider jsonProvider);
+    public abstract JsonNode getRef(JsonNode node);
 
     public abstract boolean isArrayFilter();
 

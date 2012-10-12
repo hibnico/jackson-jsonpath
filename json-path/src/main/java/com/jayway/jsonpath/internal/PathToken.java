@@ -14,19 +14,20 @@
  */
 package com.jayway.jsonpath.internal;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import org.codehaus.jackson.JsonNode;
+
 import com.jayway.jsonpath.InvalidModelException;
 import com.jayway.jsonpath.internal.filter.FilterFactory;
 import com.jayway.jsonpath.internal.filter.PathTokenFilter;
-import com.jayway.jsonpath.spi.JsonProvider;
-
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * @author Kalle Stenflo
  */
 public class PathToken {
-    
+
     private static final Pattern ARRAY_INDEX_PATTERN = Pattern.compile("\\[(\\d+)\\]");
 
     private String fragment;
@@ -35,34 +36,35 @@ public class PathToken {
         this.fragment = fragment;
     }
 
-    public PathTokenFilter getFilter(){
+    public PathTokenFilter getFilter() {
         return FilterFactory.createFilter(fragment);
     }
 
-    public Object filter(Object model, JsonProvider jsonProvider){
-        return FilterFactory.createFilter(fragment).filter(model, jsonProvider);
+    public JsonNode filter(JsonNode node) {
+        return FilterFactory.createFilter(fragment).filter(node);
     }
 
-    public Object apply(Object model, JsonProvider jsonProvider){
-        return FilterFactory.createFilter(fragment).getRef(model, jsonProvider);
+    public JsonNode apply(JsonNode node) {
+        return FilterFactory.createFilter(fragment).getRef(node);
     }
 
     public String getFragment() {
         return fragment;
     }
 
-    public boolean isRootToken(){
+    public boolean isRootToken() {
         return "$".equals(fragment);
     }
-    public boolean isArrayIndexToken(){
-        return ARRAY_INDEX_PATTERN.matcher(fragment).matches();   
+
+    public boolean isArrayIndexToken() {
+        return ARRAY_INDEX_PATTERN.matcher(fragment).matches();
     }
-    
-    public int getArrayIndex(){
+
+    public int getArrayIndex() {
         Matcher matcher = ARRAY_INDEX_PATTERN.matcher(fragment);
-        if(matcher.find()){
+        if (matcher.find()) {
             return Integer.parseInt(matcher.group(1));
-        }
-        else throw new InvalidModelException("Could not get array index from fragment " + fragment);
+        } else
+            throw new InvalidModelException("Could not get array index from fragment " + fragment);
     }
 }

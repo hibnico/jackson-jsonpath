@@ -1,23 +1,24 @@
 package com.jayway.jsonpath;
 
-import com.jayway.jsonpath.internal.PathTokenizer;
+import static org.hamcrest.Matchers.hasItems;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+
+import org.codehaus.jackson.JsonNode;
 import org.hamcrest.Matcher;
 import org.junit.Test;
 
-import static org.hamcrest.Matchers.hasItems;
-import static org.junit.Assert.*;
+import com.jayway.jsonpath.internal.PathTokenizer;
 
 /**
- * Created by IntelliJ IDEA.
- * User: kallestenflo
- * Date: 2/2/11
- * Time: 1:22 PM
+ * Created by IntelliJ IDEA. User: kallestenflo Date: 2/2/11 Time: 1:22 PM
  */
 public class PathTest {
 
-    Filter filter = new Filter(){
+    Filter filter = new Filter() {
         @Override
-        public boolean accept(Object obj) {
+        public boolean accept(JsonNode obj) {
             return true;
         }
 
@@ -26,7 +27,7 @@ public class PathTest {
             return this;
         }
     };
-    
+
     @Test
     public void path_is_not_definite() throws Exception {
         assertFalse(JsonPath.compile("$..book[0]").isPathDefinite());
@@ -99,44 +100,35 @@ public class PathTest {
         assertPath("$..book[  ?(@.price<10)]", hasItems("$", "..", "book", "[?(@.price<10)]"));
     }
 
-	@Test
-	public void dot_ending_ignored() throws Exception {
+    @Test
+    public void dot_ending_ignored() throws Exception {
 
-		assertPath("$..book['something'].", hasItems("$", "..", "something"));
+        assertPath("$..book['something'].", hasItems("$", "..", "something"));
 
-	}
+    }
 
     @Test
     public void invalid_path_throws_exception() throws Exception {
         assertPathInvalid("$...*");
     }
 
-
-    //----------------------------------------------------------------
+    // ----------------------------------------------------------------
     //
     // Helpers
     //
-    //----------------------------------------------------------------
+    // ----------------------------------------------------------------
 
     private void assertPathInvalid(String path) {
         try {
             PathTokenizer tokenizer = new PathTokenizer(path);
             assertTrue("Expected exception!", false);
-        } catch (InvalidPathException expected) {}
+        } catch (InvalidPathException expected) {
+        }
     }
 
     private void assertPath(String path, Matcher<Iterable<String>> matcher) {
-        System.out.println("PATH: " + path);
-
         PathTokenizer tokenizer = new PathTokenizer(path);
-
-        for (String fragment : tokenizer.getFragments()) {
-            System.out.println(fragment);
-        }
-
         assertThat(tokenizer.getFragments(), matcher);
-        System.out.println("----------------------------------");
     }
-
 
 }

@@ -14,33 +14,27 @@
  */
 package com.jayway.jsonpath;
 
-import java.util.*;
-import java.util.regex.Pattern;
-
 import static java.util.Arrays.asList;
 import static org.apache.commons.lang.Validate.notEmpty;
 import static org.apache.commons.lang.Validate.notNull;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.regex.Pattern;
+
+import org.codehaus.jackson.JsonNode;
 
 /**
  * @author Kalle Stenflo
  */
 public class Criteria {
 
-
     private enum CriteriaType {
-        GT,
-        GTE,
-        LT,
-        LTE,
-        NE,
-        IN,
-        NIN,
-        ALL,
-        SIZE,
-        EXISTS,
-        TYPE,
-        REGEX,
-        OR
+        GT, GTE, LT, LTE, NE, IN, NIN, ALL, SIZE, EXISTS, TYPE, REGEX, OR
     }
 
     /**
@@ -55,7 +49,6 @@ public class Criteria {
     private final LinkedHashMap<CriteriaType, Object> criteria = new LinkedHashMap<CriteriaType, Object>();
 
     private Object isValue = NOT_SET;
-
 
     private Criteria(String key) {
         notEmpty(key, "key can not be null or empty");
@@ -77,12 +70,11 @@ public class Criteria {
 
     /**
      * Checks if this criteria matches the given map
-     *
+     * 
      * @param map map to check
      * @return true if criteria is a match
      */
-    public boolean matches(Map<String, Object> map) {
-
+    public boolean matches(JsonNode map) {
         if (this.criteriaChain.size() == 1) {
             return criteriaChain.get(0).singleObjectApply(map);
         } else {
@@ -95,111 +87,109 @@ public class Criteria {
         }
     }
 
-
-
-
-    boolean singleObjectApply(Map<String, Object> map) {
+    boolean singleObjectApply(JsonNode node) {
 
         for (CriteriaType key : this.criteria.keySet()) {
 
-            Object actualVal = map.get(this.key);
+            JsonNode actualVal = node.get(this.key);
             Object expectedVal = this.criteria.get(key);
 
             if (CriteriaType.GT.equals(key)) {
 
-                if (expectedVal == null || actualVal == null) {
+                if (expectedVal == null || (actualVal == null || actualVal.isNull())) {
                     return false;
                 }
 
                 Number expectedNumber = (Number) expectedVal;
-                Number actualNumber = (Number) actualVal;
+                Number actualNumber = actualVal.asDouble();
 
                 return (actualNumber.doubleValue() > expectedNumber.doubleValue());
 
             } else if (CriteriaType.GTE.equals(key)) {
 
-                if (expectedVal == null || actualVal == null) {
+                if (expectedVal == null || (actualVal == null || actualVal.isNull())) {
                     return false;
                 }
 
                 Number expectedNumber = (Number) expectedVal;
-                Number actualNumber = (Number) actualVal;
+                Number actualNumber = actualVal.asDouble();
 
                 return (actualNumber.doubleValue() >= expectedNumber.doubleValue());
 
             } else if (CriteriaType.LT.equals(key)) {
 
-                if (expectedVal == null || actualVal == null) {
+                if (expectedVal == null || (actualVal == null || actualVal.isNull())) {
                     return false;
                 }
 
                 Number expectedNumber = (Number) expectedVal;
-                Number actualNumber = (Number) actualVal;
+                Number actualNumber = actualVal.asDouble();
 
                 return (actualNumber.doubleValue() < expectedNumber.doubleValue());
 
             } else if (CriteriaType.LTE.equals(key)) {
 
-                if (expectedVal == null || actualVal == null) {
+                if (expectedVal == null || (actualVal == null || actualVal.isNull())) {
                     return false;
                 }
 
                 Number expectedNumber = (Number) expectedVal;
-                Number actualNumber = (Number) actualVal;
+                Number actualNumber = actualVal.asDouble();
 
                 return (actualNumber.doubleValue() <= expectedNumber.doubleValue());
 
             } else if (CriteriaType.NE.equals(key)) {
-                if (expectedVal == null && actualVal == null) {
+                if (expectedVal == null && (actualVal == null || actualVal.isNull())) {
                     return false;
                 }
                 if (expectedVal == null) {
                     return true;
                 } else {
-                    return !expectedVal.equals(actualVal);
+                    return !expectedVal.equals(JsonNodeUtil.asJava(actualVal));
                 }
 
             } else if (CriteriaType.IN.equals(key)) {
-
-                Collection exp = (Collection) expectedVal;
-
-                return exp.contains(actualVal);
+                Collection< ? > exp = (Collection< ? >) expectedVal;
+                return exp.contains(JsonNodeUtil.asJava(actualVal));
 
             } else if (CriteriaType.NIN.equals(key)) {
 
-                Collection exp = (Collection) expectedVal;
+                Collection< ? > exp = (Collection< ? >) expectedVal;
 
-                return !exp.contains(actualVal);
+                return !exp.contains(JsonNodeUtil.asJava(actualVal));
             } else if (CriteriaType.ALL.equals(key)) {
 
-                Collection exp = (Collection) expectedVal;
-                Collection act = (Collection) actualVal;
-
-                return act.containsAll(exp);
+                Collection< ? > exp = (Collection< ? >) expectedVal;
+                if (exp.size() != actualVal.size()) {
+                    return false;
+                }
+                boolean containsAll = true;
+                Iterator<JsonNode> it = actualVal.iterator();
+                while (it.hasNext() && containsAll) {
+                    containsAll = containsAll && exp.contains(JsonNodeUtil.asJava(it.next()));
+                }
+                return containsAll;
 
             } else if (CriteriaType.SIZE.equals(key)) {
 
                 int exp = (Integer) expectedVal;
-                List act = (List) actualVal;
 
-                return (act.size() == exp);
+                return (actualVal.size() == exp);
 
             } else if (CriteriaType.EXISTS.equals(key)) {
 
                 boolean exp = (Boolean) expectedVal;
-                boolean act = map.containsKey(this.key);
+                boolean act = node.has(this.key);
 
                 return act == exp;
 
             } else if (CriteriaType.TYPE.equals(key)) {
 
-                Class<?> exp = (Class<?>) expectedVal;
-                Class<?> act = null;
-                if (map.containsKey(this.key)) {
-                    Object actVal = map.get(this.key);
-                    if (actVal != null) {
-                        act = actVal.getClass();
-                    }
+                Class< ? > exp = (Class< ? >) expectedVal;
+                Class< ? > act = null;
+                JsonNode actVal = node.get(this.key);
+                if (actVal != null && !actVal.isNull()) {
+                    act = JsonNodeUtil.asJava(actVal).getClass();
                 }
                 if (act == null) {
                     return false;
@@ -209,12 +199,11 @@ public class Criteria {
 
             } else if (CriteriaType.REGEX.equals(key)) {
 
-
                 Pattern exp = (Pattern) expectedVal;
-                String act = (String) actualVal;
-                if (act == null) {
+                if (actualVal == null || actualVal.isNull()) {
                     return false;
                 }
+                String act = actualVal.asText();
                 return exp.matcher(act).matches();
 
             } else {
@@ -224,20 +213,22 @@ public class Criteria {
         if (isValue != NOT_SET) {
 
             if (isValue instanceof Collection) {
+                @SuppressWarnings("unchecked")
                 Collection<Criteria> cs = (Collection<Criteria>) isValue;
                 for (Criteria crit : cs) {
                     for (Criteria c : crit.criteriaChain) {
-                        if (!c.singleObjectApply(map)) {
+                        if (!c.singleObjectApply(node)) {
                             return false;
                         }
                     }
                 }
                 return true;
             } else {
+                JsonNode value = node.get(key);
                 if (isValue == null) {
-                    return (map.get(key) == null);
+                    return value == null || value.isNull();
                 } else {
-                    return isValue.equals(map.get(key));
+                    return isValue.equals(JsonNodeUtil.asJava(value));
                 }
             }
         } else {
@@ -246,10 +237,9 @@ public class Criteria {
         return true;
     }
 
-
     /**
      * Static factory method to create a Criteria using the provided key
-     *
+     * 
      * @param key filed name
      * @return the new criteria
      */
@@ -260,7 +250,7 @@ public class Criteria {
 
     /**
      * Static factory method to create a Criteria using the provided key
-     *
+     * 
      * @param key ads new filed to criteria
      * @return the criteria builder
      */
@@ -270,14 +260,13 @@ public class Criteria {
 
     /**
      * Creates a criterion using equality
-     *
+     * 
      * @param o
      * @return
      */
     public Criteria is(Object o) {
         if (isValue != NOT_SET) {
-            throw new InvalidCriteriaException(
-                    "Multiple 'is' values declared. You need to use 'and' with multiple criteria");
+            throw new InvalidCriteriaException("Multiple 'is' values declared. You need to use 'and' with multiple criteria");
         }
         if (this.criteria.size() > 0 && "$not".equals(this.criteria.keySet().toArray()[this.criteria.size() - 1])) {
             throw new InvalidCriteriaException("Invalid query: 'not' can't be used with 'is' - use 'ne' instead.");
@@ -288,7 +277,7 @@ public class Criteria {
 
     /**
      * Creates a criterion using equality
-     *
+     * 
      * @param o
      * @return
      */
@@ -298,7 +287,7 @@ public class Criteria {
 
     /**
      * Creates a criterion using the <b>!=</b> operator
-     *
+     * 
      * @param o
      * @return
      */
@@ -309,7 +298,7 @@ public class Criteria {
 
     /**
      * Creates a criterion using the <b>&lt;</b> operator
-     *
+     * 
      * @param o
      * @return
      */
@@ -320,7 +309,7 @@ public class Criteria {
 
     /**
      * Creates a criterion using the <b>&lt;=</b> operator
-     *
+     * 
      * @param o
      * @return
      */
@@ -331,7 +320,7 @@ public class Criteria {
 
     /**
      * Creates a criterion using the <b>&gt;</b> operator
-     *
+     * 
      * @param o
      * @return
      */
@@ -342,7 +331,7 @@ public class Criteria {
 
     /**
      * Creates a criterion using the <b>&gt;=</b> operator
-     *
+     * 
      * @param o
      * @return
      */
@@ -352,37 +341,34 @@ public class Criteria {
     }
 
     /**
-     * The <code>in</code> operator is analogous to the SQL IN modifier, allowing you
-     * to specify an array of possible matches.
-     *
+     * The <code>in</code> operator is analogous to the SQL IN modifier, allowing you to specify an array of possible matches.
+     * 
      * @param o the values to match against
      * @return
      */
     public Criteria in(Object... o) {
         if (o.length > 1 && o[1] instanceof Collection) {
-            throw new InvalidCriteriaException("You can only pass in one argument of type "
-                    + o[1].getClass().getName());
+            throw new InvalidCriteriaException("You can only pass in one argument of type " + o[1].getClass().getName());
         }
         return in(Arrays.asList(o));
     }
 
     /**
-      * The <code>in</code> operator is analogous to the SQL IN modifier, allowing you
-      * to specify an array of possible matches.
-      *
-      * @param c the collection containing the values to match against
-      * @return
-      */
-    public Criteria in(Collection<?> c) {
+     * The <code>in</code> operator is analogous to the SQL IN modifier, allowing you to specify an array of possible matches.
+     * 
+     * @param c the collection containing the values to match against
+     * @return
+     */
+    public Criteria in(Collection< ? > c) {
         notNull(c, "collection can not be null");
         criteria.put(CriteriaType.IN, c);
         return this;
     }
 
     /**
-     * The <code>nin</code> operator is similar to $in except that it selects objects for
-     * which the specified field does not have any value in the specified array.
-     *
+     * The <code>nin</code> operator is similar to $in except that it selects objects for which the specified field does not have any value in the
+     * specified array.
+     * 
      * @param o the values to match against
      * @return
      */
@@ -391,35 +377,37 @@ public class Criteria {
     }
 
     /**
-     * The <code>nin</code> operator is similar to $in except that it selects objects for
-     * which the specified field does not have any value in the specified array.
-     *
+     * The <code>nin</code> operator is similar to $in except that it selects objects for which the specified field does not have any value in the
+     * specified array.
+     * 
      * @param c the values to match against
      * @return
      */
-    public Criteria nin(Collection<?> c) {
+    public Criteria nin(Collection< ? > c) {
         notNull(c, "collection can not be null");
         criteria.put(CriteriaType.NIN, c);
         return this;
     }
 
-
     /**
-     * The <code>all</code> operator is similar to $in, but instead of matching any value in the specified array all values in the array must be matched.
-     *
+     * The <code>all</code> operator is similar to $in, but instead of matching any value in the specified array all values in the array must be
+     * matched.
+     * 
      * @param o
      * @return
      */
     public Criteria all(Object... o) {
         return all(Arrays.asList(o));
     }
+
     /**
-     * The <code>all</code> operator is similar to $in, but instead of matching any value in the specified array all values in the array must be matched.
-     *
+     * The <code>all</code> operator is similar to $in, but instead of matching any value in the specified array all values in the array must be
+     * matched.
+     * 
      * @param c
      * @return
      */
-    public Criteria all(Collection<?> c) {
+    public Criteria all(Collection< ? > c) {
         notNull(c, "collection can not be null");
         criteria.put(CriteriaType.ALL, c);
         return this;
@@ -427,7 +415,7 @@ public class Criteria {
 
     /**
      * The <code>size</code> operator matches any array with the specified number of elements.
-     *
+     * 
      * @param s
      * @return
      */
@@ -438,7 +426,7 @@ public class Criteria {
 
     /**
      * Check for existence (or lack thereof) of a field.
-     *
+     * 
      * @param b
      * @return
      */
@@ -449,20 +437,19 @@ public class Criteria {
 
     /**
      * The $type operator matches values based on their Java type.
-     *
+     * 
      * @param t
      * @return
      */
-    public Criteria type(Class<?> t) {
+    public Criteria type(Class< ? > t) {
         notNull(t, "type can not be null");
         criteria.put(CriteriaType.TYPE, t);
         return this;
     }
 
-
     /**
      * Creates a criterion using a Regex
-     *
+     * 
      * @param pattern
      * @return
      */
@@ -472,39 +459,32 @@ public class Criteria {
         return this;
     }
 
-
     /**
      * Creates an 'or' criteria using the $or operator for all of the provided criteria
-     *
+     * 
      * @param criteria
      */
     /*
-    public Criteria orOperator(Criteria... criteria) {
-        criteriaChain.add(new Criteria("$or").is(asList(criteria)));
-        return this;
-    }
-    */
+     * public Criteria orOperator(Criteria... criteria) { criteriaChain.add(new Criteria("$or").is(asList(criteria))); return this; }
+     */
 
     /**
      * Creates a 'nor' criteria using the $nor operator for all of the provided criteria
-     *
+     * 
      * @param criteria
      */
     /*
-    public Criteria norOperator(Criteria... criteria) {
-        criteriaChain.add(new Criteria("$nor").is(asList(criteria)));
-        return this;
-    }*/
+     * public Criteria norOperator(Criteria... criteria) { criteriaChain.add(new Criteria("$nor").is(asList(criteria))); return this; }
+     */
 
     /**
      * Creates an 'and' criteria using the $and operator for all of the provided criteria
-     *
+     * 
      * @param criteria
      */
     public Criteria andOperator(Criteria... criteria) {
         criteriaChain.add(new Criteria("$and").is(asList(criteria)));
         return this;
     }
-
 
 }

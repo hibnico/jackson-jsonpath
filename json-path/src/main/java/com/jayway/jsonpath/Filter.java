@@ -14,27 +14,33 @@
  */
 package com.jayway.jsonpath;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+
+import org.codehaus.jackson.JsonNode;
+import org.codehaus.jackson.node.ArrayNode;
+import org.codehaus.jackson.node.JsonNodeFactory;
 
 /**
  * A filter is used to filter the content of a JSON array in a JSONPath.
- *
+ * 
  * Sample
- *
+ * 
  * <code>
  * String doc = {"items": [{"name" : "john"}, {"name": "bob"}]}
- *
+ * 
  * List<String> names = JsonPath.read(doc, "$items[?].name", Filter.filter(Criteria.where("name").is("john"));
  * </code>
- *
+ * 
  * @see Criteria
- *
+ * 
  * @author Kalle Stenflo
  */
-public abstract class Filter<T> {
+public abstract class Filter {
 
     /**
      * Creates a new filter based on given criteria
+     * 
      * @param criteria the filter criteria
      * @return a new filter
      */
@@ -44,12 +50,13 @@ public abstract class Filter<T> {
 
     /**
      * Filters the provided list based on this filter configuration
+     * 
      * @param filterItems items to filter
      * @return the filtered list
      */
-    public List<T> doFilter(List<T> filterItems) {
-        List<T> result = new ArrayList<T>();
-        for (T filterItem : filterItems) {
+    public ArrayNode doFilter(ArrayNode node) {
+        ArrayNode result = JsonNodeFactory.instance.arrayNode();
+        for (JsonNode filterItem : node) {
             if (accept(filterItem)) {
                 result.add(filterItem);
             }
@@ -59,29 +66,29 @@ public abstract class Filter<T> {
 
     /**
      * Check if this filter will accept or reject the given object
+     * 
      * @param obj item to check
      * @return true if filter matches
      */
-    public abstract boolean accept(T obj);
+    public abstract boolean accept(JsonNode obj);
 
     /**
      * Adds a new criteria to this filter
-     *
+     * 
      * @param criteria to add
      * @return the updated filter
      */
     public abstract Filter addCriteria(Criteria criteria);
-
 
     // --------------------------------------------------------
     //
     // Default filter implementation
     //
     // --------------------------------------------------------
-    public static abstract class FilterAdapter<T> extends Filter<T> {
+    public static abstract class FilterAdapter extends Filter {
 
         @Override
-        public boolean accept(T obj){
+        public boolean accept(JsonNode obj) {
             return false;
         }
 
@@ -91,8 +98,7 @@ public abstract class Filter<T> {
         }
     }
 
-
-    private static class MapFilter extends FilterAdapter<Map<String, Object>> {
+    private static class MapFilter extends FilterAdapter {
 
         private HashMap<String, Criteria> criteria = new LinkedHashMap<String, Criteria>();
 
@@ -112,7 +118,7 @@ public abstract class Filter<T> {
         }
 
         @Override
-        public boolean accept(Map<String, Object> map) {
+        public boolean accept(JsonNode map) {
             for (Criteria criterion : this.criteria.values()) {
                 if (!criterion.matches(map)) {
                     return false;

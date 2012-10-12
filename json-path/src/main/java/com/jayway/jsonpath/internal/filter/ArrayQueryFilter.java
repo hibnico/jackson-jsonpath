@@ -14,11 +14,12 @@
  */
 package com.jayway.jsonpath.internal.filter;
 
-import com.jayway.jsonpath.Filter;
-import com.jayway.jsonpath.spi.JsonProvider;
-
 import java.util.LinkedList;
-import java.util.List;
+
+import org.codehaus.jackson.JsonNode;
+import org.codehaus.jackson.node.ArrayNode;
+
+import com.jayway.jsonpath.Filter;
 
 /**
  * @author Kalle Stenflo
@@ -30,21 +31,19 @@ public class ArrayQueryFilter extends PathTokenFilter {
     }
 
     @Override
-    public Object filter(Object obj, JsonProvider jsonProvider, LinkedList<Filter> filters, boolean inArrayContext) {
-
+    public JsonNode filter(JsonNode node, LinkedList<Filter> filters, boolean inArrayContext) {
         Filter filter = filters.poll();
-
-        return filter.doFilter((List)obj);
+        return filter.doFilter((ArrayNode) node);
 
     }
 
     @Override
-    public Object filter(Object obj, JsonProvider jsonProvider) {
+    public JsonNode filter(JsonNode node) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public Object getRef(Object obj, JsonProvider jsonProvider) {
+    public JsonNode getRef(JsonNode node) {
         throw new UnsupportedOperationException("");
     }
 

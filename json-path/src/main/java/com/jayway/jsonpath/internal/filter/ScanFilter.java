@@ -14,10 +14,9 @@
  */
 package com.jayway.jsonpath.internal.filter;
 
-
-import com.jayway.jsonpath.spi.JsonProvider;
-
-import java.util.List;
+import org.codehaus.jackson.JsonNode;
+import org.codehaus.jackson.node.ArrayNode;
+import org.codehaus.jackson.node.JsonNodeFactory;
 
 /**
  * @author Kalle Stenflo
@@ -29,10 +28,9 @@ public class ScanFilter extends PathTokenFilter {
     }
 
     @Override
-    public Object filter(Object obj, JsonProvider jsonProvider) {
-        List<Object> result = jsonProvider.createList();
-        scan(obj, result, jsonProvider);
-
+    public JsonNode filter(JsonNode node) {
+        ArrayNode result = JsonNodeFactory.instance.arrayNode();
+        scan(node, result);
         return result;
     }
 
@@ -42,26 +40,22 @@ public class ScanFilter extends PathTokenFilter {
     }
 
     @Override
-    public Object getRef(Object obj, JsonProvider jsonProvider) {
+    public JsonNode getRef(JsonNode node) {
         throw new UnsupportedOperationException();
     }
 
-
-    private void scan(Object container, List<Object> result, JsonProvider jsonProvider) {
-
-        if (jsonProvider.isMap(container)) {
-            result.add(container);
-
-            for (Object value : jsonProvider.toMap(container).values()) {
-                if (jsonProvider.isContainer(value)) {
-                    scan(value, result, jsonProvider);
+    private void scan(JsonNode node, ArrayNode result) {
+        if (node.isObject()) {
+            result.add(node);
+            for (JsonNode value : node) {
+                if (value.isContainerNode()) {
+                    scan(value, result);
                 }
             }
-        } else if (jsonProvider.isList(container)) {
-
-            for (Object value : jsonProvider.toList(container)) {
-                if (jsonProvider.isContainer(value)) {
-                    scan(value, result, jsonProvider);
+        } else if (node.isArray()) {
+            for (JsonNode value : node) {
+                if (value.isContainerNode()) {
+                    scan(value, result);
                 }
             }
         }

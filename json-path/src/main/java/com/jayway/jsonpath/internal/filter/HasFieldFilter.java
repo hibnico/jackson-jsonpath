@@ -14,10 +14,9 @@
  */
 package com.jayway.jsonpath.internal.filter;
 
-import com.jayway.jsonpath.spi.JsonProvider;
-
-import java.util.List;
-import java.util.Map;
+import org.codehaus.jackson.JsonNode;
+import org.codehaus.jackson.node.ArrayNode;
+import org.codehaus.jackson.node.JsonNodeFactory;
 
 /**
  * @author Kalle Stenflo
@@ -29,26 +28,24 @@ public class HasFieldFilter extends PathTokenFilter {
     }
 
     @Override
-    public Object filter(Object obj, JsonProvider jsonProvider) {
+    public JsonNode filter(JsonNode node) {
 
-        //[?(@.isbn)]
-        List<Object> src = jsonProvider.toList(obj);
-        List<Object> result = jsonProvider.createList();
+        // [?(@.isbn)]
+        ArrayNode result = JsonNodeFactory.instance.arrayNode();
 
         String trimmedCondition = condition;
 
-        if(condition.contains("['")){
+        if (condition.contains("['")) {
             trimmedCondition = trimmedCondition.replace("['", ".");
             trimmedCondition = trimmedCondition.replace("']", "");
         }
 
         trimmedCondition = trim(trimmedCondition, 5, 2);
 
-        for (Object item : src) {
-            if(jsonProvider.isMap(item)){
-                Map<String, Object> map = jsonProvider.toMap(item);
-                if(map.containsKey(trimmedCondition)){
-                    result.add(map);
+        for (JsonNode item : node) {
+            if (item.isObject()) {
+                if (item.has(trimmedCondition)) {
+                    result.add(item);
                 }
             }
         }
@@ -56,7 +53,7 @@ public class HasFieldFilter extends PathTokenFilter {
     }
 
     @Override
-    public Object getRef(Object obj, JsonProvider jsonProvider) {
+    public JsonNode getRef(JsonNode node) {
         throw new UnsupportedOperationException();
     }
 

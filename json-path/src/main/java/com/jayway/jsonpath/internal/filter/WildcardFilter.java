@@ -14,9 +14,9 @@
  */
 package com.jayway.jsonpath.internal.filter;
 
-import com.jayway.jsonpath.spi.JsonProvider;
-
-import java.util.List;
+import org.codehaus.jackson.JsonNode;
+import org.codehaus.jackson.node.ArrayNode;
+import org.codehaus.jackson.node.JsonNodeFactory;
 
 /**
  * @author Kalle Stenflo
@@ -28,17 +28,17 @@ public class WildcardFilter extends PathTokenFilter {
     }
 
     @Override
-    public Object filter(Object obj, JsonProvider jsonProvider) {
-        List<Object> result = jsonProvider.createList();
+    public JsonNode filter(JsonNode node) {
+        ArrayNode result = JsonNodeFactory.instance.arrayNode();
 
-        if (jsonProvider.isList(obj)) {
-            for (Object current : jsonProvider.toList(obj)) {
-                for (Object value : jsonProvider.toMap(current).values()) {
+        if (node.isArray()) {
+            for (JsonNode current : node) {
+                for (JsonNode value : current) {
                     result.add(value);
                 }
             }
         } else {
-            for (Object value : jsonProvider.toMap(obj).values()) {
+            for (JsonNode value : node) {
                 result.add(value);
             }
         }
@@ -46,7 +46,7 @@ public class WildcardFilter extends PathTokenFilter {
     }
 
     @Override
-    public Object getRef(Object obj, JsonProvider jsonProvider) {
+    public JsonNode getRef(JsonNode node) {
         throw new UnsupportedOperationException();
     }
 

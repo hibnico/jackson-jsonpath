@@ -14,13 +14,14 @@
  */
 package com.jayway.jsonpath.internal.filter;
 
+import java.util.LinkedList;
+
+import org.codehaus.jackson.JsonNode;
+import org.codehaus.jackson.node.ArrayNode;
+import org.codehaus.jackson.node.JsonNodeFactory;
+
 import com.jayway.jsonpath.Filter;
 import com.jayway.jsonpath.InvalidPathException;
-import com.jayway.jsonpath.spi.JsonProvider;
-
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
 
 /**
  * @author Kalle Stenflo
@@ -32,21 +33,22 @@ public class FieldFilter extends PathTokenFilter {
     }
 
     @Override
-    public Object filter(Object obj, JsonProvider jsonProvider, LinkedList<Filter> filters, boolean inArrayContext) {
-        if (jsonProvider.isList(obj)) {
+    public JsonNode filter(JsonNode node, LinkedList<Filter> filters, boolean inArrayContext) {
+        if (node.isArray()) {
             if (!inArrayContext) {
                 return null;
             } else {
-                List<Object> result = jsonProvider.createList();
-                for (Object current : jsonProvider.toList(obj)) {
-                    if (jsonProvider.isMap(current)) {
-                        Map<String, Object> map = jsonProvider.toMap(current);
-                        if (map.containsKey(condition)) {
-                            Object o = map.get(condition);
-                            if (jsonProvider.isList(o)) {
-                                result.addAll(jsonProvider.toList(o));
+                ArrayNode result = JsonNodeFactory.instance.arrayNode();
+                for (JsonNode current : node) {
+                    if (current.isObject()) {
+                        if (current.has(condition)) {
+                            JsonNode o = current.get(condition);
+                            if (o.isArray()) {
+                                for (JsonNode item : o) {
+                                    result.add(item);
+                                }
                             } else {
-                                result.add(map.get(condition));
+                                result.add(o);
                             }
                         }
                     }
@@ -54,33 +56,30 @@ public class FieldFilter extends PathTokenFilter {
                 return result;
             }
         } else {
-            Map<String, Object> map = jsonProvider.toMap(obj);
-            if(!map.containsKey(condition)){
+            if (!node.has(condition)) {
                 throw new InvalidPathException("invalid path");
             } else {
-                return map.get(condition);
+                return node.get(condition);
             }
         }
     }
 
-
-    public Object filter(Object obj, JsonProvider jsonProvider) {
-        if (jsonProvider.isList(obj)) {
-            return obj;
+    public JsonNode filter(JsonNode node) {
+        if (node.isArray()) {
+            return node;
         } else {
-            return jsonProvider.getMapValue(obj, condition);
+            return node.get(condition);
         }
     }
 
     @Override
-    public Object getRef(Object obj, JsonProvider jsonProvider) {
-        return filter(obj, jsonProvider);
+    public JsonNode getRef(JsonNode node) {
+        return filter(node);
     }
 
     @Override
     public boolean isArrayFilter() {
         return false;
     }
-
 
 }

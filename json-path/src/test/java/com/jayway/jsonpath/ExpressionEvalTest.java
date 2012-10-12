@@ -1,64 +1,71 @@
 package com.jayway.jsonpath;
 
-import com.jayway.jsonpath.internal.filter.eval.ExpressionEvaluator;
+import static org.junit.Assert.assertEquals;
+
+import org.codehaus.jackson.node.JsonNodeFactory;
 import org.junit.Test;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import com.jayway.jsonpath.internal.filter.eval.ExpressionEvaluator;
 
-/**
- * Created by IntelliJ IDEA.
- * User: kallestenflo
- * Date: 2/4/11
- * Time: 9:32 PM
- */
 public class ExpressionEvalTest {
+
+    private void checkNumber(int i, String op, String value, boolean expected) {
+        assertEquals(ExpressionEvaluator.eval(JsonNodeFactory.instance.numberNode(i), op, value), expected);
+    }
+
+    private void checkNumber(long l, String op, String value, boolean expected) {
+        assertEquals(ExpressionEvaluator.eval(JsonNodeFactory.instance.numberNode(l), op, value), expected);
+    }
+
+    private void checkNumber(double d, String op, String value, boolean expected) {
+        assertEquals(ExpressionEvaluator.eval(JsonNodeFactory.instance.numberNode(d), op, value), expected);
+    }
+
+    private void checkString(String s, String op, String value, boolean expected) {
+        assertEquals(ExpressionEvaluator.eval(JsonNodeFactory.instance.textNode(s), op, value), expected);
+    }
 
     @Test
     public void long_eval() throws Exception {
+        checkNumber(1L, "==", "1", true);
+        checkNumber(2L, "!=", "1", true);
+        checkNumber(2L, ">", "1", true);
+        checkNumber(2L, ">=", "1", true);
+        checkNumber(2L, ">=", "2", true);
+        checkNumber(1L, "<", "2", true);
+        checkNumber(2L, "<=", "2", true);
 
-        assertTrue(ExpressionEvaluator.eval(1L, "==", "1"));
-        assertTrue(ExpressionEvaluator.eval(2L, "!=", "1"));
-        assertTrue(ExpressionEvaluator.eval(2L, ">", "1"));
-        assertTrue(ExpressionEvaluator.eval(2L, ">=", "1"));
-        assertTrue(ExpressionEvaluator.eval(2L, ">=", "2"));
-        assertTrue(ExpressionEvaluator.eval(1L, "<", "2"));
-        assertTrue(ExpressionEvaluator.eval(2L, "<=", "2"));
-
-        assertFalse(ExpressionEvaluator.eval(1, ">", "2"));
-        assertFalse(ExpressionEvaluator.eval(1, ">=", "2"));
-        assertFalse(ExpressionEvaluator.eval(2, "<", "1"));
-        assertFalse(ExpressionEvaluator.eval(2, "<=", "1"));
-        assertFalse(ExpressionEvaluator.eval(1, "==", "2"));
-        assertFalse(ExpressionEvaluator.eval(1, "!=", "1"));
+        checkNumber(1, ">", "2", false);
+        checkNumber(1, ">=", "2", false);
+        checkNumber(2, "<", "1", false);
+        checkNumber(2, "<=", "1", false);
+        checkNumber(1, "==", "2", false);
+        checkNumber(1, "!=", "1", false);
     }
 
     @Test
     public void double_eval() throws Exception {
+        checkNumber(1D, "==", "1", true);
+        checkNumber(2D, "!=", "1", true);
+        checkNumber(2D, ">", "1", true);
+        checkNumber(2D, ">=", "1", true);
+        checkNumber(2D, ">=", "2", true);
+        checkNumber(1D, "<", "2", true);
+        checkNumber(2D, "<=", "2", true);
 
-        assertTrue(ExpressionEvaluator.eval(1D, "==", "1"));
-        assertTrue(ExpressionEvaluator.eval(2D, "!=", "1"));
-        assertTrue(ExpressionEvaluator.eval(2D, ">", "1"));
-        assertTrue(ExpressionEvaluator.eval(2D, ">=", "1"));
-        assertTrue(ExpressionEvaluator.eval(2D, ">=", "2"));
-        assertTrue(ExpressionEvaluator.eval(1D, "<", "2"));
-        assertTrue(ExpressionEvaluator.eval(2D, "<=", "2"));
-
-        assertFalse(ExpressionEvaluator.eval(1D, ">", "2"));
-        assertFalse(ExpressionEvaluator.eval(1D, ">=", "2"));
-        assertFalse(ExpressionEvaluator.eval(2D, "<", "1"));
-        assertFalse(ExpressionEvaluator.eval(2D, "<=", "1"));
-        assertFalse(ExpressionEvaluator.eval(1D, "==", "2"));
-        assertFalse(ExpressionEvaluator.eval(1D, "!=", "1"));
+        checkNumber(1D, ">", "2", false);
+        checkNumber(1D, ">=", "2", false);
+        checkNumber(2D, "<", "1", false);
+        checkNumber(2D, "<=", "1", false);
+        checkNumber(1D, "==", "2", false);
+        checkNumber(1D, "!=", "1", false);
     }
 
     @Test
     public void string_eval() throws Exception {
-
-        assertTrue(ExpressionEvaluator.eval("A", "==", "A"));
-        assertTrue(ExpressionEvaluator.eval("B", "!=", "A"));
+        checkString("A", "==", "A", true);
+        checkString("B", "!=", "A", true);
 
     }
-
 
 }

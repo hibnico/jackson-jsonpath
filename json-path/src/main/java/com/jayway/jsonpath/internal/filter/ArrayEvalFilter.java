@@ -14,14 +14,15 @@
  */
 package com.jayway.jsonpath.internal.filter;
 
-import com.jayway.jsonpath.InvalidPathException;
-import com.jayway.jsonpath.internal.filter.eval.ExpressionEvaluator;
-import com.jayway.jsonpath.spi.JsonProvider;
-
-import java.util.List;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.codehaus.jackson.JsonNode;
+import org.codehaus.jackson.node.ArrayNode;
+import org.codehaus.jackson.node.JsonNodeFactory;
+
+import com.jayway.jsonpath.InvalidPathException;
+import com.jayway.jsonpath.internal.filter.eval.ExpressionEvaluator;
 
 /**
  * @author Kalle Stenflo
@@ -35,14 +36,13 @@ public class ArrayEvalFilter extends PathTokenFilter {
     }
 
     @Override
-    public Object filter(Object obj, JsonProvider jsonProvider) {
-        //[?(@.isbn == 10)]
-        List<Object> src = jsonProvider.toList(obj);
-        List<Object> result = jsonProvider.createList();
+    public JsonNode filter(JsonNode node) {
+        // [?(@.isbn == 10)]
+        ArrayNode result = JsonNodeFactory.instance.arrayNode();
 
         String trimmedCondition = condition;
 
-        if(condition.contains("['")){
+        if (condition.contains("['")) {
             trimmedCondition = trimmedCondition.replace("['", ".");
             trimmedCondition = trimmedCondition.replace("']", "");
         }
@@ -51,8 +51,8 @@ public class ArrayEvalFilter extends PathTokenFilter {
 
         ConditionStatement conditionStatement = createConditionStatement(trimmedCondition);
 
-        for (Object item : src) {
-            if (isMatch(item, conditionStatement, jsonProvider)) {
+        for (JsonNode item : node) {
+            if (isMatch(item, conditionStatement)) {
                 result.add(item);
             }
         }
@@ -60,7 +60,7 @@ public class ArrayEvalFilter extends PathTokenFilter {
     }
 
     @Override
-    public Object getRef(Object obj, JsonProvider jsonProvider) {
+    public JsonNode getRef(JsonNode node) {
         throw new UnsupportedOperationException("");
     }
 
@@ -69,24 +69,22 @@ public class ArrayEvalFilter extends PathTokenFilter {
         return true;
     }
 
-    private boolean isMatch(Object check, ConditionStatement conditionStatement, JsonProvider jsonProvider) {
-        if (!jsonProvider.isMap(check)) {
-            return false;
-        }
-        Map<String, Object> obj = jsonProvider.toMap(check);
-
-        if (!obj.containsKey(conditionStatement.getField())) {
+    private boolean isMatch(JsonNode node, ConditionStatement conditionStatement) {
+        if (!node.isObject()) {
             return false;
         }
 
-        Object propertyValue = obj.get(conditionStatement.getField());
+        if (!node.has(conditionStatement.getField())) {
+            return false;
+        }
 
-        if (jsonProvider.isContainer(propertyValue)) {
+        JsonNode propertyValue = node.get(conditionStatement.getField());
+
+        if (propertyValue.isContainerNode()) {
             return false;
         }
         return ExpressionEvaluator.eval(propertyValue, conditionStatement.getOperator(), conditionStatement.getExpected());
     }
-
 
     private ConditionStatement createConditionStatement(String str) {
         Matcher matcher = PATTERN.matcher(str);
@@ -111,7 +109,7 @@ public class ArrayEvalFilter extends PathTokenFilter {
             this.operator = operator.trim();
             this.expected = expected;
 
-            if(this.expected.startsWith("'")){
+            if (this.expected.startsWith("'")) {
                 this.expected = trim(this.expected, 1, 1);
             }
         }

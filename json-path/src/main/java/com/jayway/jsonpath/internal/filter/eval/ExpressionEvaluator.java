@@ -14,16 +14,18 @@
  */
 package com.jayway.jsonpath.internal.filter.eval;
 
+import org.codehaus.jackson.JsonNode;
+
 /**
  * @author Kalle Stenflo
  */
 public class ExpressionEvaluator {
 
-    public static <T> boolean eval(T actual, String comparator, String expected) {
+    public static boolean eval(JsonNode actual, String comparator, String expected) {
 
-        if (actual instanceof Long) {
+        if (actual.isLong()) {
 
-            Long a = (Long) actual;
+            Long a = actual.asLong();
             Long e = Long.parseLong(expected.trim());
 
             if ("==".equals(comparator)) {
@@ -39,8 +41,8 @@ public class ExpressionEvaluator {
             } else if ("<=".equals(comparator)) {
                 return a <= e;
             }
-        } else if (actual instanceof Integer) {
-            Integer a = (Integer) actual;
+        } else if (actual.isInt()) {
+            Integer a = actual.asInt();
             Integer e = Integer.parseInt(expected.trim());
 
             if ("==".equals(comparator)) {
@@ -56,9 +58,9 @@ public class ExpressionEvaluator {
             } else if ("<=".equals(comparator)) {
                 return a <= e;
             }
-        } else if (actual instanceof Double) {
+        } else if (actual.isDouble()) {
 
-            Double a = (Double) actual;
+            Double a = actual.asDouble();
             Double e = Double.parseDouble(expected.trim());
 
             if ("==".equals(comparator)) {
@@ -74,15 +76,15 @@ public class ExpressionEvaluator {
             } else if ("<=".equals(comparator)) {
                 return a <= e;
             }
-        } else if (actual instanceof String) {
+        } else if (actual.isTextual()) {
 
-            String a = (String)actual;
+            String a = actual.asText();
             expected = expected.trim();
-            if(expected.startsWith("'")) {
+            if (expected.startsWith("'")) {
                 expected = expected.substring(1);
             }
-            if(expected.endsWith("'")){
-                expected = expected.substring(0, expected.length()-1);
+            if (expected.endsWith("'")) {
+                expected = expected.substring(0, expected.length() - 1);
             }
 
             if ("==".equals(comparator)) {

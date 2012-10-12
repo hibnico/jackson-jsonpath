@@ -1,87 +1,95 @@
 package com.jayway.jsonpath;
 
-import org.hamcrest.Matchers;
-import org.junit.Test;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasItems;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
 
 import java.util.List;
 import java.util.Map;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertThat;
+import org.hamcrest.Matcher;
+import org.hamcrest.Matchers;
+import org.junit.Test;
 
 /**
  * test defined in http://jsonpath.googlecode.com/svn/trunk/tests/jsonpath-test-js.html
  */
 public class ComplianceTest {
 
+    @SuppressWarnings("unchecked")
+    private <T> void checkList(String json, String jsonPath, Matcher<Iterable<T>> matcher) {
+        assertThat((List<T>) JsonNodeUtil.asList(JsonPath.read(json, jsonPath)), matcher);
+    }
+
     @Test
     public void test_one() throws Exception {
+        // @formatter:off
+        String json = "{ \"a\": \"a\",\n"
+                + "      \"b\": \"b\",\n"
+                + "      \"c d\": \"e\" \n"
+                + "    }";
+        // @formatter:on
 
-        String json = "{ \"a\": \"a\",\n" +
-                "           \"b\": \"b\",\n" +
-                "           \"c d\": \"e\" \n" +
-                "         }";
+        assertThat(JsonPath.read(json, "$.a").asText(), equalTo("a"));
+        checkList(json, "$.*", hasItems("a", "b", "e"));
+        checkList(json, "$['*']", hasItems("a", "b", "e"));
+        assertThat(JsonPath.read(json, "$['a']").asText(), equalTo("a"));
 
-        assertThat(JsonPath.<String>read(json, "$.a"), equalTo("a"));
-        assertThat(JsonPath.<List<String>>read(json, "$.*"), hasItems("a", "b", "e"));
-        assertThat(JsonPath.<List<String>>read(json, "$['*']"), hasItems("a", "b", "e"));
-        assertThat(JsonPath.<String>read(json, "$['a']"), equalTo("a"));
-
-        //assertThat(JsonPath.<String>read(json, "$.'c d'"), is(equalTo("e")));             //low
-        //assertThat(JsonPath.<List<String>>read(json, "$[*]"), hasItems("a", "b", "e"));   //low
+        // assertThat(JsonPath.<String>read(json, "$.'c d'"), is(equalTo("e"))); //low
+        // assertThat(JsonPath.<List<String>>read(json, "$[*]"), hasItems("a", "b", "e")); //low
 
     }
-    
+
     @Test
     public void test_two() throws Exception {
         String json = "[ 1, \"2\", 3.14, true, null ]";
 
-        assertThat(JsonPath.<Integer>read(json, "$[0]"), is(equalTo(1)));
-        assertThat(JsonPath.<Integer>read(json, "$[4]"), is(equalTo(null)));
-        assertThat(JsonPath.<List<Comparable>>read(json, "$[*]"), hasItems(
-                new Integer(1),
-                new String("2"),
-                new Double(3.14),
-                new Boolean(true),
-                (Comparable)null));
-        assertThat(JsonPath.<Boolean>read(json, "$[-1:]"), is(equalTo(null)));
+        assertThat(JsonPath.read(json, "$[0]").asInt(), is(equalTo(1)));
+        assertThat(JsonPath.read(json, "$[4]").isNull(), is(equalTo(true)));
+        checkList(json, "$[*]", hasItems(new Integer(1), new String("2"), new Double(3.14), new Boolean(true), (Comparable) null));
+        assertThat(JsonPath.read(json, "$[-1:]").isNull(), is(equalTo(true)));
     }
 
+    @SuppressWarnings({"rawtypes", "unchecked"})
     @Test
     public void test_three() throws Exception {
-        String json = "{ \"points\": [\n" +
-                "             { \"id\": \"i1\", \"x\":  4, \"y\": -5 },\n" +
-                "             { \"id\": \"i2\", \"x\": -2, \"y\":  2, \"z\": 1 },\n" +
-                "             { \"id\": \"i3\", \"x\":  8, \"y\":  3 },\n" +
-                "             { \"id\": \"i4\", \"x\": -6, \"y\": -1 },\n" +
-                "             { \"id\": \"i5\", \"x\":  0, \"y\":  2, \"z\": 1 },\n" +
-                "             { \"id\": \"i6\", \"x\":  1, \"y\":  4 }\n" +
-                "           ]\n" +
-                "         }";
+        // @formatter:off
+        String json = "{ \"points\": [\n"
+                + "        { \"id\": \"i1\", \"x\":  4, \"y\": -5 },\n"
+                + "        { \"id\": \"i2\", \"x\": -2, \"y\":  2, \"z\": 1 },\n"
+                + "        { \"id\": \"i3\", \"x\":  8, \"y\":  3 },\n"
+                + "        { \"id\": \"i4\", \"x\": -6, \"y\": -1 },\n"
+                + "        { \"id\": \"i5\", \"x\":  0, \"y\":  2, \"z\": 1 },\n"
+                + "        { \"id\": \"i6\", \"x\":  1, \"y\":  4 }\n"
+                + "      ]\n"
+                + "    }";
+        // @formatter:on
 
-        assertThat(JsonPath.<Map<String, Comparable>>read(json, "$.points[1]"), allOf(
-                Matchers.<String, Comparable>hasEntry("id", "i2"),
-                Matchers.<String, Comparable>hasEntry("x", -2),
-                Matchers.<String, Comparable>hasEntry("y", 2),
-                Matchers.<String, Comparable>hasEntry("z", 1)
-        ));
+        assertThat(
+                (Map< ? extends String, ? extends Comparable>) JsonNodeUtil.asMap(JsonPath.read(json, "$.points[1]")),
+                allOf(Matchers.<String, Comparable> hasEntry("id", "i2"), Matchers.<String, Comparable> hasEntry("x", -2),
+                        Matchers.<String, Comparable> hasEntry("y", 2), Matchers.<String, Comparable> hasEntry("z", 1)));
 
-        assertThat(JsonPath.<Integer>read(json, "$.points[4].x"), equalTo(0));
+        assertThat(JsonPath.read(json, "$.points[4].x").asInt(), equalTo(0));
 
-        assertThat(JsonPath.<List<Integer>>read(json, "$.points[?(@.id == 'i4')].x"), hasItem(-6));
+        assertThat((List< ? super Integer>) JsonNodeUtil.asList(JsonPath.read(json, "$.points[?(@.id == 'i4')].x")), hasItem(-6));
 
-        assertThat(JsonPath.<List<Integer>>read(json, "$.points[*].x"), hasItems(4, -2, 8, -6, 0, 1));
+        checkList(json, "$.points[*].x", hasItems(4, -2, 8, -6, 0, 1));
 
-        assertThat(JsonPath.<List<String>>read(json, "$.points[?(@.z)].id"), hasItems("i2", "i5"));
+        checkList(json, "$.points[?(@.z)].id", hasItems("i2", "i5"));
 
-        assertThat(JsonPath.<String>read(json, "$.points[(@.length - 1)].id"), equalTo("i6"));
+        assertThat(JsonPath.read(json, "$.points[(@.length - 1)].id").asText(), equalTo("i6"));
 
-        //assertThat(JsonPath.<List<Integer>>read(json, "$['points'][?(@.x * @.x + @.y * @.y > 50)].id"), hasItems(?)); //low
+        // assertThat(JsonPath.<List<Integer>>read(json, "$['points'][?(@.x * @.x + @.y * @.y > 50)].id"), hasItems(?)); //low
     }
 
     @SuppressWarnings("UnusedAssignment")
     @Test
     public void test_four() throws Exception {
+        // @formatter:off
         String json = "{ \"menu\": {\n" +
                 "                 \"header\": \"SVG Viewer\",\n" +
                 "                 \"items\": [\n" +
@@ -110,17 +118,16 @@ public class ComplianceTest {
                 "                 ]\n" +
                 "               }\n" +
                 "             }";
+        // @formatter:on
 
-
-        //assertThat(JsonPath.<List<String>>read(json, "$.menu.items[?(@ && @.id && !@.label)].id"), hasItems("?")); //low
-        //assertThat(JsonPath.<List<String>>read(json, "$.menu.items[?(@ && @.label && /SVG/.test(@.label))].id"), hasItems("?")); //low
-        //assertThat(JsonPath.<List<String>>read(json, "$.menu.items[?(!@)]"), hasItems("?")); //low
-        //assertThat(JsonPath.<List<String>>read(json, "$..[0]"), hasItems("?")); //low
+        // assertThat(JsonPath.<List<String>>read(json, "$.menu.items[?(@ && @.id && !@.label)].id"), hasItems("?")); //low
+        // assertThat(JsonPath.<List<String>>read(json, "$.menu.items[?(@ && @.label && /SVG/.test(@.label))].id"), hasItems("?")); //low
+        // assertThat(JsonPath.<List<String>>read(json, "$.menu.items[?(!@)]"), hasItems("?")); //low
+        // assertThat(JsonPath.<List<String>>read(json, "$..[0]"), hasItems("?")); //low
 
     }
 
-
-
+    // @formatter:off
     /*
     --one
     { "o": { a: "a",
@@ -246,4 +253,5 @@ public class ComplianceTest {
              ]
       }
      */
+    // @formatter:on
 }

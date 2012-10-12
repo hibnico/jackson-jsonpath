@@ -1,25 +1,24 @@
 package com.jayway.jsonpath;
 
-import org.junit.Test;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.regex.Pattern;
-
 import static com.jayway.jsonpath.Criteria.where;
 import static com.jayway.jsonpath.Filter.filter;
-import static java.util.Arrays.asList;
 import static junit.framework.Assert.assertEquals;
 
+import java.util.regex.Pattern;
+
+import org.codehaus.jackson.JsonNode;
+import org.codehaus.jackson.node.JsonNodeFactory;
+import org.codehaus.jackson.node.ObjectNode;
+import org.junit.Test;
+
+import com.jayway.jsonpath.Filter.FilterAdapter;
+
 /**
- * Created by IntelliJ IDEA.
- * User: kallestenflo
- * Date: 3/5/12
- * Time: 4:24 PM
+ * Created by IntelliJ IDEA. User: kallestenflo Date: 3/5/12 Time: 4:24 PM
  */
 public class JsonPathFilterTest {
-    
+
+    // @formatter:off
     public final static String DOCUMENT =
             "{ \"store\": {\n" +
                     "    \"book\": [ \n" +
@@ -54,75 +53,65 @@ public class JsonPathFilterTest {
                     "    }\n" +
                     "  }\n" +
                     "}";
+    // @formatter:on
 
-    
-    
     @Test
     public void arrays_of_maps_can_be_filtered() throws Exception {
-
-
-        Map<String, Object> rootGrandChild_A = new HashMap<String, Object>();
+        ObjectNode rootGrandChild_A = JsonNodeFactory.instance.objectNode();
         rootGrandChild_A.put("name", "rootGrandChild_A");
 
-        Map<String, Object> rootGrandChild_B = new HashMap<String, Object>();
+        ObjectNode rootGrandChild_B = JsonNodeFactory.instance.objectNode();
         rootGrandChild_B.put("name", "rootGrandChild_B");
 
-        Map<String, Object> rootGrandChild_C = new HashMap<String, Object>();
+        ObjectNode rootGrandChild_C = JsonNodeFactory.instance.objectNode();
         rootGrandChild_C.put("name", "rootGrandChild_C");
 
-
-        Map<String, Object> rootChild_A = new HashMap<String, Object>();
+        ObjectNode rootChild_A = JsonNodeFactory.instance.objectNode();
         rootChild_A.put("name", "rootChild_A");
-        rootChild_A.put("children", asList(rootGrandChild_A, rootGrandChild_B, rootGrandChild_C));
+        rootChild_A.put("children", JsonNodeUtil.asArrayNode(rootGrandChild_A, rootGrandChild_B, rootGrandChild_C));
 
-        Map<String, Object> rootChild_B = new HashMap<String, Object>();
+        ObjectNode rootChild_B = JsonNodeFactory.instance.objectNode();
         rootChild_B.put("name", "rootChild_B");
-        rootChild_B.put("children", asList(rootGrandChild_A, rootGrandChild_B, rootGrandChild_C));
+        rootChild_B.put("children", JsonNodeUtil.asArrayNode(rootGrandChild_A, rootGrandChild_B, rootGrandChild_C));
 
-        Map<String, Object> rootChild_C = new HashMap<String, Object>();
+        ObjectNode rootChild_C = JsonNodeFactory.instance.objectNode();
         rootChild_C.put("name", "rootChild_C");
-        rootChild_C.put("children", asList(rootGrandChild_A, rootGrandChild_B, rootGrandChild_C));
+        rootChild_C.put("children", JsonNodeUtil.asArrayNode(rootGrandChild_A, rootGrandChild_B, rootGrandChild_C));
 
-        Map<String, Object> root = new HashMap<String, Object>();
-        root.put("children", asList(rootChild_A, rootChild_B, rootChild_C));
+        ObjectNode root = JsonNodeFactory.instance.objectNode();
+        root.put("children", JsonNodeUtil.asArrayNode(rootChild_A, rootChild_B, rootChild_C));
 
-
-
-        Filter customFilter = new Filter.FilterAdapter<Map<String, Object>>() {
+        Filter customFilter = new Filter.FilterAdapter() {
             @Override
-            public boolean accept(Map<String, Object> map) {
-                if(map.get("name").equals("rootGrandChild_A")){
+            public boolean accept(JsonNode map) {
+                if (map.get("name").asText().equals("rootGrandChild_A")) {
                     return true;
                 }
                 return false;
             }
         };
-        
+
         Filter rootChildFilter = filter(where("name").regex(Pattern.compile("rootChild_[A|B]")));
         Filter rootGrandChildFilter = filter(where("name").regex(Pattern.compile("rootGrandChild_[A|B]")));
 
-        List read = JsonPath.read(root, "children[?].children[?][?]", rootChildFilter, rootGrandChildFilter, customFilter);
-
-
-        System.out.println(read.size());
+        JsonPath.read(root, "children[?].children[?][?]", rootChildFilter, rootGrandChildFilter, customFilter);
     }
-    
-    
+
     @Test
     public void arrays_of_objects_can_be_filtered() throws Exception {
-        Map<String, Object> doc = new HashMap<String, Object>();
-        doc.put("items", asList(1, 2, 3));
-        
-        Filter customFilter = new Filter.FilterAdapter<Integer>(){
+        ObjectNode doc = JsonNodeFactory.instance.objectNode();
+        doc.put("items", JsonNodeUtil.asArrayNode(1, 2, 3));
+
+        FilterAdapter customFilter = new Filter.FilterAdapter() {
             @Override
-            public boolean accept(Integer o) {
-                return 1 == o;
+            public boolean accept(JsonNode o) {
+                return 1 == o.asInt();
             }
         };
-        
-        List<Integer> res = JsonPath.read(doc, "$.items[?]", customFilter);
 
-        assertEquals(1, res.get(0).intValue());
+        JsonNode res = JsonPath.read(doc, "$.items[?]", customFilter);
+
+        assertEquals(1, res.get(0).asInt());
     }
-    
+
 }
