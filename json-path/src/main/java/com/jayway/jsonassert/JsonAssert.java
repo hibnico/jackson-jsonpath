@@ -16,14 +16,13 @@ package com.jayway.jsonassert;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.Reader;
-import java.io.StringWriter;
-import java.io.Writer;
+import java.net.URL;
 import java.text.ParseException;
 import java.util.Collection;
 import java.util.Map;
 
+import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.hamcrest.Matcher;
 
@@ -38,6 +37,21 @@ import com.jayway.jsonpath.InvalidJsonException;
 public class JsonAssert {
 
     private static ObjectMapper jsonMapper = new ObjectMapper();
+
+    /**
+     * Creates a JSONAsserter
+     * 
+     * @param json the JSON document to create a JSONAsserter for
+     * @return a JSON asserter initialized with the provided document
+     * @throws ParseException when the given JSON could not be parsed
+     */
+    public static JsonAsserter withResource(String jsonResource) {
+        try {
+            return new JsonAsserterImpl(jsonMapper.readTree(JsonAssert.class.getResource(jsonResource)));
+        } catch (IOException e) {
+            throw new InvalidJsonException(e);
+        }
+    }
 
     /**
      * Creates a JSONAsserter
@@ -62,7 +76,11 @@ public class JsonAssert {
      * @throws ParseException when the given JSON could not be parsed
      */
     public static JsonAsserter with(Reader reader) throws IOException {
-        return with(convertReaderToString(reader));
+        try {
+            return new JsonAsserterImpl(jsonMapper.readTree(reader));
+        } catch (IOException e) {
+            throw new InvalidJsonException(e);
+        }
     }
 
     /**
@@ -73,8 +91,37 @@ public class JsonAssert {
      * @throws ParseException when the given JSON could not be parsed
      */
     public static JsonAsserter with(InputStream is) throws IOException {
-        Reader reader = new InputStreamReader(is);
-        return with(reader);
+        try {
+            return new JsonAsserterImpl(jsonMapper.readTree(is));
+        } catch (IOException e) {
+            throw new InvalidJsonException(e);
+        }
+    }
+
+    /**
+     * Creates a JSONAsserter
+     * 
+     * @param is url of the json file to read
+     * @return a JSON asserter initialized with the provided document
+     * @throws ParseException when the given JSON could not be parsed
+     */
+    public static JsonAsserter with(URL url) throws IOException {
+        try {
+            return new JsonAsserterImpl(jsonMapper.readTree(url));
+        } catch (IOException e) {
+            throw new InvalidJsonException(e);
+        }
+    }
+
+    /**
+     * Creates a JSONAsserter
+     * 
+     * @param is url of the json file to read
+     * @return a JSON asserter initialized with the provided document
+     * @throws ParseException when the given JSON could not be parsed
+     */
+    public static JsonAsserter with(JsonNode node) throws IOException {
+        return new JsonAsserterImpl(node);
     }
 
     // Matchers
@@ -95,25 +142,6 @@ public class JsonAssert {
 
     public static Matcher<Collection<Object>> emptyCollection() {
         return new IsEmptyCollection<Object>();
-    }
-
-    private static String convertReaderToString(Reader reader) throws IOException {
-        if (reader != null) {
-            Writer writer = new StringWriter();
-
-            char[] buffer = new char[1024];
-            try {
-                int n;
-                while ((n = reader.read(buffer)) != -1) {
-                    writer.write(buffer, 0, n);
-                }
-            } finally {
-                reader.close();
-            }
-            return writer.toString();
-        } else {
-            return "";
-        }
     }
 
 }

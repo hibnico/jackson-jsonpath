@@ -14,18 +14,18 @@
  */
 package com.jayway.jsonpath;
 
+import static com.jayway.jsonassert.JsonAssert.with;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasItems;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
 
-import java.util.List;
-import java.util.Map;
+import java.io.IOException;
+import java.io.Serializable;
 
-import org.hamcrest.Matcher;
-import org.hamcrest.Matchers;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.node.ArrayNode;
 import org.junit.Test;
 
 /**
@@ -33,237 +33,108 @@ import org.junit.Test;
  */
 public class ComplianceTest {
 
-    @SuppressWarnings("unchecked")
-    private <T> void checkList(String json, String jsonPath, Matcher<Iterable<T>> matcher) {
-        assertThat((List<T>) JsonNodeUtil.asList(JsonPath.read(json, jsonPath)), matcher);
+    private static ArrayNode jsonTest;
+
+    static {
+        try {
+            jsonTest = (ArrayNode) new ObjectMapper().readTree(ComplianceTest.class.getResource("jsonpath-test.json"));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Test
-    public void test_one() throws Exception {
+    public void test0() throws Exception {
         // @formatter:off
-        String json = "{ \"a\": \"a\",\n"
-                + "      \"b\": \"b\",\n"
-                + "      \"c d\": \"e\" \n"
-                + "    }";
+        with(jsonTest.get(0).get("o"))
+            .assertThat("$.a", equalTo("a"))
+            .assertThat("$['a']", equalTo("a"))
+            .assertThat("$['c d']", equalTo("e"))
+            .assertThat("$.*", hasItems("a", "b", "e"))
+            .assertThat("$['*']", hasItems("a", "b", "e"))
+            .assertThat("$[*]", hasItems("a", "b", "e"));
         // @formatter:on
-
-        assertThat(JsonPath.read(json, "$.a").asText(), equalTo("a"));
-        checkList(json, "$.*", hasItems("a", "b", "e"));
-        checkList(json, "$['*']", hasItems("a", "b", "e"));
-        assertThat(JsonPath.read(json, "$['a']").asText(), equalTo("a"));
-
-        // FIXME assertThat(JsonPath.read(json, "$.'c d'").asText(), is(equalTo("e")));
-        // FIXME checkList(json, "$[*]", hasItems("a", "b", "e"));
     }
 
-    @SuppressWarnings("rawtypes")
     @Test
-    public void test_two() throws Exception {
-        String json = "[ 1, \"2\", 3.14, true, null ]";
-
-        assertThat(JsonPath.read(json, "$[0]").asInt(), is(equalTo(1)));
-        assertThat(JsonPath.read(json, "$[4]").isNull(), is(equalTo(true)));
-        checkList(json, "$[*]", hasItems(new Integer(1), new String("2"), new Double(3.14), new Boolean(true), (Comparable) null));
-        assertThat(JsonPath.read(json, "$[-1:]").isNull(), is(equalTo(true)));
-    }
-
-    @SuppressWarnings({"rawtypes", "unchecked"})
-    @Test
-    public void test_three() throws Exception {
+    public void test1() throws Exception {
         // @formatter:off
-        String json = "{ \"points\": [\n"
-                + "        { \"id\": \"i1\", \"x\":  4, \"y\": -5 },\n"
-                + "        { \"id\": \"i2\", \"x\": -2, \"y\":  2, \"z\": 1 },\n"
-                + "        { \"id\": \"i3\", \"x\":  8, \"y\":  3 },\n"
-                + "        { \"id\": \"i4\", \"x\": -6, \"y\": -1 },\n"
-                + "        { \"id\": \"i5\", \"x\":  0, \"y\":  2, \"z\": 1 },\n"
-                + "        { \"id\": \"i6\", \"x\":  1, \"y\":  4 }\n"
-                + "      ]\n"
-                + "    }";
+        with(jsonTest.get(1).get("o"))
+            .assertThat("$[0]", equalTo(1))
+            .assertThat("$[4]", equalTo(null))
+            .assertThat("$[*]", hasItems(1, "2", 3.14d, true, (Serializable) null))
+            .assertThat("$[-1:]", hasItem(null));
         // @formatter:on
-
-        assertThat(
-                (Map< ? extends String, ? extends Comparable>) JsonNodeUtil.asMap(JsonPath.read(json, "$.points[1]")),
-                allOf(Matchers.<String, Comparable> hasEntry("id", "i2"), Matchers.<String, Comparable> hasEntry("x", -2),
-                        Matchers.<String, Comparable> hasEntry("y", 2), Matchers.<String, Comparable> hasEntry("z", 1)));
-
-        assertThat(JsonPath.read(json, "$.points[4].x").asInt(), equalTo(0));
-
-        assertThat((List< ? super Integer>) JsonNodeUtil.asList(JsonPath.read(json, "$.points[?(@.id == 'i4')].x")), hasItem(-6));
-
-        checkList(json, "$.points[*].x", hasItems(4, -2, 8, -6, 0, 1));
-
-        checkList(json, "$.points[?(@.z)].id", hasItems("i2", "i5"));
-
-        assertThat(JsonPath.read(json, "$.points[(@.length - 1)].id").asText(), equalTo("i6"));
-
-        // FIXME checkList(json, "$['points'][?(@.x * @.x + @.y * @.y > 50)].id", hasItems("?"));
     }
 
     @Test
-    public void test_four() throws Exception {
+    public void test2() throws Exception {
         // @formatter:off
-        String json = "{ \"menu\": {\n" +
-                "                 \"header\": \"SVG Viewer\",\n" +
-                "                 \"items\": [\n" +
-                "                     {\"id\": \"Open\"},\n" +
-                "                     {\"id\": \"OpenNew\", \"label\": \"Open New\"},\n" +
-                "                     null,\n" +
-                "                     {\"id\": \"ZoomIn\", \"label\": \"Zoom In\"},\n" +
-                "                     {\"id\": \"ZoomOut\", \"label\": \"Zoom Out\"},\n" +
-                "                     {\"id\": \"OriginalView\", \"label\": \"Original View\"},\n" +
-                "                     null,\n" +
-                "                     {\"id\": \"Quality\"},\n" +
-                "                     {\"id\": \"Pause\"},\n" +
-                "                     {\"id\": \"Mute\"},\n" +
-                "                     null,\n" +
-                "                     {\"id\": \"Find\", \"label\": \"Find...\"},\n" +
-                "                     {\"id\": \"FindAgain\", \"label\": \"Find Again\"},\n" +
-                "                     {\"id\": \"Copy\"},\n" +
-                "                     {\"id\": \"CopyAgain\", \"label\": \"Copy Again\"},\n" +
-                "                     {\"id\": \"CopySVG\", \"label\": \"Copy SVG\"},\n" +
-                "                     {\"id\": \"ViewSVG\", \"label\": \"View SVG\"},\n" +
-                "                     {\"id\": \"ViewSource\", \"label\": \"View Source\"},\n" +
-                "                     {\"id\": \"SaveAs\", \"label\": \"Save As\"},\n" +
-                "                     null,\n" +
-                "                     {\"id\": \"Help\"},\n" +
-                "                     {\"id\": \"About\", \"label\": \"About Adobe CVG Viewer...\"}\n" +
-                "                 ]\n" +
-                "               }\n" +
-                "             }";
+        with(jsonTest.get(2).get("o"))
+            .assertThat("$.points[1]", allOf(hasEntry("id", "i2"), hasEntry("x", -2), hasEntry("y", 2), hasEntry("z", 1)))
+            .assertThat("$.points[4].x", equalTo(0))
+            .assertThat("$.points[?(@.id=='i4')].x", hasItem(-6))
+            .assertThat("$.points[*].x", hasItems(4, -2, 8, -6, 0, 1))
+            .assertThat("$['points'][?(@.x*@.x+@.y*@.y > 50)].id", hasItem("i3"))
+            .assertThat("$.points[?(@.z)].id", hasItems("i2", "i5"))
+            .assertThat("$.points[(@.length-1)].id", hasItem("i6"));
         // @formatter:on
-
-        // FIXME checkList(json, "$.menu.items[?(@ && @.id && !@.label)].id", hasItems("?"));
-        // FIXME checkList(json, "$.menu.items[?(@ && @.label && /SVG/.test(@.label))].id", hasItems("?"));
-        // FIXME checkList(json, "$.menu.items[?(!@)]", hasItems("?"));
-        // FIXME checkList(json, "$..[0]", hasItems("?"));
     }
 
-    // @formatter:off
-    /*
-    --one
-    { "o": { a: "a",
-               b: "b",
-               "c d": "e"
-             },
-        "p": [ "$.a",
-               "$['a']",
-               "$.'c d'",
-               "$.*",
-               "$['*']" ,
-               "$[*]"
-             ]
-      },
-      --two
-      { "o": [ 1, "2", 3.14, true, null ],
-        "p": [ "$[0]",
-               "$[4]",
-               "$[*]",
-    	   "$[-1:]"
-             ]
-      },
-      --three
-      { "o": { points: [
-                 { id: "i1", x:  4, y: -5 },
-                 { id: "i2", x: -2, y:  2, z: 1 },
-                 { id: "i3", x:  8, y:  3 },
-                 { id: "i4", x: -6, y: -1 },
-                 { id: "i5", x:  0, y:  2, z: 1 },
-                 { id: "i6", x:  1, y:  4 }
-               ]
-             },
-        "p": [ "$.points[1]",
-               "$.points[4].x",
-               "$.points[?(@.id=='i4')].x",
-               "$.points[*].x",
-               "$['points'][?(@.x*@.x+@.y*@.y > 50)].id",
-               "$.points[?(@.z)].id",
-               "$.points[(@.length-1)].id"
-             ]
-      },
-      --four
-      { "o": { "menu": {
-                 "header": "SVG Viewer",
-                 "items": [
-                     {"id": "Open"},
-                     {"id": "OpenNew", "label": "Open New"},
-                     null,
-                     {"id": "ZoomIn", "label": "Zoom In"},
-                     {"id": "ZoomOut", "label": "Zoom Out"},
-                     {"id": "OriginalView", "label": "Original View"},
-                     null,
-                     {"id": "Quality"},
-                     {"id": "Pause"},
-                     {"id": "Mute"},
-                     null,
-                     {"id": "Find", "label": "Find..."},
-                     {"id": "FindAgain", "label": "Find Again"},
-                     {"id": "Copy"},
-                     {"id": "CopyAgain", "label": "Copy Again"},
-                     {"id": "CopySVG", "label": "Copy SVG"},
-                     {"id": "ViewSVG", "label": "View SVG"},
-                     {"id": "ViewSource", "label": "View Source"},
-                     {"id": "SaveAs", "label": "Save As"},
-                     null,
-                     {"id": "Help"},
-                     {"id": "About", "label": "About Adobe CVG Viewer..."}
-                 ]
-               }
-             },
-        "p": [ "$.menu.items[?(@ && @.id && !@.label)].id",
-               "$.menu.items[?(@ && @.label && /SVG/.test(@.label))].id",
-               "$.menu.items[?(!@)]",
-    		   "$..[0]"
-             ]
-      },
-      --five
-      { "o": { a: [1,2,3,4],
-               b: [5,6,7,8]
-             },
-        "p": [ "$..[0]",
-    	       "$..[-1:]",
-    		   "$..[?(@%2==0)]"
-             ]
-      },
-      { "o": { lin: {color:"red", x:2, y:3},
-               cir: {color:"blue", x:5, y:2, r:1 },
-               arc: {color:"green", x:2, y:4, r:2, phi0:30, dphi:120 },
-               pnt: {x:0, y:7 }
-             },
-        "p": [ "$.'?(@.color)'.x",
-               "$['lin','cir'].color"
-             ]
-      },
-      { "o": { lin: {color:"red", x:2, y:3},
-               cir: {color:"blue", x:5, y:2, r:1 },
-               arc: {color:"green", x:2, y:4, r:2, phi0:30, dphi:120 },
-               pnt: {x:0, y:7 }
-             },
-        "p": [ "$.'?(@.color)'.x",
-               "$['lin','arc'].color"
-             ]
-      },
-      { "o": { text: [ "hello", "world2.0"] },
-        "p": [ "$.text[?(@.length > 5)]",
-               "$.text[?(@.charAt(0) == 'h')]"
-             ]
-      },
-      { "o": { a: { a:2, b:3 },
-               b: { a:4, b:5 },
-               c: { a: { a:6, b:7}, c:8}
-             },
-        "p": [ "$..a"
-             ]
-      },
-      { "o": { a: [ { a:5, '@':2, '$':3 },   // issue 7: resolved by escaping the '@' character
-                    { a:6, '@':3, '$':4 },   // in a JSONPath expression.
-                    { a:7, '@':4, '$':5 }
-                  ]
-             },
-        "p": [ "$.a[?(@['\\@']==3)]",
-               "$.a[?(@['$']==5)]"
-             ]
-      }
-     */
-    // @formatter:on
+    @Test
+    public void test3() throws Exception {
+        // @formatter:off
+        with(jsonTest.get(3).get("o"))
+            .assertThat("$.menu.items[?(@ && @.id && !@.label)].id", hasItems("Open", "Quality", "Pause", "Mute", "Copy", "Help"))
+            .assertThat("$.menu.items[?(@ && @.label && /SVG/.test(@.label))].id", hasItems("CopySVG", "ViewSVG"))
+            .assertThat("$.menu.items[?(!@)]", hasItems((Integer) null, null, null, null)) // FIXME
+            .assertThat("$..[0]", hasEntry("id", "Open"));
+        // @formatter:on
+    }
+
+    @Test
+    public void test4() throws Exception {
+        // @formatter:off
+        with(jsonTest.get(4).get("o"))
+            .assertThat("$..[0]", hasItems(1, 5))
+            .assertThat("$..[-1:]", hasItems(4, 8))
+            .assertThat("$..[?(@%2==0)]", hasItems(2, 4, 6, 8));
+        // @formatter:on
+    }
+
+    @Test
+    public void test5() throws Exception {
+        // @formatter:off
+        with(jsonTest.get(5).get("o"))
+            .assertThat("$.'?(@.color)'.x", hasItems(2, 5, 2))
+            .assertThat("$['lin','cir'].color", hasItems("red", "blue"));
+        // @formatter:on
+    }
+
+    @Test
+    public void test6() throws Exception {
+        // @formatter:off
+        with(jsonTest.get(6).get("o"))
+            .assertThat("$.text[?(@.length > 5)]", hasItem("world2.0"))
+            .assertThat("$.text[?(@.charAt(0) == 'h')]", hasItem("hello"));
+        // @formatter:on
+    }
+
+    @Test
+    public void test7() throws Exception {
+        // @formatter:off
+        with(jsonTest.get(7).get("o"))
+            .assertThat("$..a", hasItem(6));
+        // @formatter:on
+    }
+
+    @Test
+    public void test8() throws Exception {
+        // @formatter:off
+        with(jsonTest.get(8).get("o"))
+            .assertThat("$.a[?(@['\\@']==3)]", hasItem(6))
+            .assertThat("$.a[?(@['$']==5)]", hasItem(7));
+        // @formatter:on
+    }
+
 }
