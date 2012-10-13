@@ -41,7 +41,7 @@ public class JsonAssert {
     /**
      * Creates a JSONAsserter
      * 
-     * @param json the JSON document to create a JSONAsserter for
+     * @param jsonResource the resource in the classpath to read json from
      * @return a JSON asserter initialized with the provided document
      * @throws ParseException when the given JSON could not be parsed
      */
