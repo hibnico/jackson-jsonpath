@@ -63,4 +63,9 @@ public class PathToken {
         } else
             throw new InvalidModelException("Could not get array index from fragment " + fragment);
     }
+
+    @Override
+    public String toString() {
+        return fragment;
+    }
 }
