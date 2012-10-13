@@ -28,10 +28,6 @@ import org.junit.Test;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.fasterxml.jackson.jsonpath.Criteria;
-import com.fasterxml.jackson.jsonpath.Filter;
-import com.fasterxml.jackson.jsonpath.JsonNodeUtil;
-import com.fasterxml.jackson.jsonpath.JsonPath;
 
 public class FilterTest {
 
@@ -186,7 +182,7 @@ public class FilterTest {
     @Test
     public void all_filters_evaluates() throws Exception {
         ObjectNode check = JsonNodeFactory.instance.objectNode();
-        check.put("items", JsonNodeUtil.asArrayNode(1, 2, 3));
+        check.put("items", JsonNodeUtil.arrayNode(1, 2, 3));
 
         assertTrue(filter(where("items").all(1, 2, 3)).accept(check));
         assertFalse(filter(where("items").all(1, 2, 3, 4)).accept(check));
@@ -195,7 +191,7 @@ public class FilterTest {
     @Test
     public void size_filters_evaluates() throws Exception {
         ObjectNode check = JsonNodeFactory.instance.objectNode();
-        check.put("items", JsonNodeUtil.asArrayNode(1, 2, 3));
+        check.put("items", JsonNodeUtil.arrayNode(1, 2, 3));
         check.put("items_empty", JsonNodeFactory.instance.arrayNode());
 
         assertTrue(filter(where("items").size(3)).accept(check));
@@ -335,18 +331,18 @@ public class FilterTest {
 
         ObjectNode rootChild_A = JsonNodeFactory.instance.objectNode();
         rootChild_A.put("name", "rootChild_A");
-        rootChild_A.put("children", JsonNodeUtil.asArrayNode(rootGrandChild_A, rootGrandChild_B, rootGrandChild_C));
+        rootChild_A.put("children", JsonNodeUtil.arrayNode(rootGrandChild_A, rootGrandChild_B, rootGrandChild_C));
 
         ObjectNode rootChild_B = JsonNodeFactory.instance.objectNode();
         rootChild_B.put("name", "rootChild_B");
-        rootChild_B.put("children", JsonNodeUtil.asArrayNode(rootGrandChild_A, rootGrandChild_B, rootGrandChild_C));
+        rootChild_B.put("children", JsonNodeUtil.arrayNode(rootGrandChild_A, rootGrandChild_B, rootGrandChild_C));
 
         ObjectNode rootChild_C = JsonNodeFactory.instance.objectNode();
         rootChild_C.put("name", "rootChild_C");
-        rootChild_C.put("children", JsonNodeUtil.asArrayNode(rootGrandChild_A, rootGrandChild_B, rootGrandChild_C));
+        rootChild_C.put("children", JsonNodeUtil.arrayNode(rootGrandChild_A, rootGrandChild_B, rootGrandChild_C));
 
         ObjectNode root = JsonNodeFactory.instance.objectNode();
-        root.put("children", JsonNodeUtil.asArrayNode(rootChild_A, rootChild_B, rootChild_C));
+        root.put("children", JsonNodeUtil.arrayNode(rootChild_A, rootChild_B, rootChild_C));
 
         Filter customFilter = new Filter.FilterAdapter() {
             @Override
@@ -362,12 +358,13 @@ public class FilterTest {
         Filter rootGrandChildFilter = filter(where("name").regex(Pattern.compile("rootGrandChild_[A|B]")));
 
         JsonNode read = JsonPath.read(root, "children[?].children[?][?]", rootChildFilter, rootGrandChildFilter, customFilter);
+        assertTrue(read.size() != 0);
     }
 
     @Test
     public void arrays_of_objects_can_be_filtered() throws Exception {
         ObjectNode doc = JsonNodeFactory.instance.objectNode();
-        doc.put("items", JsonNodeUtil.asArrayNode(1, 2, 3));
+        doc.put("items", JsonNodeUtil.arrayNode(1, 2, 3));
 
         Filter customFilter = new Filter.FilterAdapter() {
             @Override

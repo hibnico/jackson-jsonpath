@@ -82,18 +82,18 @@ public class JsonPathFilterTest {
 
         ObjectNode rootChild_A = JsonNodeFactory.instance.objectNode();
         rootChild_A.put("name", "rootChild_A");
-        rootChild_A.put("children", JsonNodeUtil.asArrayNode(rootGrandChild_A, rootGrandChild_B, rootGrandChild_C));
+        rootChild_A.put("children", JsonNodeUtil.arrayNode(rootGrandChild_A, rootGrandChild_B, rootGrandChild_C));
 
         ObjectNode rootChild_B = JsonNodeFactory.instance.objectNode();
         rootChild_B.put("name", "rootChild_B");
-        rootChild_B.put("children", JsonNodeUtil.asArrayNode(rootGrandChild_A, rootGrandChild_B, rootGrandChild_C));
+        rootChild_B.put("children", JsonNodeUtil.arrayNode(rootGrandChild_A, rootGrandChild_B, rootGrandChild_C));
 
         ObjectNode rootChild_C = JsonNodeFactory.instance.objectNode();
         rootChild_C.put("name", "rootChild_C");
-        rootChild_C.put("children", JsonNodeUtil.asArrayNode(rootGrandChild_A, rootGrandChild_B, rootGrandChild_C));
+        rootChild_C.put("children", JsonNodeUtil.arrayNode(rootGrandChild_A, rootGrandChild_B, rootGrandChild_C));
 
         ObjectNode root = JsonNodeFactory.instance.objectNode();
-        root.put("children", JsonNodeUtil.asArrayNode(rootChild_A, rootChild_B, rootChild_C));
+        root.put("children", JsonNodeUtil.arrayNode(rootChild_A, rootChild_B, rootChild_C));
 
         Filter customFilter = new Filter.FilterAdapter() {
             @Override
@@ -114,7 +114,7 @@ public class JsonPathFilterTest {
     @Test
     public void arrays_of_objects_can_be_filtered() throws Exception {
         ObjectNode doc = JsonNodeFactory.instance.objectNode();
-        doc.put("items", JsonNodeUtil.asArrayNode(1, 2, 3));
+        doc.put("items", JsonNodeUtil.arrayNode(1, 2, 3));
 
         FilterAdapter customFilter = new Filter.FilterAdapter() {
             @Override

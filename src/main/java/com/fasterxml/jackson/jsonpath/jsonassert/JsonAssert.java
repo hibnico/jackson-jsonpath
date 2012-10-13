@@ -18,15 +18,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.net.URL;
-import java.text.ParseException;
 import java.util.Collection;
 import java.util.Map;
 
 import org.hamcrest.Matcher;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.jsonpath.InvalidJsonException;
 import com.fasterxml.jackson.jsonpath.jsonassert.impl.JsonAsserterImpl;
 import com.fasterxml.jackson.jsonpath.jsonassert.impl.matcher.CollectionMatcher;
 import com.fasterxml.jackson.jsonpath.jsonassert.impl.matcher.IsCollectionWithSize;
@@ -36,21 +35,29 @@ import com.fasterxml.jackson.jsonpath.jsonassert.impl.matcher.IsMapContainingVal
 
 public class JsonAssert {
 
-    private static ObjectMapper jsonMapper = new ObjectMapper();
-
     /**
      * Creates a JSONAsserter
      * 
      * @param jsonResource the resource in the classpath to read json from
      * @return a JSON asserter initialized with the provided document
-     * @throws ParseException when the given JSON could not be parsed
+     * @throws IOException
+     * @throws JsonProcessingException
      */
-    public static JsonAsserter withResource(String jsonResource) {
-        try {
-            return new JsonAsserterImpl(jsonMapper.readTree(JsonAssert.class.getResource(jsonResource)));
-        } catch (IOException e) {
-            throw new InvalidJsonException(e);
-        }
+    public static JsonAsserter withResource(String jsonResource) throws JsonProcessingException, IOException {
+        return withResource(jsonResource, new ObjectMapper());
+    }
+
+    /**
+     * Creates a JSONAsserter
+     * 
+     * @param jsonResource the resource in the classpath to read json from
+     * @param mapper the Jackson ObjectMapper to use to read and to map to Java object
+     * @return a JSON asserter initialized with the provided document
+     * @throws IOException
+     * @throws JsonProcessingException
+     */
+    public static JsonAsserter withResource(String jsonResource, ObjectMapper mapper) throws JsonProcessingException, IOException {
+        return new JsonAsserterImpl(mapper.readTree(JsonAssert.class.getResource(jsonResource)), mapper);
     }
 
     /**
@@ -58,14 +65,24 @@ public class JsonAssert {
      * 
      * @param json the JSON document to create a JSONAsserter for
      * @return a JSON asserter initialized with the provided document
-     * @throws ParseException when the given JSON could not be parsed
+     * @throws IOException
+     * @throws JsonProcessingException
      */
-    public static JsonAsserter with(String json) {
-        try {
-            return new JsonAsserterImpl(jsonMapper.readTree(json));
-        } catch (IOException e) {
-            throw new InvalidJsonException(e);
-        }
+    public static JsonAsserter with(String json) throws JsonProcessingException, IOException {
+        return with(json, new ObjectMapper());
+    }
+
+    /**
+     * Creates a JSONAsserter
+     * 
+     * @param json the JSON document to create a JSONAsserter for
+     * @param mapper the Jackson ObjectMapper to use to read and to map to Java object
+     * @return a JSON asserter initialized with the provided document
+     * @throws IOException
+     * @throws JsonProcessingException
+     */
+    public static JsonAsserter with(String json, ObjectMapper mapper) throws JsonProcessingException, IOException {
+        return new JsonAsserterImpl(mapper.readTree(json), mapper);
     }
 
     /**
@@ -73,14 +90,24 @@ public class JsonAssert {
      * 
      * @param reader the reader of the json document
      * @return a JSON asserter initialized with the provided document
-     * @throws ParseException when the given JSON could not be parsed
+     * @throws IOException
+     * @throws JsonProcessingException
      */
-    public static JsonAsserter with(Reader reader) throws IOException {
-        try {
-            return new JsonAsserterImpl(jsonMapper.readTree(reader));
-        } catch (IOException e) {
-            throw new InvalidJsonException(e);
-        }
+    public static JsonAsserter with(Reader reader) throws JsonProcessingException, IOException {
+        return with(reader, new ObjectMapper());
+    }
+
+    /**
+     * Creates a JSONAsserter
+     * 
+     * @param reader the reader of the json document
+     * @param mapper the Jackson ObjectMapper to use to read and to map to Java object
+     * @return a JSON asserter initialized with the provided document
+     * @throws IOException
+     * @throws JsonProcessingException
+     */
+    public static JsonAsserter with(Reader reader, ObjectMapper mapper) throws JsonProcessingException, IOException {
+        return new JsonAsserterImpl(mapper.readTree(reader), mapper);
     }
 
     /**
@@ -88,14 +115,24 @@ public class JsonAssert {
      * 
      * @param is the input stream
      * @return a JSON asserter initialized with the provided document
-     * @throws ParseException when the given JSON could not be parsed
+     * @throws IOException
+     * @throws JsonProcessingException
      */
-    public static JsonAsserter with(InputStream is) throws IOException {
-        try {
-            return new JsonAsserterImpl(jsonMapper.readTree(is));
-        } catch (IOException e) {
-            throw new InvalidJsonException(e);
-        }
+    public static JsonAsserter with(InputStream is) throws JsonProcessingException, IOException {
+        return with(is, new ObjectMapper());
+    }
+
+    /**
+     * Creates a JSONAsserter
+     * 
+     * @param is the input stream
+     * @param mapper the Jackson ObjectMapper to use to read and to map to Java object
+     * @return a JSON asserter initialized with the provided document
+     * @throws IOException
+     * @throws JsonProcessingException
+     */
+    public static JsonAsserter with(InputStream is, ObjectMapper mapper) throws JsonProcessingException, IOException {
+        return new JsonAsserterImpl(mapper.readTree(is), mapper);
     }
 
     /**
@@ -103,14 +140,24 @@ public class JsonAssert {
      * 
      * @param is url of the json file to read
      * @return a JSON asserter initialized with the provided document
-     * @throws ParseException when the given JSON could not be parsed
+     * @throws IOException
+     * @throws JsonProcessingException
      */
-    public static JsonAsserter with(URL url) throws IOException {
-        try {
-            return new JsonAsserterImpl(jsonMapper.readTree(url));
-        } catch (IOException e) {
-            throw new InvalidJsonException(e);
-        }
+    public static JsonAsserter with(URL url) throws JsonProcessingException, IOException {
+        return with(url, new ObjectMapper());
+    }
+
+    /**
+     * Creates a JSONAsserter
+     * 
+     * @param is url of the json file to read
+     * @param mapper the Jackson ObjectMapper to use to read and to map to Java object
+     * @return a JSON asserter initialized with the provided document
+     * @throws IOException
+     * @throws JsonProcessingException
+     */
+    public static JsonAsserter with(URL url, ObjectMapper mapper) throws JsonProcessingException, IOException {
+        return new JsonAsserterImpl(mapper.readTree(url), mapper);
     }
 
     /**
@@ -118,16 +165,30 @@ public class JsonAssert {
      * 
      * @param is url of the json file to read
      * @return a JSON asserter initialized with the provided document
-     * @throws ParseException when the given JSON could not be parsed
+     * @throws IOException
+     * @throws JsonProcessingException
      */
     public static JsonAsserter with(JsonNode node) throws IOException {
-        return new JsonAsserterImpl(node);
+        return with(node, new ObjectMapper());
+    }
+
+    /**
+     * Creates a JSONAsserter
+     * 
+     * @param is url of the json file to read
+     * @param mapper the Jackson ObjectMapper to use to read and to map to Java object
+     * @return a JSON asserter initialized with the provided document
+     * @throws IOException
+     * @throws JsonProcessingException
+     */
+    public static JsonAsserter with(JsonNode node, ObjectMapper mapper) throws IOException {
+        return new JsonAsserterImpl(node, mapper);
     }
 
     // Matchers
 
     @SuppressWarnings({"rawtypes", "unchecked"})
-    public static CollectionMatcher<?> collectionWithSize(Matcher< ? super Integer> sizeMatcher) {
+    public static CollectionMatcher< ? > collectionWithSize(Matcher< ? super Integer> sizeMatcher) {
         return new IsCollectionWithSize(sizeMatcher);
     }
 

@@ -24,7 +24,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class Criteria {
 
@@ -139,18 +141,18 @@ public class Criteria {
                 if (expectedVal == null) {
                     return true;
                 } else {
-                    return !expectedVal.equals(JsonNodeUtil.asJava(actualVal));
+                    return !expectedVal.equals(asJava(actualVal));
                 }
 
             } else if (CriteriaType.IN.equals(key)) {
                 Collection< ? > exp = (Collection< ? >) expectedVal;
-                return exp.contains(JsonNodeUtil.asJava(actualVal));
+                return exp.contains(asJava(actualVal));
 
             } else if (CriteriaType.NIN.equals(key)) {
 
                 Collection< ? > exp = (Collection< ? >) expectedVal;
 
-                return !exp.contains(JsonNodeUtil.asJava(actualVal));
+                return !exp.contains(asJava(actualVal));
             } else if (CriteriaType.ALL.equals(key)) {
 
                 Collection< ? > exp = (Collection< ? >) expectedVal;
@@ -160,7 +162,7 @@ public class Criteria {
                 boolean containsAll = true;
                 Iterator<JsonNode> it = actualVal.iterator();
                 while (it.hasNext() && containsAll) {
-                    containsAll = containsAll && exp.contains(JsonNodeUtil.asJava(it.next()));
+                    containsAll = containsAll && exp.contains(asJava(it.next()));
                 }
                 return containsAll;
 
@@ -183,7 +185,7 @@ public class Criteria {
                 Class< ? > act = null;
                 JsonNode actVal = node.get(this.key);
                 if (actVal != null && !actVal.isNull()) {
-                    act = JsonNodeUtil.asJava(actVal).getClass();
+                    act = asJava(actVal).getClass();
                 }
                 if (act == null) {
                     return false;
@@ -222,7 +224,7 @@ public class Criteria {
                 if (isValue == null) {
                     return value == null || value.isNull();
                 } else {
-                    return isValue.equals(JsonNodeUtil.asJava(value));
+                    return isValue.equals(asJava(value));
                 }
             }
         } else {
@@ -231,6 +233,14 @@ public class Criteria {
         return true;
     }
 
+    // FIXME : to some proper filtering with just the JsonNode API
+    private Object asJava(JsonNode node) {
+        try {
+            return new ObjectMapper().treeToValue(node, Object.class);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }
     /**
      * Static factory method to create a Criteria using the provided key
      * 

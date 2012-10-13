@@ -14,21 +14,16 @@
  */
 package com.fasterxml.jackson.jsonpath;
 
-import java.io.IOException;
 import java.math.BigDecimal;
-import java.util.List;
-import java.util.Map;
 
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 public class JsonNodeUtil {
 
-    public static ArrayNode asArrayNode(Object... values) {
+    public static ArrayNode arrayNode(Object... values) {
         ArrayNode array = JsonNodeFactory.instance.arrayNode();
         for (Object value : values) {
             if (value == null) {
@@ -58,24 +53,39 @@ public class JsonNodeUtil {
         return array;
     }
 
-    public static List< ? > asList(JsonNode node) {
-        return (List< ? >) asJava(node);
-    }
-
-    public static Map< ? , ? > asMap(JsonNode node) {
-        return (Map< ? , ? >) asJava(node);
-    }
-
-    public static Object asJava(JsonNode node) {
-        ObjectMapper mapper = new ObjectMapper();
-        try {
-            return mapper.treeToValue(node, Object.class);
-        } catch (JsonParseException e) {
-            throw new RuntimeException(e);
-        } catch (JsonMappingException e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+    public static ObjectNode objectNode(Object... values) {
+        if (values.length % 2 != 0) {
+            throw new IllegalArgumentException("newObjectNode needs a list of pair of values");
         }
+        ObjectNode node = JsonNodeFactory.instance.objectNode();
+        for (int i = 0; i < values.length; i += 2) {
+            String field = values[i].toString();
+            Object value = values[i + 1];
+            if (value == null) {
+                node.putNull(field);
+            } else if (value instanceof JsonNode) {
+                node.put(field, (JsonNode) value);
+            } else if (value instanceof Integer) {
+                node.put(field, (Integer) value);
+            } else if (value instanceof Double) {
+                node.put(field, (Double) value);
+            } else if (value instanceof Long) {
+                node.put(field, (Long) value);
+            } else if (value instanceof Float) {
+                node.put(field, (Float) value);
+            } else if (value instanceof BigDecimal) {
+                node.put(field, (BigDecimal) value);
+            } else if (value instanceof Boolean) {
+                node.put(field, (Boolean) value);
+            } else if (value instanceof String) {
+                node.put(field, (String) value);
+            } else if (value instanceof byte[]) {
+                node.put(field, (byte[]) value);
+            } else {
+                throw new IllegalArgumentException("unsupported value type " + value.getClass().getName());
+            }
+        }
+        return node;
     }
+
 }

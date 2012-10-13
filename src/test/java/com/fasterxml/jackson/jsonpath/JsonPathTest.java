@@ -14,20 +14,17 @@
  */
 package com.fasterxml.jackson.jsonpath;
 
+import static com.fasterxml.jackson.jsonpath.jsonassert.JsonAssert.with;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItems;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
-import java.util.List;
-
-import org.hamcrest.Matcher;
 import org.junit.Test;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.jsonpath.JsonNodeUtil;
-import com.fasterxml.jackson.jsonpath.JsonPath;
 
 public class JsonPathTest {
 
@@ -87,15 +84,9 @@ public class JsonPathTest {
     private final static String ARRAY_EXPAND = "[{\"parent\": \"ONE\", \"child\": {\"name\": \"NAME_ONE\"}}, [{\"parent\": \"TWO\", \"child\": {\"name\": \"NAME_TWO\"}}]]";
     // @formatter:on
 
-    @SuppressWarnings("unchecked")
-    private <T> void checkList(String json, String jsonPath, Matcher<Iterable<T>> matcher) {
-        assertThat((List<T>) JsonNodeUtil.asList(JsonPath.read(json, jsonPath)), matcher);
-    }
-
     @Test
     public void array_start_expands() throws Exception {
-        // assertThat(JsonPath.<List<String>>read(ARRAY_EXPAND, "$[?(@.parent = 'ONE')].child.name"), hasItems("NAME_ONE"));
-        checkList(ARRAY_EXPAND, "$[?(@['parent'] == 'ONE')].child.name", hasItems("NAME_ONE"));
+        with(ARRAY_EXPAND).assertThat("$[?(@['parent'] == 'ONE')].child.name", hasItems("NAME_ONE"));
     }
 
     @Test
@@ -144,22 +135,24 @@ public class JsonPathTest {
 
     @Test
     public void read_store_book_wildcard() throws Exception {
-        JsonPath path = JsonPath.compile("$.store.book[*]");
-        JsonNode node = path.read(DOCUMENT);
+        with(DOCUMENT).assertThat("$.store.book[*]", not(empty()));
     }
 
     @Test
     public void read_store_book_author() throws Exception {
-        checkList(DOCUMENT, "$.store.book[0,1].author", hasItems("Nigel Rees", "Evelyn Waugh"));
-        checkList(DOCUMENT, "$.store.book[*].author", hasItems("Nigel Rees", "Evelyn Waugh", "Herman Melville", "J. R. R. Tolkien"));
-        checkList(DOCUMENT, "$.['store'].['book'][*].['author']", hasItems("Nigel Rees", "Evelyn Waugh", "Herman Melville", "J. R. R. Tolkien"));
-        checkList(DOCUMENT, "$['store']['book'][*]['author']", hasItems("Nigel Rees", "Evelyn Waugh", "Herman Melville", "J. R. R. Tolkien"));
-        checkList(DOCUMENT, "$['store'].book[*]['author']", hasItems("Nigel Rees", "Evelyn Waugh", "Herman Melville", "J. R. R. Tolkien"));
+        // @formatter:off
+        with(DOCUMENT)
+            .assertThat("$.store.book[0,1].author", hasItems("Nigel Rees", "Evelyn Waugh"))
+            .assertThat("$.store.book[*].author", hasItems("Nigel Rees", "Evelyn Waugh", "Herman Melville", "J. R. R. Tolkien"))
+            .assertThat("$.['store'].['book'][*].['author']", hasItems("Nigel Rees", "Evelyn Waugh", "Herman Melville", "J. R. R. Tolkien"))
+            .assertThat("$['store']['book'][*]['author']", hasItems("Nigel Rees", "Evelyn Waugh", "Herman Melville", "J. R. R. Tolkien"))
+            .assertThat("$['store'].book[*]['author']", hasItems("Nigel Rees", "Evelyn Waugh", "Herman Melville", "J. R. R. Tolkien"));
+        // @formatter:on
     }
 
     @Test
     public void all_authors() throws Exception {
-        checkList(DOCUMENT, "$..author", hasItems("Nigel Rees", "Evelyn Waugh", "Herman Melville", "J. R. R. Tolkien"));
+        with(DOCUMENT).assertThat("$..author", hasItems("Nigel Rees", "Evelyn Waugh", "Herman Melville", "J. R. R. Tolkien"));
     }
 
     @Test
@@ -171,71 +164,73 @@ public class JsonPathTest {
 
     @Test
     public void all_prices_in_store() throws Exception {
-        checkList(DOCUMENT, "$.store..['display-price']", hasItems(8.95D, 12.99D, 8.99D, 19.95D));
+        with(DOCUMENT).assertThat("$.store..['display-price']", hasItems(8.95D, 12.99D, 8.99D, 19.95D));
     }
 
     @Test
     public void access_array_by_index_from_tail() throws Exception {
-        assertThat(JsonPath.read(DOCUMENT, "$..book[(@.length-1)].author").asText(), equalTo("J. R. R. Tolkien"));
-        assertThat(JsonPath.read(DOCUMENT, "$..book[-1:].author").asText(), equalTo("J. R. R. Tolkien"));
+        // @formatter:off
+        with(DOCUMENT)
+            .assertThat("$..book[(@.length-1)].author", equalTo("J. R. R. Tolkien"))
+            .assertThat("$..book[-1:].author", equalTo("J. R. R. Tolkien"));
+        // @formatter:on
     }
 
     @Test
     public void read_store_book_index_0_and_1() throws Exception {
-        checkList(DOCUMENT, "$.store.book[0,1].author", hasItems("Nigel Rees", "Evelyn Waugh"));
+        with(DOCUMENT).assertThat("$.store.book[0,1].author", hasItems("Nigel Rees", "Evelyn Waugh"));
         assertTrue(JsonPath.read(DOCUMENT, "$.store.book[0,1].author").size() == 2);
     }
 
     @Test
     public void read_store_book_pull_first_2() throws Exception {
-        checkList(DOCUMENT, "$.store.book[:2].author", hasItems("Nigel Rees", "Evelyn Waugh"));
+        with(DOCUMENT).assertThat("$.store.book[:2].author", hasItems("Nigel Rees", "Evelyn Waugh"));
         assertTrue(JsonPath.read(DOCUMENT, "$.store.book[:2].author").size() == 2);
     }
 
     @Test
     public void read_store_book_filter_by_isbn() throws Exception {
-        checkList(DOCUMENT, "$.store.book[?(@.isbn)].isbn", hasItems("0-553-21311-3", "0-395-19395-8"));
+        with(DOCUMENT).assertThat("$.store.book[?(@.isbn)].isbn", hasItems("0-553-21311-3", "0-395-19395-8"));
         assertTrue(JsonPath.read(DOCUMENT, "$.store.book[?(@.isbn)].isbn").size() == 2);
         assertTrue(JsonPath.read(DOCUMENT, "$.store.book[?(@['isbn'])].isbn").size() == 2);
     }
 
     @Test
     public void all_books_cheaper_than_10() throws Exception {
-        checkList(DOCUMENT, "$..book[?(@['display-price'] < 10)].title", hasItems("Sayings of the Century", "Moby Dick"));
-        checkList(DOCUMENT, "$..book[?(@.display-price < 10)].title", hasItems("Sayings of the Century", "Moby Dick"));
+        with(DOCUMENT).assertThat("$..book[?(@['display-price'] < 10)].title", hasItems("Sayings of the Century", "Moby Dick"));
+        with(DOCUMENT).assertThat("$..book[?(@.display-price < 10)].title", hasItems("Sayings of the Century", "Moby Dick"));
     }
 
     @Test
     public void all_books() throws Exception {
-        JsonNode books = JsonPath.read(DOCUMENT, "$..book");
+        with(DOCUMENT).assertThat("$..book", not(empty()));
     }
 
     @Test
     public void dot_in_predicate_works() throws Exception {
-        checkList(PRODUCT_JSON, "$.product[?(@.version=='4.0')].codename", hasItems("Montreal"));
+        with(PRODUCT_JSON).assertThat("$.product[?(@.version=='4.0')].codename", hasItems("Montreal"));
 
     }
 
     @Test
     public void dots_in_predicate_works() throws Exception {
-        checkList(PRODUCT_JSON, "$.product[?(@.attr.with.dot=='A')].codename", hasItems("Seattle"));
+        with(PRODUCT_JSON).assertThat("$.product[?(@.attr.with.dot=='A')].codename", hasItems("Seattle"));
     }
 
     @Test
     public void all_books_with_category_reference() throws Exception {
-        checkList(DOCUMENT, "$..book[?(@.category=='reference')].title", hasItems("Sayings of the Century"));
-        checkList(DOCUMENT, "$.store.book[?(@.category=='reference')].title", hasItems("Sayings of the Century"));
-
+        with(DOCUMENT).assertThat("$..book[?(@.category=='reference')].title", hasItems("Sayings of the Century"));
+        with(DOCUMENT).assertThat("$.store.book[?(@.category=='reference')].title", hasItems("Sayings of the Century"));
     }
 
     @Test
     public void all_members_of_all_documents() throws Exception {
-        JsonNode node = JsonPath.read(DOCUMENT, "$..*");
+        with(DOCUMENT).assertThat("$..*", not(empty()));
     }
 
     @Test(expected = IndexOutOfBoundsException.class)
     public void access_index_out_of_bounds_does_not_throw_exception() throws Exception {
-        JsonNode node = JsonPath.read(DOCUMENT, "$.store.book[100].author");
+        JsonPath.read(DOCUMENT, "$.store.book[100].author");
     }
 
 }

@@ -21,9 +21,10 @@ import static org.hamcrest.Matchers.nullValue;
 
 import org.hamcrest.Matcher;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.jsonpath.InvalidPathException;
-import com.fasterxml.jackson.jsonpath.JsonNodeUtil;
 import com.fasterxml.jackson.jsonpath.JsonPath;
 import com.fasterxml.jackson.jsonpath.jsonassert.JsonAsserter;
 
@@ -31,18 +32,26 @@ public class JsonAsserterImpl implements JsonAsserter {
 
     private final JsonNode jsonObject;
 
+    private final ObjectMapper mapper;
+
     /**
      * Instantiates a new JSONAsserter
      * 
      * @param jsonObject the object to make asserts on
      */
-    public JsonAsserterImpl(JsonNode jsonObject) {
+    public JsonAsserterImpl(JsonNode jsonObject, ObjectMapper mapper) {
         this.jsonObject = jsonObject;
+        this.mapper = mapper;
     }
 
     public <T> JsonAsserter assertThat(String path, Matcher<T> matcher) {
         JsonNode node = JsonPath.read(jsonObject, path);
-        Object obj = JsonNodeUtil.asJava(node);
+        Object obj;
+        try {
+            obj = mapper.treeToValue(node, Object.class);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
         if (!matcher.matches(obj)) {
             throw new AssertionError(String.format("JSON doesn't match.\nExpected:\n%s\nActual:\n%s", matcher.toString(), obj));
         }
