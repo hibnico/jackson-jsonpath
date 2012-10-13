@@ -57,7 +57,35 @@ public class JsonAssert {
      * @throws JsonProcessingException
      */
     public static JsonAsserter withResource(String jsonResource, ObjectMapper mapper) throws JsonProcessingException, IOException {
-        return new JsonAsserterImpl(mapper.readTree(JsonAssert.class.getResource(jsonResource)), mapper);
+        return withResource(jsonResource, JsonAssert.class, new ObjectMapper());
+    }
+
+    /**
+     * Creates a JSONAsserter
+     * 
+     * @param jsonResource the resource in the classpath to read json from
+     * @param cl the class to load the resource from
+     * @param mapper the Jackson ObjectMapper to use to read and to map to Java object
+     * @return a JSON asserter initialized with the provided document
+     * @throws IOException
+     * @throws JsonProcessingException
+     */
+    public static JsonAsserter withResource(String jsonResource, Class< ? > cl, ObjectMapper mapper) throws JsonProcessingException, IOException {
+        return withResource(jsonResource, JsonAssert.class.getClassLoader(), new ObjectMapper());
+    }
+
+    /**
+     * Creates a JSONAsserter
+     * 
+     * @param jsonResource the resource in the classpath to read json from
+     * @param cl the class loader to use to load the resource
+     * @param mapper the Jackson ObjectMapper to use to read and to map to Java object
+     * @return a JSON asserter initialized with the provided document
+     * @throws IOException
+     * @throws JsonProcessingException
+     */
+    public static JsonAsserter withResource(String jsonResource, ClassLoader cl, ObjectMapper mapper) throws JsonProcessingException, IOException {
+        return new JsonAsserterImpl(mapper.readTree(cl.getResource(jsonResource)), mapper);
     }
 
     /**
