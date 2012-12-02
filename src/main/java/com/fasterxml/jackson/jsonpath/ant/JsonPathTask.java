@@ -53,7 +53,10 @@ public class JsonPathTask extends Task {
 		}
 		JsonPath jsonPath = JsonPath.compile(path);
 		JsonNode result = jsonPath.read(json);
-		if (result != null) {
+		if (result != null && result.size() != 0) {
+			if (result.size() == 1) {
+				result = result.iterator().next();
+			}
 			getProject().setNewProperty(property, result.toString());
 		}
 	}
