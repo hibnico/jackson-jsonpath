@@ -250,4 +250,8 @@ public class PathTokenizer implements Iterable<PathToken> {
         }
     }
 
+    @Override
+    public String toString() {
+        return pathTokens.toString();
+    }
 }
