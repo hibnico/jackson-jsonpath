@@ -15,6 +15,7 @@
 package com.fasterxml.jackson.jsonpath.ant;
 
 import org.apache.tools.ant.BuildException;
+import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -53,11 +54,26 @@ public class JsonPathTask extends Task {
 		}
 		JsonPath jsonPath = JsonPath.compile(path);
 		JsonNode result = jsonPath.read(json);
-		if (result != null && result.size() != 0) {
+		if (result == null) {
+			log("Nothing matched, " + property + " not set",
+					Project.MSG_VERBOSE);
+		} else if (result.isContainerNode() && result.size() == 0) {
+			log("Empty container matched, " + property + " not set",
+					Project.MSG_VERBOSE);
+		} else {
 			if (result.size() == 1) {
 				result = result.iterator().next();
+				log("Container with 1 element matched, selectin that element",
+						Project.MSG_VERBOSE);
 			}
-			getProject().setNewProperty(property, result.toString());
+			String value;
+			if (result.isTextual()) {
+				value = result.asText();
+			} else {
+				value = result.toString();
+			}
+			log("Setting '" + property + "' to: " + value, Project.MSG_VERBOSE);
+			getProject().setNewProperty(property, value);
 		}
 	}
 }
