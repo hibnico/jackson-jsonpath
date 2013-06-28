@@ -177,6 +177,9 @@ public class JsonPath {
         for (PathToken pathToken : tokenizer) {
             PathTokenFilter filter = pathToken.getFilter();
             node = filter.filter(node, contextFilters, inArrayContext);
+        	if (node == null) {
+        		return null;
+        	}
             if (!inArrayContext) {
                 inArrayContext = filter.isArrayFilter();
             }

@@ -28,7 +28,11 @@ import static org.hamcrest.Matchers.is;
 
 import org.junit.Test;
 
+import com.fasterxml.jackson.jsonpath.JsonPath;
+
 public class JsonAssertTest {
+
+	private final static String ARRAY_EXPAND = "[{\"parent\": \"ONE\", \"child\": {\"name\": \"NAME_ONE\"}}, [{\"parent\": \"TWO\", \"child\": {\"name\": \"NAME_TWO\"}}]]";
 
     // @formatter:off
     public final static String JSON =
@@ -171,4 +175,8 @@ public class JsonAssertTest {
         withResource("lotto.json").assertThat("lotto.winners[*].winnerId", hasItems(23, 54));
     }
 
+    @Test
+    public void access_wrong_path_does_not_throw_exception() throws Exception {
+        JsonPath.read(ARRAY_EXPAND, "$.some.key.that[1].does.not.exist");
+    }
 }
