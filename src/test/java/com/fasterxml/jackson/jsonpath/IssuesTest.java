@@ -14,26 +14,25 @@
  */
 package com.fasterxml.jackson.jsonpath;
 
-import static junit.framework.Assert.assertNull;
 import static junit.framework.Assert.assertTrue;
 
 import org.junit.Test;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.jsonpath.JsonPath;
 
 public class IssuesTest {
 
     @Test
     public void issue_7() throws Exception {
-        String json = "{ \"foo\" : [\n" + "  { \"id\": 1 },  \n" + "  { \"id\": 2 },  \n" + "  { \"id\": 3 }\n" + "  ] }";
-        assertNull(JsonPath.read(json, "$.foo.id"));
+        String json = "{ \"foo\" : [\n" + "  { \"id\": 1 },  \n" + "  { \"id\": 2 },  \n" + "  { \"id\": 3 }\n"
+                + "  ] }";
+        assertTrue(JsonPath.eval(json, "$.foo.id").toNode().isNull());
     }
 
     @Test
     public void issue_11() throws Exception {
         String json = "{ \"foo\" : [] }";
-        JsonNode result = JsonPath.read(json, "$.foo[?(@.rel= 'item')][0].uri");
+        JsonNode result = JsonPath.eval(json, "$.foo[?(@.rel= 'item')][0].uri").toNode();
         assertTrue(result.size() == 0);
     }
 

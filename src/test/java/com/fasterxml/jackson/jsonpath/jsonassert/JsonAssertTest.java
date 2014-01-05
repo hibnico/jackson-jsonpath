@@ -177,6 +177,6 @@ public class JsonAssertTest {
 
     @Test
     public void access_wrong_path_does_not_throw_exception() throws Exception {
-        JsonPath.read(ARRAY_EXPAND, "$.some.key.that[1].does.not.exist");
+        JsonPath.eval(ARRAY_EXPAND, "$.some.key.that[1].does.not.exist");
     }
 }

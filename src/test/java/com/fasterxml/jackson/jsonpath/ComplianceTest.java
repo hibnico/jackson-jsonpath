@@ -53,7 +53,7 @@ public class ComplianceTest {
             .assertThat("$['a']", equalTo("a"))
             .assertThat("$['c d']", equalTo("e"))
             .assertThat("$.*", hasItems("a", "b", "e"))
-            .assertThat("$['*']", hasItems("a", "b", "e"))
+            .assertThat("$['*']", equalTo(null))
             .assertThat("$[*]", allOf(hasEntry("a", "a"), hasEntry("b", "b"), hasEntry("c d", "e")));
         // @formatter:on
     }

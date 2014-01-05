@@ -14,66 +14,79 @@
  */
 package com.fasterxml.jackson.jsonpath.ant;
 
+import java.io.IOException;
+import java.text.ParseException;
+
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.jsonpath.JsonPath;
 
 public class JsonPathTask extends Task {
 
-	private String property;
+    private String property;
 
-	private String json;
+    private String json;
 
-	private String path;
+    private String path;
 
-	public void setProperty(String property) {
-		this.property = property;
-	}
+    public void setProperty(String property) {
+        this.property = property;
+    }
 
-	public void setJson(String json) {
-		this.json = json;
-	}
+    public void setJson(String json) {
+        this.json = json;
+    }
 
-	public void setPath(String path) {
-		this.path = path;
-	}
+    public void setPath(String path) {
+        this.path = path;
+    }
 
-	@Override
-	public void execute() throws BuildException {
-		if (property == null) {
-			throw new BuildException("missing 'property' attribute");
-		}
-		if (json == null) {
-			throw new BuildException("missing 'json' attribute");
-		}
-		if (path == null) {
-			throw new BuildException("missing 'path' attribute");
-		}
-		JsonPath jsonPath = JsonPath.compile(path);
-		JsonNode result = jsonPath.read(json);
-		if (result == null) {
-			log("Nothing matched, " + property + " not set",
-					Project.MSG_VERBOSE);
-		} else if (result.isContainerNode() && result.size() == 0) {
-			log("Empty container matched, " + property + " not set",
-					Project.MSG_VERBOSE);
-		} else {
-			if (result.size() == 1) {
-				result = result.iterator().next();
-				log("Container with 1 element matched, selectin that element",
-						Project.MSG_VERBOSE);
-			}
-			String value;
-			if (result.isTextual()) {
-				value = result.asText();
-			} else {
-				value = result.toString();
-			}
-			log("Setting '" + property + "' to: " + value, Project.MSG_VERBOSE);
-			getProject().setNewProperty(property, value);
-		}
-	}
+    @Override
+    public void execute() throws BuildException {
+        if (property == null) {
+            throw new BuildException("missing 'property' attribute");
+        }
+        if (json == null) {
+            throw new BuildException("missing 'json' attribute");
+        }
+        if (path == null) {
+            throw new BuildException("missing 'path' attribute");
+        }
+        JsonPath jsonPath;
+        try {
+            jsonPath = JsonPath.compile(path);
+        } catch (ParseException e) {
+            throw new BuildException("Invalid json path: " + e.getMessage(), e);
+        }
+        JsonNode result;
+        try {
+            result = jsonPath.eval(json).toNode();
+        } catch (JsonProcessingException e) {
+            throw new BuildException("Invalid json: " + e.getMessage(), e);
+        } catch (IOException e) {
+            throw new BuildException("Invalid json: " + e.getMessage(), e);
+        }
+        if (result.isNull()) {
+            log("Nothing matched, " + property + " not set", Project.MSG_VERBOSE);
+        } else if (result.isContainerNode() && result.size() == 0) {
+            log("Empty container matched, " + property + " not set", Project.MSG_VERBOSE);
+        } else {
+            if (result.size() == 1) {
+                result = result.iterator().next();
+                log("Container with 1 element matched, selecting that element", Project.MSG_VERBOSE);
+            }
+            String value;
+            if (result.isTextual()) {
+                value = result.asText();
+            } else {
+                value = result.toString();
+            }
+            log("Setting '" + property + "' to: " + value, Project.MSG_VERBOSE);
+            getProject().setNewProperty(property, value);
+        }
+    }
 }

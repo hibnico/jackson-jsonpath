@@ -55,7 +55,7 @@ public class JsonNodeUtil {
 
     public static ObjectNode objectNode(Object... values) {
         if (values.length % 2 != 0) {
-            throw new IllegalArgumentException("newObjectNode needs a list of pair of values");
+            throw new IllegalArgumentException("objectNode needs a list of pair of values");
         }
         ObjectNode node = JsonNodeFactory.instance.objectNode();
         for (int i = 0; i < values.length; i += 2) {

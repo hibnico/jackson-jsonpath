@@ -91,45 +91,45 @@ public class JsonPathTest {
 
     @Test
     public void bracket_notation_can_be_used_in_path() throws Exception {
-        assertEquals("new", JsonPath.read(DOCUMENT, "$.['store'].bicycle.['dot.notation']").asText());
-        assertEquals("new", JsonPath.read(DOCUMENT, "$['store']['bicycle']['dot.notation']").asText());
-        assertEquals("new", JsonPath.read(DOCUMENT, "$.['store']['bicycle']['dot.notation']").asText());
-        assertEquals("new", JsonPath.read(DOCUMENT, "$.['store'].['bicycle'].['dot.notation']").asText());
+        assertEquals("new", JsonPath.eval(DOCUMENT, "$.['store'].bicycle.['dot.notation']").toNode().asText());
+        assertEquals("new", JsonPath.eval(DOCUMENT, "$['store']['bicycle']['dot.notation']").toNode().asText());
+        assertEquals("new", JsonPath.eval(DOCUMENT, "$.['store']['bicycle']['dot.notation']").toNode().asText());
+        assertEquals("new", JsonPath.eval(DOCUMENT, "$.['store'].['bicycle'].['dot.notation']").toNode().asText());
 
-        assertEquals("dashes", JsonPath.read(DOCUMENT, "$.['store'].bicycle.['dash-notation']").asText());
-        assertEquals("dashes", JsonPath.read(DOCUMENT, "$['store']['bicycle']['dash-notation']").asText());
-        assertEquals("dashes", JsonPath.read(DOCUMENT, "$.['store']['bicycle']['dash-notation']").asText());
-        assertEquals("dashes", JsonPath.read(DOCUMENT, "$.['store'].['bicycle'].['dash-notation']").asText());
+        assertEquals("dashes", JsonPath.eval(DOCUMENT, "$.['store'].bicycle.['dash-notation']").toNode().asText());
+        assertEquals("dashes", JsonPath.eval(DOCUMENT, "$['store']['bicycle']['dash-notation']").toNode().asText());
+        assertEquals("dashes", JsonPath.eval(DOCUMENT, "$.['store']['bicycle']['dash-notation']").toNode().asText());
+        assertEquals("dashes", JsonPath.eval(DOCUMENT, "$.['store'].['bicycle'].['dash-notation']").toNode().asText());
     }
 
     @Test
     public void filter_an_array() throws Exception {
-        JsonNode node = JsonPath.read(ARRAY, "$.[?(@.value == 1)]");
+        JsonNode node = JsonPath.eval(ARRAY, "$.[?(@.value == 1)]").toNode();
         assertEquals(1, node.size());
     }
 
     @Test
     public void filter_an_array_on_index() throws Exception {
-        JsonNode matches = JsonPath.read(ARRAY, "$.[1].value");
+        JsonNode matches = JsonPath.eval(ARRAY, "$.[1].value").toNode();
         assertEquals(2, matches.asInt());
     }
 
     @Test
     public void read_path_with_colon() throws Exception {
-        assertEquals(JsonPath.read(DOCUMENT, "$.store.bicycle.foo:bar").asText(), "fooBar");
-        assertEquals(JsonPath.read(DOCUMENT, "$['store']['bicycle']['foo:bar']").asText(), "fooBar");
+        assertEquals(JsonPath.eval(DOCUMENT, "$.store.bicycle.foo:bar").toNode().asText(), "fooBar");
+        assertEquals(JsonPath.eval(DOCUMENT, "$['store']['bicycle']['foo:bar']").toNode().asText(), "fooBar");
     }
 
     @Test
     public void read_document_from_root() throws Exception {
-        JsonNode node = JsonPath.read(DOCUMENT, "$.store");
+        JsonNode node = JsonPath.eval(DOCUMENT, "$.store").toNode();
         assertEquals(2, node.size());
     }
 
     @Test
     public void read_store_book_1() throws Exception {
         JsonPath path = JsonPath.compile("$.store.book[1]");
-        JsonNode node = path.read(DOCUMENT);
+        JsonNode node = path.eval(DOCUMENT).toNode();
         assertEquals("Evelyn Waugh", node.get("author").asText());
     }
 
@@ -157,9 +157,9 @@ public class JsonPathTest {
 
     @Test
     public void all_store_properties() throws Exception {
-        JsonNode node = JsonPath.read(DOCUMENT, "$.store.*");
-        assertEquals(JsonPath.read(node, "$.[0].[0].author").asText(), "Nigel Rees");
-        assertEquals(JsonPath.read(node, "$.[0][0].author").asText(), "Nigel Rees");
+        JsonNode node = JsonPath.eval(DOCUMENT, "$.store.*").toNode();
+        assertEquals(JsonPath.eval(node, "$.[0].[0].author").toNode().asText(), "Nigel Rees");
+        assertEquals(JsonPath.eval(node, "$.[0][0].author").toNode().asText(), "Nigel Rees");
     }
 
     @Test
@@ -179,20 +179,20 @@ public class JsonPathTest {
     @Test
     public void read_store_book_index_0_and_1() throws Exception {
         with(DOCUMENT).assertThat("$.store.book[0,1].author", hasItems("Nigel Rees", "Evelyn Waugh"));
-        assertTrue(JsonPath.read(DOCUMENT, "$.store.book[0,1].author").size() == 2);
+        assertTrue(JsonPath.eval(DOCUMENT, "$.store.book[0,1].author").toNode().size() == 2);
     }
 
     @Test
     public void read_store_book_pull_first_2() throws Exception {
         with(DOCUMENT).assertThat("$.store.book[:2].author", hasItems("Nigel Rees", "Evelyn Waugh"));
-        assertTrue(JsonPath.read(DOCUMENT, "$.store.book[:2].author").size() == 2);
+        assertTrue(JsonPath.eval(DOCUMENT, "$.store.book[:2].author").toNode().size() == 2);
     }
 
     @Test
     public void read_store_book_filter_by_isbn() throws Exception {
         with(DOCUMENT).assertThat("$.store.book[?(@.isbn)].isbn", hasItems("0-553-21311-3", "0-395-19395-8"));
-        assertTrue(JsonPath.read(DOCUMENT, "$.store.book[?(@.isbn)].isbn").size() == 2);
-        assertTrue(JsonPath.read(DOCUMENT, "$.store.book[?(@['isbn'])].isbn").size() == 2);
+        assertTrue(JsonPath.eval(DOCUMENT, "$.store.book[?(@.isbn)].isbn").toNode().size() == 2);
+        assertTrue(JsonPath.eval(DOCUMENT, "$.store.book[?(@['isbn'])].isbn").toNode().size() == 2);
     }
 
     @Test
@@ -230,7 +230,7 @@ public class JsonPathTest {
 
     @Test(expected = IndexOutOfBoundsException.class)
     public void access_index_out_of_bounds_does_not_throw_exception() throws Exception {
-        JsonPath.read(DOCUMENT, "$.store.book[100].author");
+        JsonPath.eval(DOCUMENT, "$.store.book[100].author");
     }
 
 }
