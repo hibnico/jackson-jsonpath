@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 the original author or authors.
+ * Copyright 2012-2014 the original author or authors.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -25,6 +25,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.jsonpath.internal.JsonPathEvaluator;
+import com.fasterxml.jackson.jsonpath.internal.JsonPathParser;
 
 public class JsonPath {
 
@@ -72,7 +73,7 @@ public class JsonPath {
     }
 
     public static JsonPath compile(String path) throws ParseException {
-        return JsonPathCompiler.DEFAULT.compile(path);
+        return new JsonPath(JsonPathParser.parse(path));
     }
 
     public static JsonPathValue eval(JsonNode node, String path) throws ParseException {
