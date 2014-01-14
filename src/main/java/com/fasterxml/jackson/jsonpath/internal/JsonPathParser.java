@@ -127,6 +127,11 @@ public class JsonPathParser {
             evaluators.add(new JsonScriptArrayEvaluator(expr));
             break;
         }
+        case WILDCARD: {
+            buffer.skip();
+            evaluators.add(new JsonWildcardSelectorEvaluator());
+            break;            
+        }
         default:
             throw new ParseException("Unexpected character '" + c + "' in selector ", buffer.pos);
         }
@@ -139,7 +144,8 @@ public class JsonPathParser {
             if (c < '0' || c > '9') {
                 break;
             }
-            n = 10 * n + ('9' - c);
+            buffer.skip();
+            n = 10 * n + (c - '0');
         }
         return n;
     }

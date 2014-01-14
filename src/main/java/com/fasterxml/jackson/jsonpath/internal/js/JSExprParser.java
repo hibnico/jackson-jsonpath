@@ -66,30 +66,15 @@ public class JSExprParser {
     }
 
     private JSExpr readConditionnalInclusiveOrExpr() throws ParseException {
-        JSExpr expr = readConditionnalExclusiveOrExpr();
+        JSExpr expr = readConditionnalAndExpr();
 
         buffer.skipWhiteSpace();
         Character c1 = buffer.readAhead();
         Character c2 = buffer.readAhead(2);
         if (c1 == '|' && c2 == '|') {
             buffer.skip(2);
-            JSExpr rightExpr = readConditionnalExclusiveOrExpr();
-            expr = new BooleanJSExpr(BooleanOp.OR, expr, rightExpr);
-        }
-
-        return expr;
-    }
-
-    private JSExpr readConditionnalExclusiveOrExpr() throws ParseException {
-        JSExpr expr = readConditionnalAndExpr();
-
-        buffer.skipWhiteSpace();
-        Character c1 = buffer.readAhead();
-        Character c2 = buffer.readAhead(2);
-        if (c1 == '^' && c2 == '^') {
-            buffer.skip(2);
             JSExpr rightExpr = readConditionnalAndExpr();
-            expr = new BooleanJSExpr(BooleanOp.XOR, expr, rightExpr);
+            expr = new BooleanJSExpr(BooleanOp.OR, expr, rightExpr);
         }
 
         return expr;
@@ -104,7 +89,7 @@ public class JSExprParser {
         if (c1 == '&' && c2 == '&') {
             buffer.skip(2);
             JSExpr rightExpr = readInclusiveOrExpr();
-            expr = new BooleanJSExpr(BooleanOp.XOR, expr, rightExpr);
+            expr = new BooleanJSExpr(BooleanOp.AND, expr, rightExpr);
         }
 
         return expr;
@@ -305,6 +290,7 @@ public class JSExprParser {
             buffer.skipWhiteSpace();
             buffer.readExpected(')', "parenthesed expression");
         } else if (c == '@') {
+            buffer.skip();
             expr = new ThisJSExpr();
             buffer.skipWhiteSpace();
             Character c2 = buffer.readAhead();
@@ -313,38 +299,199 @@ public class JSExprParser {
                 do {
                     buffer.skip();
                     if (lastId != null) {
-                        expr = new FieldSelectorJSExpr(expr, lastId); 
+                        expr = new FieldSelectorJSExpr(expr, lastId);
                     }
                     lastId = readIdentifier();
                     buffer.skipWhiteSpace();
                 } while (buffer.readAhead() == '.');
                 expr = readIdentifierSuffix(expr, lastId);
             }
-        } else if (isAlpha(c)) {
-            String lastId = readIdentifier();
-            buffer.skipWhiteSpace();
-            expr = null;
-            Character c2 = buffer.readAhead();
-            if (c2 == '.') {
-                do {
-                    buffer.skip();
-                    if (expr == null) {
-                        expr = new VariableJSExpr(lastId);
-                    } else {
-                        expr = new FieldSelectorJSExpr(expr, lastId); 
-                    }
-                    lastId = readIdentifier();
-                    buffer.skipWhiteSpace();
-                } while (buffer.readAhead() == '.');
-            }
-            expr = readIdentifierSuffix(expr, lastId);
-        } else if (isNum(c)) {
-            
         } else {
-            expr = null;
+            expr = readLiteral();
         }
 
         return expr;
+    }
+
+    private JSExpr readLiteral() throws ParseException {
+        Character c = buffer.readAhead();
+        if (c == null) {
+            return null;
+        }
+        if (c == '\'') {
+            buffer.skip();
+            String value = readEscaped('\'');
+            buffer.readExpected('\'', "end of string \'");
+            return new LiteralExpr(value);
+        }
+        if (c == '"') {
+            buffer.skip();
+            String value = readEscaped('"');
+            buffer.readExpected('"', "end of string \"");
+            return new LiteralExpr(value);
+        }
+        Character c2 = buffer.readAhead(2);
+        Character c3 = buffer.readAhead(2);
+        if (c == '0' && (c2 == 'x' || c2 == 'X')
+                && (c3 != null && (c3 >= '0' && c3 <= '9') || (c3 >= 'A' && c3 < 'F') || (c3 >= 'a' && c3 < 'f'))) {
+            // hexa number
+            StringBuilder numberBuffer = new StringBuilder();
+            numberBuffer.append(c);
+            numberBuffer.append(c2);
+            buffer.skip(2);
+            c = buffer.readAhead();
+            while (c != null) {
+                if (c >= '0' && c <= '9' || c >= 'A' && c < 'F' || c >= 'a' && c < 'f' || c == '_') {
+                    numberBuffer.append(c);
+                } else {
+                    break;
+                }
+                buffer.skip();
+                c = buffer.readAhead();
+            }
+            if (c == 'l' || c == 'L') {
+                numberBuffer.append(c);
+                buffer.skip();
+            }
+            return new LiteralExpr(Long.parseLong(numberBuffer.toString()));
+        } else if (c == '0' && (c2 == 'b' || c2 == 'B') && (c3 == '0' || c3 == '1')) {
+            // binary number
+            StringBuilder numberBuffer = new StringBuilder();
+            numberBuffer.append(c);
+            numberBuffer.append(c2);
+            buffer.skip(2);
+            c = buffer.readAhead();
+            while (c != null) {
+                if (c == '0' || c == '1' || c == '_') {
+                    numberBuffer.append(c);
+                } else {
+                    break;
+                }
+                buffer.skip();
+                c = buffer.readAhead();
+            }
+            if (c == 'l' || c == 'L') {
+                numberBuffer.append(c);
+                buffer.skip();
+            }
+            return new LiteralExpr(Long.parseLong(numberBuffer.toString()));
+        } else if (c == '0' && c2 != null && c2 >= '0' && c2 <= '7') {
+            // octal number
+            StringBuilder numberBuffer = new StringBuilder();
+            numberBuffer.append(c);
+            buffer.skip();
+            c = buffer.readAhead();
+            while (c != null) {
+                if (c >= '0' && c <= '7' || c == '_') {
+                    numberBuffer.append(c);
+                } else {
+                    break;
+                }
+                buffer.skip();
+                c = buffer.readAhead();
+            }
+            if (c == 'l' || c == 'L') {
+                numberBuffer.append(c);
+                buffer.skip();
+            }
+            return new LiteralExpr(Long.parseLong(numberBuffer.toString()));
+        } else if (c >= '0' && c <= '9') {
+            // number
+            StringBuilder numberBuffer = new StringBuilder();
+            while (c != null) {
+                if (c >= '0' && c <= '9' || c == '_') {
+                    numberBuffer.append(c);
+                } else {
+                    break;
+                }
+                buffer.skip();
+                c = buffer.readAhead();
+            }
+            if (c == '.') {
+                appendFloatingPoint(numberBuffer);
+                return new LiteralExpr(Double.parseDouble(numberBuffer.toString()));
+            }
+            if (c == 'f' || c == 'F' || c == 'd' || c == 'D') {
+                numberBuffer.append(c);
+                buffer.skip();
+                return new LiteralExpr(Double.parseDouble(numberBuffer.toString()));
+            }
+            if (c == 'l' || c == 'L') {
+                numberBuffer.append(c);
+                buffer.skip();
+            }
+            return new LiteralExpr(Long.parseLong(numberBuffer.toString()));
+        } else if (c == '.' && c2 != null && c2 >= '0' && c2 <= '9') {
+            // double number
+            StringBuilder numberBuffer = new StringBuilder();
+            appendFloatingPoint(numberBuffer);
+            return new LiteralExpr(Double.parseDouble(numberBuffer.toString()));
+        }
+        return null;
+    }
+
+    private String readEscaped(char end) {
+        StringBuilder s = new StringBuilder();
+        Character c = null;
+        while ((c = buffer.readAhead()) != null) {
+            if (c == end) {
+                break;
+            }
+            buffer.skip();
+            if (c == '\\') {
+                c = buffer.read();
+                if (c == null) {
+                    break;
+                }
+                s.append(c);
+            } else {
+                s.append(c);
+            }
+        }
+        return s.toString();
+    }
+
+    private void appendFloatingPoint(StringBuilder numberBuffer) {
+        numberBuffer.append(buffer.read()); // adding the dot
+        Character c = buffer.readAhead();
+        while (c != null) {
+            if (c >= '0' && c <= '9' || c == '_') {
+                numberBuffer.append(c);
+            } else {
+                break;
+            }
+            buffer.skip();
+            c = buffer.readAhead();
+        }
+        Character c2 = buffer.readAhead(2);
+        Character c3 = buffer.readAhead(3);
+        if (c != null
+                && (c == 'E' || c == 'e')
+                && ((c2 == '+' || c2 == '-') && (c3 != null && c3 >= '0' && c3 <= '9') || (c2 != null && c2 >= '0' && c2 <= '9'))) {
+            numberBuffer.append(c);
+            buffer.skip();
+            if (c2 == '+' || c2 == '-') {
+                numberBuffer.append(c);
+                buffer.skip();
+                c = c3;
+            } else {
+                c = c2;
+            }
+            while (c != null) {
+                if (c >= '0' && c <= '9') {
+                    numberBuffer.append(c);
+                } else {
+                    break;
+                }
+                buffer.skip();
+                c = buffer.readAhead();
+            }
+        }
+        c = buffer.readAhead();
+        if (c == 'f' || c == 'F' || c == 'd' || c == 'D') {
+            numberBuffer.append(c);
+            buffer.skip();
+        }
     }
 
     private JSExpr readSelectorExpr(JSExpr expr) throws ParseException {
@@ -365,6 +512,8 @@ public class JSExprParser {
             expr = new ArraySelectorJSExpr(expr, indexExpr);
             buffer.skipWhiteSpace();
             buffer.readExpected(']', "array selector");
+        } else {
+            return expr;
         }
         readSelectorExpr(expr);
         return expr;
@@ -426,6 +575,8 @@ public class JSExprParser {
             if (arguments != null) {
                 expr = new MethodCallJSExpr(expr, id, arguments);
             }
+        } else {
+            expr = new FieldSelectorJSExpr(expr, id);            
         }
         return expr;
     }

@@ -53,11 +53,13 @@ public class JsonAsserterImpl implements JsonAsserter {
         } catch (ParseException e) {
             throw new IllegalArgumentException("Invalid json path: " + e.getMessage(), e);
         }
-        Object obj;
-        try {
-            obj = mapper.treeToValue(node, Object.class);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
+        Object obj = null;
+        if (node != null) {
+            try {
+                obj = mapper.treeToValue(node, Object.class);
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
         }
         if (!matcher.matches(obj)) {
             throw new AssertionError(String.format("JSON doesn't match.\nExpected:\n%s\nActual:\n%s",

@@ -77,10 +77,9 @@ public class ComplianceTest {
             .assertThat("$.points[4].x", equalTo(0))
             .assertThat("$.points[?(@.id=='i4')].x", hasItem(-6))
             .assertThat("$.points[*].x", hasItems(4, -2, 8, -6, 0, 1))
-            // FIXME not supported yet .assertThat("$['points'][?(@.x*@.x+@.y*@.y > 50)].id", hasItem("i3"))
-            // FIXME not supported yet .assertThat("$.points[?(@.z)].id", hasItems("i2", "i5"))
-            // FIXME not supported yet .assertThat("$.points[(@.length-1)].id", hasItem("i6"))
-            ;
+            .assertThat("$['points'][?(@.x*@.x+@.y*@.y > 50)].id", hasItem("i3"))
+            .assertThat("$.points[?(@.z)].id", hasItems("i2", "i5"))
+            .assertThat("$.points[(@.length-1)].id", hasItem("i6"));
         // @formatter:on
     }
 

@@ -15,125 +15,216 @@
 package com.fasterxml.jackson.jsonpath.internal.js;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.BooleanNode;
+import com.fasterxml.jackson.databind.node.NumericNode;
+import com.fasterxml.jackson.databind.node.TextNode;
 
 public abstract class JSExpr {
 
     public abstract Object eval(JsonNode node);
 
-    public Integer evalNullableInt(JsonNode node) {
-        Object v = eval(node);
+    public Number asLenientNumber(Object v) {
+        if (v instanceof Number) {
+            return (Number) v;
+        }
+        if (v instanceof NumericNode) {
+            NumericNode n = (NumericNode) v;
+            if (n.isDouble()) {
+                return n.asDouble();
+            }
+            if (n.isLong()) {
+                return n.asLong();
+            }
+            if (n.isInt()) {
+                return n.asInt();
+            }
+            return null;
+        }
+        return null;
+    }
+
+    public Number asNullableNumber(Object v) {
         if (v == null) {
             return null;
         }
-        if (v instanceof String) {
-            return Integer.parseInt((String) v);
+        Number n = asLenientNumber(v);
+        if (n == null) {
+            throw new IllegalStateException(v.getClass() + " not a number");
         }
-        if (!(v instanceof Number)) {
+        return n;
+    }
+
+    public Number asNumber(Object v) {
+        Number n = asNullableNumber(v);
+        if (n == null) {
+            throw new IllegalStateException("NPE");
+        }
+        return n;
+    }
+
+    public Integer asLenientInt(Object v) {
+        if (v instanceof NumericNode) {
+            return ((NumericNode) v).asInt();
+        }
+        if (v instanceof Number) {
+            return ((Number) v).intValue();
+        }
+        return null;
+    }
+
+    public Integer asNullableInt(Object v) {
+        if (v == null) {
+            return null;
+        }
+        Integer i = asLenientInt(v);
+        if (i == null) {
             throw new IllegalStateException(v.getClass() + " not int");
         }
-        return ((Number) v).intValue();
+        return i;
     }
 
-    public int evalInt(JsonNode node) {
-        Integer i = evalNullableInt(node);
+    public int asInt(Object v) {
+        Integer i = asNullableInt(v);
         if (i == null) {
-            throw new IllegalStateException("null int");
+            throw new IllegalStateException("NPE");
         }
         return i;
     }
 
-    public int evalInt(JsonNode node, int def) {
-        Integer i = evalNullableInt(node);
-        if (i == null) {
-            return def;
-        }
-        return i;
+    public int evalAsInt(JsonNode node) {
+        return asInt(eval(node));
     }
 
-    public Long evalNullableLong(JsonNode node) {
-        Object v = eval(node);
+    public Long asLenientLong(Object v) {
+        if (v instanceof NumericNode) {
+            return ((NumericNode) v).asLong();
+        }
+        if (v instanceof Number) {
+            return ((Number) v).longValue();
+        }
+        return null;
+    }
+
+    public Long asNullableLong(Object v) {
         if (v == null) {
             return null;
         }
-        if (v instanceof String) {
-            return Long.parseLong((String) v);
-        }
-        if (!(v instanceof Number)) {
+        Long l = asLenientLong(v);
+        if (l == null) {
             throw new IllegalStateException(v.getClass() + " not long");
         }
-        return ((Number) v).longValue();
+        return l;
     }
 
-    public long evalLong(JsonNode node) {
-        Long l = evalNullableLong(node);
+    public long asLong(Object v) {
+        Long l = asNullableLong(v);
         if (l == null) {
-            throw new IllegalStateException("null long");
+            throw new IllegalStateException("NPE");
         }
         return l;
     }
 
-    public long evalLong(JsonNode node, long def) {
-        Long l = evalNullableLong(node);
-        if (l == null) {
-            return def;
-        }
-        return l;
+    public long evalAsLong(JsonNode node) {
+        return asLong(eval(node));
     }
 
-    public String evalNullableString(JsonNode node) {
-        Object v = eval(node);
+    public Double asLenientDouble(Object v) {
+        if (v instanceof NumericNode) {
+            return ((NumericNode) v).asDouble();
+        }
+        if (v instanceof Number) {
+            return ((Number) v).doubleValue();
+        }
+        return null;
+    }
+
+    public Double asNullableDouble(Object v) {
         if (v == null) {
             return null;
         }
-        if (!(v instanceof String)) {
-            return v.toString();
+        Double d = asLenientDouble(v);
+        if (d == null) {
+            throw new IllegalStateException(v.getClass() + " not double");
         }
-        return (String) v;
+        return d;
     }
 
-    public String evalString(JsonNode node) {
-        String s = evalNullableString(node);
-        if (s == null) {
-            throw new IllegalStateException("null string");
+    public double asDouble(Object v) {
+        Double d = asNullableDouble(v);
+        if (d == null) {
+            throw new IllegalStateException("NPE");
         }
-        return s;
+        return d;
     }
 
-    public String evalString(JsonNode node, String def) {
-        String s = evalNullableString(node);
-        if (s == null) {
-            return def;
-        }
-        return s;
+    public double evalAsDouble(JsonNode node) {
+        return asDouble(eval(node));
     }
 
-    public Boolean evalNullableBoolean(JsonNode node) {
-        Object v = eval(node);
-        if (v == null) {
-            return null;
-        }
+    public String asLenientString(Object v) {
         if (v instanceof String) {
-            return Boolean.parseBoolean((String) v);
+            return (String) v;
         }
-        if (!(v instanceof Boolean)) {
+        if (v instanceof TextNode) {
+            return ((TextNode) v).asText();
+        }
+        return null;
+    }
+
+    public String asNullableString(Object v) {
+        if (v == null) {
+            return null;
+        }
+        String s = asLenientString(v);
+        if (s == null) {
+            throw new IllegalStateException(v.getClass() + " not string");
+        }
+        return s;
+    }
+
+    public String asString(Object v) {
+        String s = asNullableString(v);
+        if (s == null) {
+            throw new IllegalStateException("NPE");
+        }
+        return s;
+    }
+
+    public String evalAsString(JsonNode node) {
+        return asString(eval(node));
+    }
+
+    public Boolean asLenientBoolean(Object v) {
+        if (v instanceof Boolean) {
+            return (Boolean) v;
+        }
+        if (v instanceof BooleanNode) {
+            return ((BooleanNode) v).asBoolean();
+        }
+        return null;
+    }
+
+    public Boolean asNullableBoolean(Object v) {
+        if (v == null) {
+            return null;
+        }
+        Boolean b = asLenientBoolean(v);
+        if (b == null) {
             throw new IllegalStateException(v.getClass() + " not boolean");
         }
-        return (Boolean) v;
+        return b;
     }
 
-    public boolean evalBoolean(JsonNode node) {
-        Boolean b = evalNullableBoolean(node);
+    public boolean asBoolean(Object v) {
+        Boolean b = asNullableBoolean(v);
         if (b == null) {
-            throw new IllegalStateException("null boolean");
+            throw new IllegalStateException("NPE");
         }
-        return (Boolean) b;
+        return b;
     }
 
-    public boolean evalBoolean(JsonNode node, boolean def) {
-        Boolean b = evalNullableBoolean(node);
-        if (b == null) {
-            return def;
-        }
-        return (Boolean) b;
+    public boolean evalAsBoolean(JsonNode node) {
+        return asBoolean(eval(node));
     }
+
 }

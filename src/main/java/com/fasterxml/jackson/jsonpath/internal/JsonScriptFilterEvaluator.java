@@ -30,9 +30,11 @@ class JsonScriptFilterEvaluator extends JsonPathEvaluator {
 
     @Override
     public JsonPathValue eval(JsonNode node) {
-        boolean select = expression.evalBoolean(node);
-        if (select) {
-            return new JsonPathSingleValue(node);
+        for (JsonNode subNode : node) {
+            boolean select = expression.evalAsBoolean(subNode);
+            if (select) {
+                return new JsonPathSingleValue(subNode);
+            }
         }
         return JsonPathNoValue.INSTANCE;
     }

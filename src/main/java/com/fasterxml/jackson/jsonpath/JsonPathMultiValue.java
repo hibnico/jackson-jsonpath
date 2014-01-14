@@ -54,7 +54,7 @@ public class JsonPathMultiValue extends JsonPathValue {
     @Override
     public ArrayNode toNode() {
         ArrayNode array = JsonNodeFactory.instance.arrayNode();
-        array.addAll(array);
+        array.addAll(nodes);
         return array;
     }
 }

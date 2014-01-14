@@ -27,7 +27,7 @@ class JsonScriptArrayEvaluator extends JsonArrayEvaluator {
 
     @Override
     public int getIndex(JsonNode node) {
-        return expression.evalInt(node);
+        return expression.evalAsInt(node);
     }
 
 }

@@ -12,22 +12,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.fasterxml.jackson.jsonpath.internal;
+package com.fasterxml.jackson.jsonpath.internal.js;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.jsonpath.JsonPathSingleValue;
 
-abstract class JsonArrayEvaluator extends JsonPathMultiEvaluator {
+public class LiteralExpr extends JSExpr {
 
-    public abstract int getIndex(JsonNode node);
-    
-    @Override
-    public JsonPathSingleValue eval(JsonNode node) {
-        if (!node.isArray()) {
-            throw new IllegalStateException("node is not an array");
-        }
-        int index = getIndex(node);
-        return new JsonPathSingleValue(node.get(index));
+    private Object literal;
+
+    public LiteralExpr(Object literal) {
+        this.literal = literal;
     }
 
+    @Override
+    public Object eval(JsonNode node) {
+        return literal;
+    }
+
+    @Override
+    public String toString() {
+        return literal.toString();
+    }
 }
