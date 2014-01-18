@@ -17,13 +17,18 @@ package com.fasterxml.jackson.jsonpath.internal;
 import java.util.Iterator;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.jsonpath.JsonNodeUtil;
 import com.fasterxml.jackson.jsonpath.JsonPathMultiValue;
+import com.fasterxml.jackson.jsonpath.JsonPathValue;
 
-class JsonWildcardSelectorEvaluator extends JsonPathEvaluator {
+class WildcardSelectorJPE extends JsonPathExpression {
+
+    public WildcardSelectorJPE(JsonPathExpression object) {
+        super(object);
+    }
 
     @Override
-    public JsonPathMultiValue eval(JsonNode node) {
+    JsonPathValue compute(JsonPathContext context, JsonNode[] childValues) {
+        JsonNode node = childValues[0];
         JsonPathMultiValue ret = new JsonPathMultiValue();
         if (node.isArray()) {
             for (int i = 0; i < node.size(); i++) {
@@ -40,4 +45,8 @@ class JsonWildcardSelectorEvaluator extends JsonPathEvaluator {
         return ret;
     }
 
+    @Override
+    public String toString() {
+        return children[0].toString() + "[*]";
+    }
 }

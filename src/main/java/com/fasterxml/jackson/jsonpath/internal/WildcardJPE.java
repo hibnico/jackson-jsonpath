@@ -18,29 +18,32 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.jsonpath.JsonPathMultiValue;
 import com.fasterxml.jackson.jsonpath.JsonPathValue;
 
-class JsonFieldDescendingEvaluator extends JsonPathEvaluator {
+class WildcardJPE extends JsonPathExpression {
+
+    public WildcardJPE(JsonPathExpression object) {
+        super(object);
+    }
 
     @Override
-    public JsonPathValue eval(JsonNode node) {
+    JsonPathValue compute(JsonPathContext context, JsonNode[] childValues) {
+        JsonNode node = childValues[0];
         JsonPathMultiValue ret = new JsonPathMultiValue();
-        descend(node, ret);
+        if (node.isArray()) {
+            for (JsonNode current : node) {
+                for (JsonNode value : current) {
+                    ret.add(value);
+                }
+            }
+        } else {
+            for (JsonNode subNode : node) {
+                ret.add(subNode);
+            }
+        }
         return ret;
     }
 
-    private void descend(JsonNode node, JsonPathMultiValue result) {
-        if (node.isObject()) {
-            result.add(node);
-            for (JsonNode value : node) {
-                if (value.isContainerNode()) {
-                    descend(value, result);
-                }
-            }
-        } else if (node.isArray()) {
-            for (JsonNode value : node) {
-                if (value.isContainerNode()) {
-                    descend(value, result);
-                }
-            }
-        }
+    @Override
+    public String toString() {
+        return children[0].toString() + ".*";
     }
 }

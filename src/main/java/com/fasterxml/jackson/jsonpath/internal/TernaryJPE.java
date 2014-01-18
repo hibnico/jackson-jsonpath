@@ -12,31 +12,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.fasterxml.jackson.jsonpath.internal.js;
+package com.fasterxml.jackson.jsonpath.internal;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.jsonpath.JsonPathValue;
 
-public class TernaryJSExpr extends JSExpr {
+class TernaryJPE extends JsonPathExpression {
 
-    private JSExpr condition;
+    private JsonPathExpression condition;
 
-    private JSExpr onTrue;
+    private JsonPathExpression onTrue;
 
-    private JSExpr onFalse;
+    private JsonPathExpression onFalse;
 
-    public TernaryJSExpr(JSExpr condition, JSExpr onTrue, JSExpr onFalse) {
+    public TernaryJPE(JsonPathExpression condition, JsonPathExpression onTrue, JsonPathExpression onFalse) {
         this.condition = condition;
         this.onTrue = onTrue;
         this.onFalse = onFalse;
     }
 
     @Override
-    public Object eval(JsonNode node) {
-        boolean c = asBoolean(condition.eval(node));
+    public JsonPathValue eval(JsonPathContext context) {
+        boolean c = condition.evalAsBoolean(context);
         if (c) {
-            return onTrue.eval(node);
+            return onTrue.eval(context);
         } else {
-            return onFalse.eval(node);
+            return onFalse.eval(context);
         }
     }
 

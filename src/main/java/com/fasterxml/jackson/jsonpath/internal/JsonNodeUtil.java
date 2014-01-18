@@ -12,7 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.fasterxml.jackson.jsonpath;
+package com.fasterxml.jackson.jsonpath.internal;
 
 import java.math.BigDecimal;
 
@@ -21,9 +21,9 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
-public class JsonNodeUtil {
+class JsonNodeUtil {
 
-    public static ArrayNode arrayNode(Object... values) {
+    static ArrayNode arrayNode(Object... values) {
         ArrayNode array = JsonNodeFactory.instance.arrayNode();
         for (Object value : values) {
             if (value == null) {
@@ -53,7 +53,7 @@ public class JsonNodeUtil {
         return array;
     }
 
-    public static ObjectNode objectNode(Object... values) {
+    static ObjectNode objectNode(Object... values) {
         if (values.length % 2 != 0) {
             throw new IllegalArgumentException("objectNode needs a list of pair of values");
         }

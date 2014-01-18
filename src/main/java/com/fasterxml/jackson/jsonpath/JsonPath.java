@@ -19,22 +19,22 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.text.ParseException;
-import java.util.List;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.jsonpath.internal.JsonPathEvaluator;
-import com.fasterxml.jackson.jsonpath.internal.JsonPathParser;
+import com.fasterxml.jackson.jsonpath.internal.JsonPathContext;
+import com.fasterxml.jackson.jsonpath.internal.JsonPathExpression;
+import com.fasterxml.jackson.jsonpath.internal.JsonPathExpressionParser;
 
 public class JsonPath {
 
     private ObjectMapper jsonMapper = new ObjectMapper();
 
-    private List<JsonPathEvaluator> evaluators;
+    private JsonPathExpression expr;
 
-    JsonPath(List<JsonPathEvaluator> evaluators) {
-        this.evaluators = evaluators;
+    JsonPath(JsonPathExpression expr) {
+        this.expr = expr;
     }
 
     public JsonPathValue eval(JsonNode node) {
@@ -42,12 +42,7 @@ public class JsonPath {
             return JsonPathNoValue.INSTANCE;
         }
 
-        JsonPathValue value = new JsonPathSingleValue(node);
-        for (JsonPathEvaluator evaluator : evaluators) {
-            value = value.apply(evaluator);
-        }
-
-        return value;
+        return expr.eval(new JsonPathContext(node));
     }
 
     public JsonPathValue eval(String json) throws JsonProcessingException, IOException {
@@ -73,7 +68,7 @@ public class JsonPath {
     }
 
     public static JsonPath compile(String path) throws ParseException {
-        return new JsonPath(JsonPathParser.parse(path));
+        return new JsonPath(JsonPathExpressionParser.parse(path));
     }
 
     public static JsonPathValue eval(JsonNode node, String path) throws ParseException {

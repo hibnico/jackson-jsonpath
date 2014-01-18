@@ -15,19 +15,22 @@
 package com.fasterxml.jackson.jsonpath.internal;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.jsonpath.internal.js.JSExpr;
 
-class JsonScriptArrayEvaluator extends JsonArrayEvaluator {
+class LiteralJPE extends JsonPathExpression {
 
-    private JSExpr expression;
+    private JsonNode literal;
 
-    public JsonScriptArrayEvaluator(JSExpr expression) {
-        this.expression = expression;
+    public LiteralJPE(JsonNode literal) {
+        this.literal = literal;
     }
 
     @Override
-    public int getIndex(JsonNode node) {
-        return expression.evalAsInt(node);
+    JsonNode computeNode(JsonPathContext context, JsonNode[] childValues) {
+        return literal;
     }
 
+    @Override
+    public String toString() {
+        return literal.toString();
+    }
 }

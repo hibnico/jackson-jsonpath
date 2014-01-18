@@ -14,20 +14,24 @@
  */
 package com.fasterxml.jackson.jsonpath.internal;
 
+import java.util.List;
+
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.jsonpath.JsonPathSingleValue;
 
-abstract class JsonArrayEvaluator extends JsonPathMultiEvaluator {
+class MethodCallJPE extends JsonPathExpression {
 
-    public abstract int getIndex(JsonNode node);
-    
-    @Override
-    public JsonPathSingleValue eval(JsonNode node) {
-        if (!node.isArray()) {
-            throw new IllegalStateException("node is not an array");
-        }
-        int index = getIndex(node);
-        return new JsonPathSingleValue(node.get(index));
+    private String function;
+
+    private List<JsonPathExpression> arguments;
+
+    public MethodCallJPE(JsonPathExpression object, String function, List<JsonPathExpression> arguments) {
+        super(object);
+        this.function = function;
+        this.arguments = arguments;
     }
 
+    @Override
+    Object computeObject(JsonPathContext context, JsonNode[] childValues) {
+        throw new IllegalStateException("TODO");
+    }
 }

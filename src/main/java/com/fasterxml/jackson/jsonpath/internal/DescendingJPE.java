@@ -16,24 +16,35 @@ package com.fasterxml.jackson.jsonpath.internal;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.jsonpath.JsonPathMultiValue;
+import com.fasterxml.jackson.jsonpath.JsonPathValue;
 
-class JsonWildcardEvaluator extends JsonPathEvaluator {
+class DescendingJPE extends JsonPathExpression {
+
+    public DescendingJPE(JsonPathExpression object) {
+        super(object);
+    }
 
     @Override
-    public JsonPathMultiValue eval(JsonNode node) {
+    JsonPathValue compute(JsonPathContext context, JsonNode[] childValues) {
         JsonPathMultiValue ret = new JsonPathMultiValue();
-        if (node.isArray()) {
-            for (JsonNode current : node) {
-                for (JsonNode value : current) {
-                    ret.add(value);
-                }
-            }
-        } else {
-            for (JsonNode subNode : node) {
-                ret.add(subNode);
-            }
-        }
+        descend(childValues[0], ret);
         return ret;
     }
 
+    private void descend(JsonNode node, JsonPathMultiValue result) {
+        if (node.isObject()) {
+            result.add(node);
+            for (JsonNode value : node) {
+                if (value.isContainerNode()) {
+                    descend(value, result);
+                }
+            }
+        } else if (node.isArray()) {
+            for (JsonNode value : node) {
+                if (value.isContainerNode()) {
+                    descend(value, result);
+                }
+            }
+        }
+    }
 }

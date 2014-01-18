@@ -12,11 +12,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.fasterxml.jackson.jsonpath.internal.js;
+package com.fasterxml.jackson.jsonpath.internal;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
-public class BitwiseJSExpr extends JSExpr {
+class BitwiseJPE extends JsonPathExpression {
 
     enum BitwiseOp {
         OR("|"), AND("&"), XOR("^");
@@ -28,45 +28,40 @@ public class BitwiseJSExpr extends JSExpr {
         }
     }
 
-    private JSExpr left;
-
-    private JSExpr right;
-
     private BitwiseOp op;
 
-    public BitwiseJSExpr(BitwiseOp op, JSExpr left, JSExpr right) {
+    public BitwiseJPE(BitwiseOp op, JsonPathExpression left, JsonPathExpression right) {
+        super(left, right);
         this.op = op;
-        this.left = left;
-        this.right = right;
     }
 
     @Override
-    public Object eval(JsonNode node) {
-        Object v1 = asNumber(left.eval(node));
-        Object v2 = asNumber(right.eval(node));
+    Object computeObject(JsonPathContext context, JsonNode[] childValues) {
+        Number v1 = asNumber(childValues[0]);
+        Number v2 = asNumber(childValues[1]);
         switch (op) {
         case AND:
             if (v1 instanceof Long || v2 instanceof Long) {
-                return asLong(v1) & asLong(v2);
+                return v1.longValue() & v2.longValue();
             }
             if (v1 instanceof Integer || v2 instanceof Integer) {
-                return asInt(v1) & asInt(v2);
+                return v1.intValue() & v2.intValue();
             }
             throw new IllegalStateException("unsupported types " + v1.getClass() + " and " + v2.getClass());
         case OR:
             if (v1 instanceof Long || v2 instanceof Long) {
-                return asLong(v1) | asLong(v2);
+                return v1.longValue() | v2.longValue();
             }
             if (v1 instanceof Integer || v2 instanceof Integer) {
-                return asInt(v1) | asInt(v2);
+                return v1.intValue() | v2.intValue();
             }
             throw new IllegalStateException("unsupported types " + v1.getClass() + " and " + v2.getClass());
         case XOR:
             if (v1 instanceof Long || v2 instanceof Long) {
-                return asLong(v1) ^ asLong(v2);
+                return v1.longValue() ^ v2.longValue();
             }
             if (v1 instanceof Integer || v2 instanceof Integer) {
-                return asInt(v1) ^ asInt(v2);
+                return v1.intValue() ^ v2.intValue();
             }
             throw new IllegalStateException("unsupported types " + v1.getClass() + " and " + v2.getClass());
         default:
@@ -76,6 +71,6 @@ public class BitwiseJSExpr extends JSExpr {
 
     @Override
     public String toString() {
-        return left.toString() + ' ' + op.sign + ' ' + right.toString();
+        return children[0].toString() + ' ' + op.sign + ' ' + children[1].toString();
     }
 }

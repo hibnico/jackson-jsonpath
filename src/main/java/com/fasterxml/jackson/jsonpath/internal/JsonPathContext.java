@@ -12,28 +12,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.fasterxml.jackson.jsonpath.internal.js;
-
-import java.util.List;
+package com.fasterxml.jackson.jsonpath.internal;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
-public class MethodCallJSExpr extends JSExpr {
+public class JsonPathContext {
 
-    private JSExpr object;
+    private JsonNode root;
 
-    private String function;
+    private JsonNode this_;
 
-    private List<JSExpr> arguments;
-
-    public MethodCallJSExpr(JSExpr object, String function, List<JSExpr> arguments) {
-        this.object = object;
-        this.function = function;
-        this.arguments = arguments;
+    public JsonPathContext(JsonNode root) {
+        this(root, root);
     }
 
-    @Override
-    public Object eval(JsonNode node) {
-        throw new IllegalStateException("TODO");
+    JsonPathContext(JsonPathContext context, JsonNode this_) {
+        this(context.root, this_);
+    }
+
+    private JsonPathContext(JsonNode root, JsonNode this_) {
+        this.root = root;
+        this.this_ = this_;
+    }
+
+    public JsonNode getRoot() {
+        return root;
+    }
+
+    public JsonNode getThis() {
+        return this_;
     }
 }

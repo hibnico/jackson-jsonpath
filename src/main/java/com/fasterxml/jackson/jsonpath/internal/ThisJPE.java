@@ -12,19 +12,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.fasterxml.jackson.jsonpath.internal.js;
+package com.fasterxml.jackson.jsonpath.internal;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
-public class ThisJSExpr extends JSExpr {
+class ThisJPE extends JsonPathExpression {
 
     @Override
-    public Object eval(JsonNode node) {
-        return node;
+    JsonNode computeNode(JsonPathContext context, JsonNode[] childValues) {
+        return context.getThis();
     }
 
     @Override
     public String toString() {
-        return "@";
+        return "$";
     }
 }

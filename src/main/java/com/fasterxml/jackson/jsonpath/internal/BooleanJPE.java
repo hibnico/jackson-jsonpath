@@ -12,11 +12,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.fasterxml.jackson.jsonpath.internal.js;
+package com.fasterxml.jackson.jsonpath.internal;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
-public class BooleanJSExpr extends JSExpr {
+class BooleanJPE extends JsonPathExpression {
 
     enum BooleanOp {
         OR("||"), AND("&&");
@@ -28,22 +28,17 @@ public class BooleanJSExpr extends JSExpr {
         }
     }
 
-    private JSExpr left;
-
-    private JSExpr right;
-
     private BooleanOp op;
 
-    public BooleanJSExpr(BooleanOp op, JSExpr left, JSExpr right) {
+    public BooleanJPE(BooleanOp op, JsonPathExpression left, JsonPathExpression right) {
+        super(left, right);
         this.op = op;
-        this.left = left;
-        this.right = right;
     }
 
     @Override
-    public Object eval(JsonNode node) {
-        boolean b1 = asBoolean(left.eval(node));
-        boolean b2 = asBoolean(right.eval(node));
+    Object computeObject(JsonPathContext context, JsonNode[] childValues) {
+        boolean b1 = asBoolean(childValues[0]);
+        boolean b2 = asBoolean(childValues[1]);
         switch (op) {
         case AND:
             return b1 && b2;
@@ -56,6 +51,6 @@ public class BooleanJSExpr extends JSExpr {
 
     @Override
     public String toString() {
-        return left.toString() + ' ' + op.sign + ' ' + right.toString();
+        return children[0].toString() + ' ' + op.sign + ' ' + children[1].toString();
     }
 }

@@ -12,11 +12,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.fasterxml.jackson.jsonpath.internal.js;
+package com.fasterxml.jackson.jsonpath.internal;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
-public class CompareJSExpr extends JSExpr {
+class CompareJPE extends JsonPathExpression {
 
     enum CompareOp {
         EQ("=="), NE("!="), LT("<"), GT(">"), LE("<="), GE(">=");
@@ -28,83 +28,73 @@ public class CompareJSExpr extends JSExpr {
         }
     }
 
-    private JSExpr left;
-
-    private JSExpr right;
-
     private CompareOp op;
 
-    public CompareJSExpr(CompareOp op, JSExpr left, JSExpr right) {
+    public CompareJPE(CompareOp op, JsonPathExpression left, JsonPathExpression right) {
+        super(left, right);
         this.op = op;
-        this.left = left;
-        this.right = right;
     }
 
     @Override
-    public Object eval(JsonNode node) {
-        Object v1 = left.eval(node);
-        Object v2 = right.eval(node);
-        if (v1 == null || v2 == null) {
-            throw new IllegalStateException("NPE");
-        }
+    Object computeObject(JsonPathContext context, JsonNode[] childValues) {
         switch (op) {
         case EQ:
-            return v1.equals(v2);
+            return childValues[0].equals(childValues[1]);
         case NE:
-            return !v1.equals(v2);
+            return !childValues[0].equals(childValues[1]);
         case GE: {
-            Number n1 = asNumber(v1);
-            Number n2 = asNumber(v2);
+            Number n1 = asNumber(childValues[0]);
+            Number n2 = asNumber(childValues[1]);
             if (n1 instanceof Double || n2 instanceof Double) {
-                return asDouble(v1) >= asDouble(v2);
+                return n1.doubleValue() >= n2.doubleValue();
             }
             if (n1 instanceof Long || n2 instanceof Long) {
-                return asLong(v1) >= asLong(v2);
+                return n1.longValue() >= n2.longValue();
             }
             if (n1 instanceof Integer || n2 instanceof Integer) {
-                return asInt(v1) >= asInt(v2);
+                return n1.intValue() >= n2.intValue();
             }
             throw new IllegalStateException("unsupported numbers " + n1.getClass() + " and " + n2.getClass());
         }
         case GT: {
-            Number n1 = asNumber(v1);
-            Number n2 = asNumber(v2);
+            Number n1 = asNumber(childValues[0]);
+            Number n2 = asNumber(childValues[1]);
             if (n1 instanceof Double || n2 instanceof Double) {
-                return asDouble(v1) > asDouble(v2);
+                return n1.doubleValue() > n2.doubleValue();
             }
             if (n1 instanceof Long || n2 instanceof Long) {
-                return asLong(v1) > asLong(v2);
+                return n1.longValue() > n2.longValue();
             }
             if (n1 instanceof Integer || n2 instanceof Integer) {
-                return asInt(v1) > asInt(v2);
+                return n1.intValue() > n2.intValue();
             }
             throw new IllegalStateException("unsupported numbers " + n1.getClass() + " and " + n2.getClass());
         }
         case LE: {
-            Number n1 = asNumber(v1);
-            Number n2 = asNumber(v2);
+            Number n1 = asNumber(childValues[0]);
+            Number n2 = asNumber(childValues[1]);
             if (n1 instanceof Double || n2 instanceof Double) {
-                return asDouble(v1) <= asDouble(v2);
+                return n1.doubleValue() <= n2.doubleValue();
             }
             if (n1 instanceof Long || n2 instanceof Long) {
-                return asLong(v1) <= asLong(v2);
+                return n1.longValue() <= n2.longValue();
             }
             if (n1 instanceof Integer || n2 instanceof Integer) {
-                return asInt(v1) <= asInt(v2);
+                return n1.intValue() <= n2.intValue();
             }
             throw new IllegalStateException("unsupported numbers " + n1.getClass() + " and " + n2.getClass());
         }
         case LT: {
-            Number n1 = asNumber(v1);
-            Number n2 = asNumber(v2);
+            Number n1 = asNumber(childValues[0]);
+            Number n2 = asNumber(childValues[1]);
             if (n1 instanceof Double || n2 instanceof Double) {
-                return asDouble(v1) < asDouble(v2);
+                return n1.intValue() < n2.intValue();
             }
             if (n1 instanceof Long || n2 instanceof Long) {
-                return asLong(v1) < asLong(v2);
+                return n1.longValue() < n2.longValue();
             }
             if (n1 instanceof Integer || n2 instanceof Integer) {
-                return asInt(v1) < asInt(v2);
+                return n1.intValue() < n2.intValue();
             }
             throw new IllegalStateException("unsupported numbers " + n1.getClass() + " and " + n2.getClass());
         }
@@ -115,6 +105,6 @@ public class CompareJSExpr extends JSExpr {
 
     @Override
     public String toString() {
-        return left.toString() + ' ' + op.sign + ' ' + right.toString();
+        return children[0].toString() + ' ' + op.sign + ' ' + children[1].toString();
     }
 }

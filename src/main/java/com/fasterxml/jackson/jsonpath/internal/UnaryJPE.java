@@ -12,11 +12,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.fasterxml.jackson.jsonpath.internal.js;
+package com.fasterxml.jackson.jsonpath.internal;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
-public class UnaryJSExpr extends JSExpr {
+class UnaryJPE extends JsonPathExpression {
 
     enum UnaryOp {
         NOT("!"), PLUS("+"), MINUS("-"), NOT_BITWISE("~");
@@ -28,23 +28,20 @@ public class UnaryJSExpr extends JSExpr {
         }
     }
 
-    private JSExpr expr;
-
     private UnaryOp op;
 
-    public UnaryJSExpr(UnaryOp op, JSExpr expr) {
+    public UnaryJPE(UnaryOp op, JsonPathExpression expr) {
+        super(expr);
         this.op = op;
-        this.expr = expr;
     }
 
     @Override
-    public Object eval(JsonNode node) {
-        Object v = expr.eval(node);
+    Object computeObject(JsonPathContext context, JsonNode[] childValues) {
         switch (op) {
         case NOT:
-            return !asBoolean(v);
+            return !asBoolean(childValues[0]);
         case MINUS: {
-            Number n = asNumber(v);
+            Number n = asNumber(childValues[0]);
             if (n instanceof Double) {
                 return -((Double) n);
             }
@@ -57,9 +54,9 @@ public class UnaryJSExpr extends JSExpr {
             throw new IllegalStateException("unsupported number " + n.getClass());
         }
         case PLUS:
-            return asNumber(v);
+            return asNumber(childValues[0]);
         case NOT_BITWISE: {
-            Number n = asNumber(v);
+            Number n = asNumber(childValues[0]);
             if (n instanceof Long) {
                 return ~((Long) n);
             }
@@ -75,6 +72,6 @@ public class UnaryJSExpr extends JSExpr {
 
     @Override
     public String toString() {
-        return op.sign + expr.toString();
+        return op.sign + children[0].toString();
     }
 }

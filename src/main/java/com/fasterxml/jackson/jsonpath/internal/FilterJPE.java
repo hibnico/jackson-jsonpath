@@ -14,19 +14,30 @@
  */
 package com.fasterxml.jackson.jsonpath.internal;
 
-import java.util.List;
-
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.jsonpath.JsonPathValue;
 
-public abstract class JsonPathMultiEvaluator extends JsonPathEvaluator {
+class FilterJPE extends JsonPathExpression {
 
-    public JsonPathValue eval(List<JsonNode> nodes) {
-        ArrayNode array = JsonNodeFactory.instance.arrayNode();
-        array.addAll(nodes);
-        return eval(array);
+    private JsonPathExpression filter;
+
+    public FilterJPE(JsonPathExpression object, JsonPathExpression filter) {
+        super(object);
+        this.filter = filter;
     }
 
+    @Override
+    JsonNode computeNode(JsonPathContext context, JsonNode[] childValues) {
+        for (JsonNode subNode : childValues[0]) {
+            boolean select = filter.evalAsBoolean(new JsonPathContext(context, subNode));
+            if (select) {
+                return subNode;
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public String toString() {
+        return children[0].toString() + "[?(" + filter.toString() + ")]";
+    }
 }

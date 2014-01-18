@@ -12,11 +12,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.fasterxml.jackson.jsonpath.internal.js;
+package com.fasterxml.jackson.jsonpath.internal;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
-public class ShiftJSExpr extends JSExpr {
+class ShiftJPE extends JsonPathExpression {
 
     enum ShiftOp {
         LEFT("<<"), RIGHT(">>"), LOGICAL_RIGHT(">>>");
@@ -28,22 +28,17 @@ public class ShiftJSExpr extends JSExpr {
         }
     }
 
-    private JSExpr left;
-
-    private JSExpr right;
-
     private ShiftOp op;
 
-    public ShiftJSExpr(ShiftOp op, JSExpr left, JSExpr right) {
+    public ShiftJPE(ShiftOp op, JsonPathExpression left, JsonPathExpression right) {
+        super(left, right);
         this.op = op;
-        this.left = left;
-        this.right = right;
     }
 
     @Override
-    public Object eval(JsonNode node) {
-        Number l = asNumber(left.eval(node));
-        Number r = asNumber(right.eval(node));
+    Object computeObject(JsonPathContext context, JsonNode[] childValues) {
+        Number l = asNumber(childValues[0]);
+        Number r = asNumber(childValues[1]);
         switch (op) {
         case LEFT:
             if (l instanceof Long) {
@@ -112,6 +107,6 @@ public class ShiftJSExpr extends JSExpr {
 
     @Override
     public String toString() {
-        return left.toString() + ' ' + op.sign + ' ' + right.toString();
+        return children[0].toString() + ' ' + op.sign + ' ' + children[1].toString();
     }
 }

@@ -16,7 +16,7 @@ package com.fasterxml.jackson.jsonpath.internal;
 
 import java.text.ParseException;
 
-public class Buffer {
+class Buffer {
 
     private char[] input;
 

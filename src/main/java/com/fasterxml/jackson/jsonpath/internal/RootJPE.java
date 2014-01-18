@@ -12,25 +12,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.fasterxml.jackson.jsonpath.internal.js;
+package com.fasterxml.jackson.jsonpath.internal;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
-public class LiteralExpr extends JSExpr {
-
-    private Object literal;
-
-    public LiteralExpr(Object literal) {
-        this.literal = literal;
-    }
+class RootJPE extends JsonPathExpression {
 
     @Override
-    public Object eval(JsonNode node) {
-        return literal;
+    JsonNode computeNode(JsonPathContext context, JsonNode[] childValues) {
+        return context.getRoot();
     }
 
     @Override
     public String toString() {
-        return literal.toString();
+        return "@";
     }
 }
