@@ -29,6 +29,6 @@ class ThisJPE extends JsonPathExpression {
 
     @Override
     public String toString() {
-        return "$";
+        return "@";
     }
 }
