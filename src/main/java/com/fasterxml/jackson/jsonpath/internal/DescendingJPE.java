@@ -32,19 +32,16 @@ class DescendingJPE extends JsonPathExpression {
     }
 
     private void descend(JsonNode node, JsonPathMultiValue result) {
-        if (node.isObject()) {
+        if (node.isContainerNode()) {
             result.add(node);
             for (JsonNode value : node) {
-                if (value.isContainerNode()) {
-                    descend(value, result);
-                }
-            }
-        } else if (node.isArray()) {
-            for (JsonNode value : node) {
-                if (value.isContainerNode()) {
-                    descend(value, result);
-                }
+                descend(value, result);
             }
         }
+    }
+
+    @Override
+    public String toString() {
+        return children[0].toString() + "..";
     }
 }
