@@ -40,7 +40,8 @@ class WildcardJPE extends JsonPathExpression {
                 ret.add(subNode);
             }
         } else {
-            throw new JsonPathRuntimeException("wilcard cannot be applied to " + node.getNodeType(), position);
+            throw new JsonPathRuntimeException("wilcard cannot be applied to "
+                    + node.getNodeType().toString().toLowerCase(), position);
         }
         return ret;
     }

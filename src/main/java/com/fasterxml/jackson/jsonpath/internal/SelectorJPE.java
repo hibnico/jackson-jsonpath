@@ -50,7 +50,8 @@ class SelectorJPE extends JsonPathExpression {
         if (o.isArray()) {
             return o.get(asInt(i, "index of selector"));
         }
-        throw new JsonPathRuntimeException("the json selector cannot be applied to " + o.getNodeType(), position);
+        throw new JsonPathRuntimeException("the json selector cannot be applied to "
+                + o.getNodeType().toString().toLowerCase(), position);
     }
 
     @Override
