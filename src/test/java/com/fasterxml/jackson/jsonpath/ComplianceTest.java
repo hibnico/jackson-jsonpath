@@ -92,7 +92,7 @@ public class ComplianceTest {
             .assertThat("$.menu.items[?(@ != null && @.id != null && @.label == null)].id", asObject(hasItems("Open", "Quality", "Pause", "Mute", "Copy", "Help")))
             // .assertThat("$.menu.items[?(@!= null  && @.label != null && /SVG/.test(@.label))].id", asObject(hasItems("CopySVG", "ViewSVG"))) TODO
             .assertThat("$.menu.items[?(@ == null)]", asObject(hasItems((Integer) null, null, null, null)))
-            .assertThat("$..[0]", asObject(hasEntry("id", "Open")));
+            .assertThat("$..[3]", asObject(hasEntry("id", "Open")));
         // @formatter:on
     }
 

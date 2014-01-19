@@ -19,21 +19,17 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.jsonpath.JsonPathRuntimeException;
 import com.fasterxml.jackson.jsonpath.JsonPathValue;
 
-class SelectorJPE extends JsonPathExpression {
+class FieldSelectorJPE extends JsonPathExpression {
 
     private JsonPathExpression object;
 
     private JsonPathExpression index;
 
-    SelectorJPE(int position, JsonPathExpression object, String id) {
+    FieldSelectorJPE(int position, JsonPathExpression object, String id) {
         this(position, object, new LiteralJPE(position, JsonNodeFactory.instance.textNode(id)));
     }
 
-    SelectorJPE(int position, JsonPathExpression object, int index) {
-        this(position, object, new LiteralJPE(position, JsonNodeFactory.instance.numberNode(index)));
-    }
-
-    SelectorJPE(int position, JsonPathExpression object, JsonPathExpression index) {
+    FieldSelectorJPE(int position, JsonPathExpression object, JsonPathExpression index) {
         super(position, object.isVector());
         this.object = object;
         this.index = index;
@@ -45,22 +41,14 @@ class SelectorJPE extends JsonPathExpression {
     }
 
     @Override
-    Object computeObject(JsonPathContext context, JsonNode[] childValues) {
+    JsonNode computeNode(JsonPathContext context, JsonNode[] childValues) {
         JsonNode o = childValues[0];
+        if (!o.isObject()) {
+            throw new JsonPathRuntimeException("field selector must apply on an object, not a "
+                    + o.getNodeType().toString().toLowerCase(), position);
+        }
         JsonNode i = index.eval(context).toNode();
-
-        if (o.isObject()) {
-            String si = asLenientString(i);
-            if (si != null) {
-                return o.get(si);
-            }
-            return o.get(asInt(i, "index of selector"));
-        }
-        if (o.isArray()) {
-            return o.get(asInt(i, "index of selector"));
-        }
-        throw new JsonPathRuntimeException("the json selector cannot be applied to "
-                + o.getNodeType().toString().toLowerCase(), position);
+        return o.path(asString(i, "index of selector"));
     }
 
     @Override

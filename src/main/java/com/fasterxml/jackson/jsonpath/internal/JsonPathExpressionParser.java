@@ -550,14 +550,14 @@ public class JsonPathExpressionParser {
             c = buffer.readAhead();
             if (c != null && c >= '0' && c <= '9') {
                 int i = readInt();
-                expr = new SelectorJPE(p, expr, i);
+                expr = new IndexSelectorJPE(p, expr, i);
             } else {
                 String id = readIdentifier();
                 List<JsonPathExpression> arguments = readArguments();
                 if (arguments != null) {
                     expr = new MethodCallJPE(p, expr, id, arguments);
                 } else {
-                    expr = new SelectorJPE(p, expr, id);
+                    expr = new FieldSelectorJPE(p, expr, id);
                 }
             }
         } else if (c != null && c == '[') {
@@ -579,29 +579,29 @@ public class JsonPathExpressionParser {
                 int p = buffer.pos;
                 buffer.skip();
                 JsonPathExpression indexExpr = readExpr();
-                expr = new SelectorJPE(p, expr, indexExpr);
+                expr = new FieldSelectorJPE(p, expr, indexExpr);
                 buffer.skipWhiteSpace();
                 buffer.readExpected(')', "expression");
             } else if (c != null && c == '\'') {
                 int p = buffer.pos;
                 buffer.skip();
                 String field = readEscaped('\'');
-                expr = new SelectorJPE(p, expr, field);
+                expr = new FieldSelectorJPE(p, expr, field);
                 buffer.readExpected('\'', "string");
             } else if (c != null && c == '\"') {
                 int p = buffer.pos;
                 buffer.skip();
                 String field = readEscaped('\"');
-                expr = new SelectorJPE(p, expr, field);
+                expr = new FieldSelectorJPE(p, expr, field);
                 buffer.readExpected('\"', "string");
             } else if (c != null && c >= '0' && c <= '9') {
                 int p = buffer.pos;
                 int i = readInt();
-                expr = new SelectorJPE(p, expr, i);
+                expr = new IndexSelectorJPE(p, expr, i);
             } else {
                 int p = buffer.pos;
                 String field = readIdentifier();
-                expr = new SelectorJPE(p, expr, field);
+                expr = new FieldSelectorJPE(p, expr, field);
             }
             buffer.skipWhiteSpace();
             buffer.readExpected(']', "array selector");

@@ -96,7 +96,7 @@ public abstract class JsonPathExpression {
 
     JsonPathValue compute(JsonPathContext context, JsonNode[] childValues) {
         JsonNode node = computeNode(context, childValues);
-        if (node == null || node.isNull()) {
+        if (node == null || node.isMissingNode()) {
             return JsonPathNoValue.INSTANCE;
         }
         return new JsonPathSingleValue(node);
