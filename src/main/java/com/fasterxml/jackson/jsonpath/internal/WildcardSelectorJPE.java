@@ -33,7 +33,7 @@ class WildcardSelectorJPE extends JsonPathExpression {
         JsonPathMultiValue ret = new JsonPathMultiValue();
         if (node.isArray()) {
             for (int i = 0; i < node.size(); i++) {
-                ret.add(JsonNodeUtil.objectNode(i, node.get(i)));
+                ret.add(node.get(i));
             }
         } else if (node.isObject()) {
             for (Iterator<String> it = node.fieldNames(); it.hasNext();) {
@@ -41,7 +41,8 @@ class WildcardSelectorJPE extends JsonPathExpression {
                 ret.add(JsonNodeUtil.objectNode(field, node.get(field)));
             }
         } else {
-            throw new JsonPathRuntimeException("wildcard selector cannot apply to " + node.getNodeType(), position);
+            throw new JsonPathRuntimeException("wildcard selector cannot apply to "
+                    + node.getNodeType().toString().toLowerCase(), position);
         }
         return ret;
     }
