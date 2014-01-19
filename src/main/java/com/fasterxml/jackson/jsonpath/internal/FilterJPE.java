@@ -30,11 +30,13 @@ class FilterJPE extends JsonPathExpression {
     @Override
     JsonPathValue compute(JsonPathContext context, JsonNode[] childValues) {
         JsonPathMultiValue ret = new JsonPathMultiValue();
+        int i = 0;
         for (JsonNode subNode : childValues[0]) {
-            boolean select = filter.evalAsBoolean(new JsonPathContext(context, subNode), "filtering selector");
+            boolean select = filter.evalAsBoolean(new JsonPathContext(context, subNode, i), "filtering selector");
             if (select) {
                 ret.add(subNode);
             }
+            i++;
         }
         return ret;
     }

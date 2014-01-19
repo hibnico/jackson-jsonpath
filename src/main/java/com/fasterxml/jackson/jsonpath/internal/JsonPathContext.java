@@ -22,12 +22,15 @@ public class JsonPathContext {
 
     private JsonNode this_;
 
+    private Integer pos;
+
     public JsonPathContext(JsonNode root) {
         this(root, root);
     }
 
-    JsonPathContext(JsonPathContext context, JsonNode this_) {
+    JsonPathContext(JsonPathContext context, JsonNode this_, int pos) {
         this(context.root, this_);
+        this.pos = pos;
     }
 
     private JsonPathContext(JsonNode root, JsonNode this_) {
@@ -41,5 +44,9 @@ public class JsonPathContext {
 
     public JsonNode getThis() {
         return this_;
+    }
+
+    public Integer getPos() {
+        return pos;
     }
 }
