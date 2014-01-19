@@ -14,8 +14,10 @@
  */
 package com.fasterxml.jackson.jsonpath.jsonassert;
 
+import static com.fasterxml.jackson.jsonpath.jsonassert.JsonAssert.asObject;
 import static com.fasterxml.jackson.jsonpath.jsonassert.JsonAssert.collectionWithSize;
 import static com.fasterxml.jackson.jsonpath.jsonassert.JsonAssert.emptyCollection;
+import static com.fasterxml.jackson.jsonpath.jsonassert.JsonAssert.isNoValue;
 import static com.fasterxml.jackson.jsonpath.jsonassert.JsonAssert.mapContainingKey;
 import static com.fasterxml.jackson.jsonpath.jsonassert.JsonAssert.mapContainingValue;
 import static com.fasterxml.jackson.jsonpath.jsonassert.JsonAssert.with;
@@ -72,7 +74,7 @@ public class JsonAssertTest {
 
     @Test(expected = AssertionError.class)
     public void failed_error_message() throws Exception {
-        with(JSON).assertThat("$.store.book[0].category", endsWith("foobar"));
+        with(JSON).assertThat("$.store.book[0].category", asObject(endsWith("foobar")));
     }
 
     @Test
@@ -80,17 +82,17 @@ public class JsonAssertTest {
         // @formatter:off
         withResource("links.json")
                 .assertEquals("count", 2)
-                .assertThat("links.gc:this.href", endsWith("?pageNumber=1&pageSize=2"))
-                .assertNotDefined("links.gc:prev")
-                .assertNotDefined("links.gc:next")
-                .assertThat("rows", collectionWithSize(equalTo(2)));
+                .assertThat("links.gc:this.href", asObject(endsWith("?pageNumber=1&pageSize=2")))
+                .assertThat("links.gc:prev", isNoValue())
+                .assertThat("links.gc:next", isNoValue())
+                .assertThat("rows", asObject(collectionWithSize(equalTo(2))));
         // @formatter:on
 
     }
 
     @Test
     public void a_document_can_be_expected_not_to_contain_a_path() throws Exception {
-        with(JSON).assertNotDefined("$.store.bicycle.cool");
+        with(JSON).assertThat("$.store.bicycle.cool", isNoValue());
     }
 
     @Test
@@ -100,56 +102,60 @@ public class JsonAssertTest {
 
     @Test
     public void ends_with_evalueates() throws Exception {
-        with(JSON).assertThat("$.store.book[0].category", endsWith("nce"));
+        with(JSON).assertThat("$.store.book[0].category", asObject(endsWith("nce")));
     }
 
     @Test
     public void a_path_can_be_asserted_with_matcher() throws Exception {
 
-        with(JSON).assertThat("$.store.bicycle.color", equalTo("red")).assertThat("$.store.bicycle.price", equalTo(19.95D));
+        with(JSON).assertThat("$.store.bicycle.color", asObject(equalTo("red"))).assertThat("$.store.bicycle.price",
+                asObject(equalTo(19.95D)));
     }
 
     @Test
     public void list_content_can_be_asserted_with_matcher() throws Exception {
 
-        with(JSON).assertThat("$..book[*].author", hasItems("Nigel Rees", "Evelyn Waugh", "Herman Melville", "J. R. R. Tolkien"));
+        with(JSON).assertThat("$..book[*].author",
+                asObject(hasItems("Nigel Rees", "Evelyn Waugh", "Herman Melville", "J. R. R. Tolkien")));
 
-        with(JSON).assertThat("$..author", hasItems("Nigel Rees", "Evelyn Waugh", "Herman Melville", "J. R. R. Tolkien")).assertThat("$..author",
-                is(collectionWithSize(equalTo(4))));
+        with(JSON).assertThat("$..author",
+                asObject(hasItems("Nigel Rees", "Evelyn Waugh", "Herman Melville", "J. R. R. Tolkien"))).assertThat(
+                "$..author", asObject(is(collectionWithSize(equalTo(4)))));
     }
 
     @SuppressWarnings("unchecked")
     @Test
     public void list_content_can_be_asserted_with_nested_matcher() throws Exception {
-        with(JSON).assertThat("$..book[*]", hasItems(hasEntry("author", "Nigel Rees"), hasEntry("author", "Evelyn Waugh")));
+        with(JSON).assertThat("$..book[*]",
+                asObject(hasItems(hasEntry("author", "Nigel Rees"), hasEntry("author", "Evelyn Waugh"))));
     }
 
     @Test
     public void map_content_can_be_asserted_with_matcher() throws Exception {
         // @formatter:off
-        with(JSON).assertThat("$.store.book[0]", hasEntry("category", "reference"))
-                .assertThat("$.store.book[0]", hasEntry("title", "Sayings of the Century"))
+        with(JSON).assertThat("$.store.book[0]", asObject(hasEntry("category", "reference")))
+                .assertThat("$.store.book[0]", asObject(hasEntry("title", "Sayings of the Century")))
                 .and()
-                .assertThat("$..book[0]", hasEntry("category", "reference"))
+                .assertThat("$..book[0]", asObject(hasEntry("category", "reference")))
                 .and()
-                .assertThat("$.store.book[0]", mapContainingKey(equalTo("category")))
+                .assertThat("$.store.book[0]", asObject(mapContainingKey(equalTo("category"))))
                 .and()
-                .assertThat("$.store.book[0]", mapContainingValue(equalTo("reference")));
+                .assertThat("$.store.book[0]", asObject(mapContainingValue(equalTo("reference"))));
 
-        with(JSON).assertThat("$.['store'].['book'][0]", hasEntry("category", "reference"))
-                .assertThat("$.['store'].['book'][0]", hasEntry("title", "Sayings of the Century"))
+        with(JSON).assertThat("$.['store'].['book'][0]", asObject(hasEntry("category", "reference")))
+                .assertThat("$.['store'].['book'][0]", asObject(hasEntry("title", "Sayings of the Century")))
                 .and()
-                .assertThat("$..['book'][0]", hasEntry("category", "reference"))
+                .assertThat("$..['book'][0]", asObject(hasEntry("category", "reference")))
                 .and()
-                .assertThat("$.['store'].['book'][0]", mapContainingKey(equalTo("category")))
+                .assertThat("$.['store'].['book'][0]", asObject(mapContainingKey(equalTo("category"))))
                 .and()
-                .assertThat("$.['store'].['book'][0]", mapContainingValue(equalTo("reference")));
+                .assertThat("$.['store'].['book'][0]", asObject(mapContainingValue(equalTo("reference"))));
         // @formatter:on
     }
 
     @Test
     public void an_empty_collection() throws Exception {
-        with(JSON).assertThat("$.store.book[?(@.category = 'x')]", emptyCollection());
+        with(JSON).assertThat("$.store.book[?(@.category = 'x')]", asObject(emptyCollection()));
     }
 
     @Test
@@ -157,22 +163,22 @@ public class JsonAssertTest {
         // @formatter:off
         with(JSON)
             .assertEquals("$.store.book[0].title", "Sayings of the Century")
-            .assertThat("$.store.book[0].title", equalTo("Sayings of the Century"));
+            .assertThat("$.store.book[0].title", asObject(equalTo("Sayings of the Century")));
 
         with(JSON)
             .assertEquals("$['store']['book'][0].['title']", "Sayings of the Century")
-            .assertThat("$['store'].book[0].title", equalTo("Sayings of the Century"));
+            .assertThat("$['store'].book[0].title", asObject(equalTo("Sayings of the Century")));
         // @formatter:on
     }
 
     @Test
     public void invalid_path() throws Exception {
-        with(JSON).assertThat("$.store.book[*].fooBar", emptyCollection());
+        with(JSON).assertThat("$.store.book[*].fooBar", asObject(emptyCollection()));
     }
 
     @Test
     public void path_including_wildcard_path_followed_by_another_path_concatenates_results_to_list() throws Exception {
-        withResource("lotto.json").assertThat("lotto.winners[*].winnerId", hasItems(23, 54));
+        withResource("lotto.json").assertThat("lotto.winners[*].winnerId", asObject(hasItems(23, 54)));
     }
 
     @Test

@@ -45,14 +45,6 @@ public interface JsonAsserter {
     <T> JsonAsserter assertEquals(String path, T expected);
 
     /**
-     * Checks that a path is not defined within a document. If the document contains the given path, an AssertionError is thrown
-     * 
-     * @param path the path to make sure not exists
-     * @return this
-     */
-    JsonAsserter assertNotDefined(String path);
-
-    /**
      * Asserts that object specified by path is null. If it is not, an AssertionError is thrown with the given message.
      * 
      * @param path the json path specifying the value that should be null

@@ -14,7 +14,7 @@
  */
 package com.fasterxml.jackson.jsonpath.jsonassert.impl;
 
-import static java.lang.String.format;
+import static com.fasterxml.jackson.jsonpath.jsonassert.JsonAssert.asObject;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
@@ -37,18 +37,19 @@ public class JsonAsserterImpl implements JsonAsserter {
         this.jsonObject = jsonObject;
     }
 
+    @Override
     public <T> JsonAsserter assertThat(String path, Matcher<T> matcher) {
         JsonPathValue value;
         try {
             value = JsonPath.eval(jsonObject, path);
         } catch (ParseException e) {
-            AssertionError error = new AssertionError(String.format("Invalid json path: " + e.getMessage()
-                    + ". Error at:\n" + path + "\n%" + e.getErrorOffset() + "s^", ""));
+            AssertionError error = new AssertionError(String.format(
+                    "Invalid json path: %s. Error at:\n%s\n%" + e.getErrorOffset() + "s^", e.getMessage(), path, ""));
             error.initCause(e);
             throw error;
         } catch (JsonPathRuntimeException e) {
-            AssertionError error = new AssertionError(String.format("Runtime error: " + e.getMessage()
-                    + ". Error at:\n" + path + "\n%" + e.getPosition() + "s^", ""));
+            AssertionError error = new AssertionError(String.format(
+                    "Runtime error: %s. Error at:\n%s\n%" + e.getPosition() + "s^", e.getMessage(), path, ""));
             error.initCause(e);
             throw error;
         }
@@ -59,38 +60,22 @@ public class JsonAsserterImpl implements JsonAsserter {
         return this;
     }
 
+    @Override
     public <T> JsonAsserter assertEquals(String path, T expected) {
-        return assertThat(path, equalTo(expected));
+        return assertThat(path, asObject(equalTo(expected)));
     }
 
-    public JsonAsserter assertNotDefined(String path) {
-        try {
-            JsonNode res = JsonPath.eval(jsonObject, path).toNode();
-            if (!res.isNull()) {
-                throw new AssertionError(format("Document contains the path <%s> but was expected not to.", path));
-            }
-        } catch (ParseException e) {
-            AssertionError error = new AssertionError(String.format("Invalid json path: " + e.getMessage()
-                    + ". Error at:\n" + path + "\n%" + e.getErrorOffset() + "s^", ""));
-            error.initCause(e);
-            throw error;
-        } catch (JsonPathRuntimeException e) {
-            AssertionError error = new AssertionError(String.format("Runtime error: " + e.getMessage()
-                    + ". Error at:\n" + path + "\n%" + e.getPosition() + "s^", ""));
-            error.initCause(e);
-            throw error;
-        }
-        return this;
-    }
-
+    @Override
     public JsonAsserter assertNull(String path) {
-        return assertThat(path, nullValue());
+        return assertThat(path, asObject(nullValue()));
     }
 
+    @Override
     public <T> JsonAsserter assertNotNull(String path) {
-        return assertThat(path, notNullValue());
+        return assertThat(path, asObject(notNullValue()));
     }
 
+    @Override
     public JsonAsserter and() {
         return this;
     }
