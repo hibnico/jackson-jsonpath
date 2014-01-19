@@ -26,13 +26,8 @@ class WildcardSelectorJPE extends JsonPathExpression {
     private JsonPathExpression object;
 
     WildcardSelectorJPE(int position, JsonPathExpression object) {
-        super(position);
+        super(position, true);
         this.object = object;
-    }
-
-    @Override
-    boolean isVector() {
-        return true;
     }
 
     @Override

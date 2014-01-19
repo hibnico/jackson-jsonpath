@@ -36,15 +36,10 @@ class BitwiseJPE extends JsonPathExpression {
     private JsonPathExpression right;
 
     BitwiseJPE(int position, BitwiseOp op, JsonPathExpression left, JsonPathExpression right) {
-        super(position);
+        super(position, isVectorFromDotProduct(left, right));
         this.op = op;
         this.left = left;
         this.right = right;
-    }
-
-    @Override
-    boolean isVector() {
-        return isVectorFromDotProduct(left, right);
     }
 
     @Override

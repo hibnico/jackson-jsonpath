@@ -34,14 +34,9 @@ class SelectorJPE extends JsonPathExpression {
     }
 
     SelectorJPE(int position, JsonPathExpression object, JsonPathExpression index) {
-        super(position);
+        super(position, object.isVector());
         this.object = object;
         this.index = index;
-    }
-
-    @Override
-    boolean isVector() {
-        return object.isVector();
     }
 
     @Override

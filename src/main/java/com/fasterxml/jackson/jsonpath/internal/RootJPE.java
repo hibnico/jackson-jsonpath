@@ -20,12 +20,7 @@ import com.fasterxml.jackson.jsonpath.JsonPathValue;
 class RootJPE extends JsonPathExpression {
 
     RootJPE(int position) {
-        super(position);
-    }
-
-    @Override
-    boolean isVector() {
-        return false;
+        super(position, false);
     }
 
     @Override

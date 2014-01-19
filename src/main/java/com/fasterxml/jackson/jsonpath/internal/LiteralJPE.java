@@ -23,13 +23,8 @@ class LiteralJPE extends JsonPathExpression {
     private JsonNode literal;
 
     LiteralJPE(int position, JsonNode literal) {
-        super(position);
+        super(position, false);
         this.literal = literal;
-    }
-
-    @Override
-    boolean isVector() {
-        return false;
     }
 
     @Override

@@ -26,19 +26,15 @@ class TernaryJPE extends JsonPathExpression {
 
     private JsonPathExpression onFalse;
 
-    TernaryJPE(int position, JsonPathExpression condition, JsonPathExpression onTrue, JsonPathExpression onFalse) throws ParseException {
-        super(position);
+    TernaryJPE(int position, JsonPathExpression condition, JsonPathExpression onTrue, JsonPathExpression onFalse)
+            throws ParseException {
+        super(position, onTrue.isVector());
         this.condition = condition;
         this.onTrue = onTrue;
         this.onFalse = onFalse;
         if (onTrue.isVector() != onFalse.isVector()) {
             throw new ParseException("Incompatible dimension of onTrue and onFalse", position);
         }
-    }
-
-    @Override
-    boolean isVector() {
-        return onTrue.isVector();
     }
 
     @Override

@@ -38,33 +38,14 @@ class CompareJPE extends JsonPathExpression {
     private JsonPathExpression right;
 
     CompareJPE(int position, CompareOp op, JsonPathExpression left, JsonPathExpression right) throws ParseException {
-        super(position);
+        super(position, computeIsVector(position, op, left, right));
         this.op = op;
         this.left = left;
         this.right = right;
-
-        // check vector compliance
-        switch (op) {
-        case EQ:
-        case NE:
-            // OK
-            break;
-        case GE:
-        case GT:
-        case LE:
-        case LT:
-            if (left.isVector() && right.isVector()) {
-                throw new ParseException("left and right cannot be both vectors on comparaison operator " + op.sign,
-                        position);
-            }
-            break;
-        default:
-            throw new IllegalStateException("unsupported op " + op);
-        }
     }
 
-    @Override
-    boolean isVector() {
+    static boolean computeIsVector(int position, CompareOp op, JsonPathExpression left, JsonPathExpression right)
+            throws ParseException {
         switch (op) {
         case EQ:
         case NE:
@@ -73,6 +54,10 @@ class CompareJPE extends JsonPathExpression {
         case GT:
         case LE:
         case LT:
+            if (left.isVector() && right.isVector()) {
+                throw new ParseException("left and right cannot be both vectors on comparaison operator " + op.sign,
+                        position);
+            }
             return left.isVector() && !right.isVector() || !left.isVector() && right.isVector();
         default:
             throw new IllegalStateException("unsupported op " + op);

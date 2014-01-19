@@ -25,14 +25,9 @@ class FilterJPE extends JsonPathExpression {
     private JsonPathExpression filter;
 
     FilterJPE(int position, JsonPathExpression object, JsonPathExpression filter) {
-        super(position);
+        super(position, true);
         this.object = object;
         this.filter = filter;
-    }
-
-    @Override
-    boolean isVector() {
-        return true;
     }
 
     @Override

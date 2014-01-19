@@ -27,15 +27,10 @@ class MethodCallJPE extends JsonPathExpression {
     private List<JsonPathExpression> arguments;
 
     MethodCallJPE(int position, JsonPathExpression object, String function, List<JsonPathExpression> arguments) {
-        super(position);
+        super(position, object.isVector());
         this.object = object;
         this.function = function;
         this.arguments = arguments;
-    }
-
-    @Override
-    boolean isVector() {
-        return object.isVector();
     }
 
     @Override

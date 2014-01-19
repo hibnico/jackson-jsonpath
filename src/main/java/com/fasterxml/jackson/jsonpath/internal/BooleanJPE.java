@@ -15,6 +15,8 @@
 package com.fasterxml.jackson.jsonpath.internal;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.jsonpath.JsonPathSingleValue;
 import com.fasterxml.jackson.jsonpath.JsonPathValue;
 
 class BooleanJPE extends JsonPathExpression {
@@ -32,43 +34,58 @@ class BooleanJPE extends JsonPathExpression {
     private BooleanOp op;
 
     private JsonPathExpression left;
-    
+
     private JsonPathExpression right;
 
     BooleanJPE(int position, BooleanOp op, JsonPathExpression left, JsonPathExpression right) {
-        super(position);
+        super(position, isVectorFromDotProduct(left, right));
         this.op = op;
         this.left = left;
         this.right = right;
     }
 
     @Override
-    boolean isVector() {
-        return isVectorFromDotProduct(left, right);
-    }
-
-    @Override
     public JsonPathValue eval(JsonPathContext context) {
+        if (!isVector()) {
+            // not a vector, so no dot product to do, so we can do partial computations
+            boolean result = computePartial(context);
+            return new JsonPathSingleValue(JsonNodeFactory.instance.booleanNode(result));
+        }
         return evalAsDotProduct(context, left, right);
     }
 
-    @Override
-    Object computeObject(JsonPathContext context, JsonNode[] childValues) {
-        boolean b1 = asBoolean(childValues[0], "boolean op '", op.sign, "'");
+    private boolean computePartial(JsonPathContext context) {
+        boolean b1 = left.evalAsBoolean(context, "boolean op '", op.sign, "'");
         switch (op) {
         case AND: {
             if (!b1) {
                 return false;
             }
-            boolean b2 = asBoolean(childValues[1], "boolean op '", op.sign, "'");
+            boolean b2 = right.evalAsBoolean(context, "boolean op '", op.sign, "'");
             return b2;
         }
         case OR: {
             if (b1) {
                 return true;
             }
-            boolean b2 = asBoolean(childValues[1], "boolean op '", op.sign, "'");
+            boolean b2 = right.evalAsBoolean(context, "boolean op '", op.sign, "'");
             return b2;
+        }
+        default:
+            throw new IllegalStateException("unsupported op " + op);
+        }
+    }
+
+    @Override
+    Object computeObject(JsonPathContext context, JsonNode[] childValues) {
+        boolean b1 = asBoolean(childValues[0], "boolean op '", op.sign, "'");
+        boolean b2 = asBoolean(childValues[1], "boolean op '", op.sign, "'");
+        switch (op) {
+        case AND: {
+            return b1 && b2;
+        }
+        case OR: {
+            return b1 || b2;
         }
         default:
             throw new IllegalStateException("unsupported op " + op);

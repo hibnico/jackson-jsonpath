@@ -31,17 +31,18 @@ public abstract class JsonPathExpression {
 
     int position;
 
-    private Boolean isVector = null;
+    private boolean vector;
 
-    JsonPathExpression(int position) {
+    JsonPathExpression(int position, boolean vector) {
         this.position = position;
+        this.vector = vector;
     }
 
-    public abstract JsonPathValue eval(JsonPathContext context);
+    final boolean isVector() {
+        return vector;
+    }
 
-    abstract boolean isVector();
-
-    boolean isVectorFromDotProduct(JsonPathExpression... children) {
+    static boolean isVectorFromDotProduct(JsonPathExpression... children) {
         for (JsonPathExpression child : children) {
             if (child.isVector()) {
                 return true;
@@ -50,12 +51,7 @@ public abstract class JsonPathExpression {
         return false;
     }
 
-    private boolean isVectorCached() {
-        if (isVector == null) {
-            isVector = isVector();
-        }
-        return isVector;
-    }
+    public abstract JsonPathValue eval(JsonPathContext context);
 
     JsonPathValue evalAsDotProduct(JsonPathContext context, JsonPathExpression... children) {
         JsonPathValue[] values = new JsonPathValue[children.length];
@@ -96,42 +92,6 @@ public abstract class JsonPathExpression {
             value.addTo(ret);
         }
         return ret;
-    }
-
-    private JsonPathValue dotProduct(JsonPathContext context, JsonPathExpression[] children, JsonPathValue[] values,
-            int iChild, JsonNode[] nodes, JsonPathVectorValue vector, Integer vectorLength, int iVector) {
-
-        if (values[iChild] instanceof JsonPathVectorValue) {
-            List<JsonNode> subNodes = ((JsonPathVectorValue) values[iChild]).getNodes();
-            if (vectorLength == null) {
-                vectorLength = subNodes.size();
-            } else if (vectorLength != subNodes.size()) {
-                throw new JsonPathRuntimeException("dot product is of incompatible sizes: " + vectorLength + " vs "
-                        + subNodes.size(), position);
-            }
-            nodes[iChild] = subNodes.get(iVector);
-        } else {
-            nodes[iChild] = values[iChild].toNode();
-        }
-
-        if (iChild == values.length - 1) {
-            // every child has been computed
-            JsonPathValue value = compute(context, nodes);
-            if (vector == null) {
-                return value;
-            } else {
-                value.addTo(vector);
-                if (vectorLength != null && iVector == vectorLength - 1) {
-                    // dot product completely computed
-                    return vector;
-                }
-                // iterate over the dot product
-                return dotProduct(context, children, values, 0, nodes, vector, vectorLength, iVector + 1);
-            }
-        }
-
-        // continue with the next child
-        return dotProduct(context, children, values, iChild + 1, nodes, vector, vectorLength, iVector);
     }
 
     JsonPathValue compute(JsonPathContext context, JsonNode[] childValues) {

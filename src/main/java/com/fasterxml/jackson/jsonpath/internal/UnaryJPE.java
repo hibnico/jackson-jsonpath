@@ -34,14 +34,9 @@ class UnaryJPE extends JsonPathExpression {
     private JsonPathExpression expr;
 
     UnaryJPE(int position, UnaryOp op, JsonPathExpression expr) {
-        super(position);
+        super(position, expr.isVector());
         this.op = op;
         this.expr = expr;
-    }
-
-    @Override
-    boolean isVector() {
-        return expr.isVector();
     }
 
     @Override

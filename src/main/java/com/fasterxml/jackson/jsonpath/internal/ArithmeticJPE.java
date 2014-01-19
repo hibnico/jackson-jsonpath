@@ -37,15 +37,10 @@ class ArithmeticJPE extends JsonPathExpression {
     private JsonPathExpression right;
 
     ArithmeticJPE(int position, ArithmeticOp op, JsonPathExpression left, JsonPathExpression right) {
-        super(position);
+        super(position, isVectorFromDotProduct(left, right));
         this.op = op;
         this.left = left;
         this.right = right;
-    }
-
-    @Override
-    boolean isVector() {
-        return isVectorFromDotProduct(left, right);
     }
 
     @Override
