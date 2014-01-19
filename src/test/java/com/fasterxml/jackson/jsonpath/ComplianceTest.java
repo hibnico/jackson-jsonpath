@@ -108,7 +108,7 @@ public class ComplianceTest {
     public void test5() throws Exception {
         // @formatter:off
         with(jsonTest.get(5).get("o"))
-            .assertThat("$[?(@.color)].x", hasItems(2, 5, 2))
+            .assertThat("$[?(@.color != null)].x", hasItems(2, 5, 2))
             .assertThat("$['lin','cir'].color", hasItems("red", "blue"));
         // @formatter:on
     }

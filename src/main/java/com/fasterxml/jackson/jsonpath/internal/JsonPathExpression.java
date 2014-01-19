@@ -36,7 +36,7 @@ public abstract class JsonPathExpression {
     }
 
     public JsonPathValue eval(JsonPathContext context) {
-        JsonPathValue[] values = new JsonPathSingleValue[children.length];
+        JsonPathValue[] values = new JsonPathValue[children.length];
         for (int i = 0; i < children.length; i++) {
             values[i] = children[i].eval(context);
         }

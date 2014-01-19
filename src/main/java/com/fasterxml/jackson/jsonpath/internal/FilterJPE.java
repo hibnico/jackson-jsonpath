@@ -15,6 +15,8 @@
 package com.fasterxml.jackson.jsonpath.internal;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.jsonpath.JsonPathMultiValue;
+import com.fasterxml.jackson.jsonpath.JsonPathValue;
 
 class FilterJPE extends JsonPathExpression {
 
@@ -26,14 +28,15 @@ class FilterJPE extends JsonPathExpression {
     }
 
     @Override
-    JsonNode computeNode(JsonPathContext context, JsonNode[] childValues) {
+    JsonPathValue compute(JsonPathContext context, JsonNode[] childValues) {
+        JsonPathMultiValue ret = new JsonPathMultiValue();
         for (JsonNode subNode : childValues[0]) {
             boolean select = filter.evalAsBoolean(new JsonPathContext(context, subNode), "filtering selector");
             if (select) {
-                return subNode;
+                ret.add(subNode);
             }
         }
-        return null;
+        return ret;
     }
 
     @Override

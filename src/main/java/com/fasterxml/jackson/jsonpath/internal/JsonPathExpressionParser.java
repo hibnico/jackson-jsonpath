@@ -603,7 +603,7 @@ public class JsonPathExpressionParser {
         } else {
             return expr;
         }
-        readSelectorExpr(expr);
+        expr = readSelectorExpr(expr);
         return expr;
     }
 
