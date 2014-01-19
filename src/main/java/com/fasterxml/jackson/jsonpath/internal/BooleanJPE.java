@@ -30,15 +30,15 @@ class BooleanJPE extends JsonPathExpression {
 
     private BooleanOp op;
 
-    public BooleanJPE(BooleanOp op, JsonPathExpression left, JsonPathExpression right) {
-        super(left, right);
+    BooleanJPE(int position, BooleanOp op, JsonPathExpression left, JsonPathExpression right) {
+        super(position, left, right);
         this.op = op;
     }
 
     @Override
     Object computeObject(JsonPathContext context, JsonNode[] childValues) {
-        boolean b1 = asBoolean(childValues[0]);
-        boolean b2 = asBoolean(childValues[1]);
+        boolean b1 = asBoolean(childValues[0], "boolean op '", op.sign, "'");
+        boolean b2 = asBoolean(childValues[1], "boolean op '", op.sign, "'");
         switch (op) {
         case AND:
             return b1 && b2;

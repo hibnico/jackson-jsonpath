@@ -30,8 +30,8 @@ class UnaryJPE extends JsonPathExpression {
 
     private UnaryOp op;
 
-    public UnaryJPE(UnaryOp op, JsonPathExpression expr) {
-        super(expr);
+    UnaryJPE(int position, UnaryOp op, JsonPathExpression expr) {
+        super(position, expr);
         this.op = op;
     }
 
@@ -39,9 +39,9 @@ class UnaryJPE extends JsonPathExpression {
     Object computeObject(JsonPathContext context, JsonNode[] childValues) {
         switch (op) {
         case NOT:
-            return !asBoolean(childValues[0]);
+            return !asBoolean(childValues[0], "unary op '", op.sign, "'");
         case MINUS: {
-            Number n = asNumber(childValues[0]);
+            Number n = asNumber(childValues[0], "unary op '", op.sign, "'");
             if (n instanceof Double) {
                 return -((Double) n);
             }
@@ -51,19 +51,19 @@ class UnaryJPE extends JsonPathExpression {
             if (n instanceof Integer) {
                 return -((Integer) n);
             }
-            throw new IllegalStateException("unsupported number " + n.getClass());
+            throw new UnsupportedTypeException(position, op.sign, n);
         }
         case PLUS:
-            return asNumber(childValues[0]);
+            return asNumber(childValues[0], "unary op '", op.sign, "'");
         case NOT_BITWISE: {
-            Number n = asNumber(childValues[0]);
+            Number n = asNumber(childValues[0], "unary op '", op.sign, "'");
             if (n instanceof Long) {
                 return ~((Long) n);
             }
             if (n instanceof Integer) {
                 return ~((Integer) n);
             }
-            throw new IllegalStateException("unsupported number " + n.getClass());
+            throw new UnsupportedTypeException(position, op.sign, n);
         }
         default:
             throw new IllegalStateException("unsupported op " + op);

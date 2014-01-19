@@ -31,8 +31,8 @@ class ArithmeticJPE extends JsonPathExpression {
 
     private ArithmeticOp op;
 
-    public ArithmeticJPE(ArithmeticOp op, JsonPathExpression left, JsonPathExpression right) {
-        super(left, right);
+    ArithmeticJPE(int position, ArithmeticOp op, JsonPathExpression left, JsonPathExpression right) {
+        super(position, left, right);
         this.op = op;
     }
 
@@ -45,8 +45,8 @@ class ArithmeticJPE extends JsonPathExpression {
             if (s1 != null || s2 != null) {
                 return s1 + s2;
             }
-            Number n1 = asLenientNumber(childValues[0]);
-            Number n2 = asLenientNumber(childValues[1]);
+            Number n1 = asNumber(childValues[0], "arithmetic op '", op.sign, "'");
+            Number n2 = asNumber(childValues[1], "arithmetic op '", op.sign, "'");
             if (n1 instanceof Double || n2 instanceof Double) {
                 return n1.doubleValue() + n2.doubleValue();
             }
@@ -56,11 +56,11 @@ class ArithmeticJPE extends JsonPathExpression {
             if (n1 instanceof Integer || n2 instanceof Integer) {
                 return n1.intValue() + n2.intValue();
             }
-            throw new IllegalStateException("not plussable " + n1 + " and " + n2);
+            throw new IllegalStateException("unsupported number type " + n1.getClass() + " and/or " + n2.getClass());
         }
         case MINUS: {
-            Number n1 = asLenientNumber(childValues[0]);
-            Number n2 = asLenientNumber(childValues[1]);
+            Number n1 = asNumber(childValues[0], "arithmetic op '", op.sign, "'");
+            Number n2 = asNumber(childValues[1], "arithmetic op '", op.sign, "'");
             if (n1 instanceof Double || n2 instanceof Double) {
                 return n1.doubleValue() - n2.doubleValue();
             }
@@ -70,11 +70,11 @@ class ArithmeticJPE extends JsonPathExpression {
             if (n1 instanceof Integer || n2 instanceof Integer) {
                 return n1.intValue() - n2.intValue();
             }
-            throw new IllegalStateException("not minussable " + n1 + " and " + n2);
+            throw new IllegalStateException("unsupported number type " + n1.getClass() + " and/or " + n2.getClass());
         }
         case DIV: {
-            Number n1 = asLenientNumber(childValues[0]);
-            Number n2 = asLenientNumber(childValues[1]);
+            Number n1 = asNumber(childValues[0], "arithmetic op '", op.sign, "'");
+            Number n2 = asNumber(childValues[1], "arithmetic op '", op.sign, "'");
             if (n1 instanceof Double || n2 instanceof Double) {
                 return n1.doubleValue() / n2.doubleValue();
             }
@@ -84,11 +84,11 @@ class ArithmeticJPE extends JsonPathExpression {
             if (n1 instanceof Integer || n2 instanceof Integer) {
                 return n1.intValue() / n2.intValue();
             }
-            throw new IllegalStateException("not divisable " + n1 + " and " + n2);
+            throw new IllegalStateException("unsupported number type " + n1.getClass() + " and/or " + n2.getClass());
         }
         case MULT: {
-            Number n1 = asLenientNumber(childValues[0]);
-            Number n2 = asLenientNumber(childValues[1]);
+            Number n1 = asNumber(childValues[0], "arithmetic op '", op.sign, "'");
+            Number n2 = asNumber(childValues[1], "arithmetic op '", op.sign, "'");
 
             if (n1 instanceof Double || n2 instanceof Double) {
                 return n1.doubleValue() * n2.doubleValue();
@@ -99,11 +99,11 @@ class ArithmeticJPE extends JsonPathExpression {
             if (n1 instanceof Integer || n2 instanceof Integer) {
                 return n1.intValue() * n2.intValue();
             }
-            throw new IllegalStateException("not multipliable " + n1 + " and " + n2);
+            throw new IllegalStateException("unsupported number type " + n1.getClass() + " and/or " + n2.getClass());
         }
         case MODULO: {
-            Number n1 = asLenientNumber(childValues[0]);
-            Number n2 = asLenientNumber(childValues[1]);
+            Number n1 = asNumber(childValues[0], "arithmetic op '", op.sign, "'");
+            Number n2 = asNumber(childValues[1], "arithmetic op '", op.sign, "'");
 
             if (n1 instanceof Double || n2 instanceof Double) {
                 return n1.doubleValue() % n2.doubleValue();
@@ -114,15 +114,16 @@ class ArithmeticJPE extends JsonPathExpression {
             if (n1 instanceof Integer || n2 instanceof Integer) {
                 return n1.intValue() % n2.intValue();
             }
-            throw new IllegalStateException("not modulable " + n1 + " and " + n2);
+            throw new IllegalStateException("unsupported number type " + n1.getClass() + " and/or " + n2.getClass());
         }
         default:
-            throw new IllegalStateException("illegal operator " + op);
+            throw new IllegalStateException("illegal operator " + op.sign);
         }
     }
 
     @Override
     public String toString() {
         return children[0].toString() + ' ' + op.sign + ' ' + children[1].toString();
-    };
+    }
+
 }

@@ -30,8 +30,8 @@ class CompareJPE extends JsonPathExpression {
 
     private CompareOp op;
 
-    public CompareJPE(CompareOp op, JsonPathExpression left, JsonPathExpression right) {
-        super(left, right);
+    CompareJPE(int position, CompareOp op, JsonPathExpression left, JsonPathExpression right) {
+        super(position, left, right);
         this.op = op;
     }
 
@@ -43,8 +43,8 @@ class CompareJPE extends JsonPathExpression {
         case NE:
             return !childValues[0].equals(childValues[1]);
         case GE: {
-            Number n1 = asNumber(childValues[0]);
-            Number n2 = asNumber(childValues[1]);
+            Number n1 = asNumber(childValues[0], "compare op '", op.sign, "'");
+            Number n2 = asNumber(childValues[1], "compare op '", op.sign, "'");
             if (n1 instanceof Double || n2 instanceof Double) {
                 return n1.doubleValue() >= n2.doubleValue();
             }
@@ -54,11 +54,11 @@ class CompareJPE extends JsonPathExpression {
             if (n1 instanceof Integer || n2 instanceof Integer) {
                 return n1.intValue() >= n2.intValue();
             }
-            throw new IllegalStateException("unsupported numbers " + n1.getClass() + " and " + n2.getClass());
+            throw new IllegalStateException("unsupported number type " + n1.getClass() + " and/or " + n2.getClass());
         }
         case GT: {
-            Number n1 = asNumber(childValues[0]);
-            Number n2 = asNumber(childValues[1]);
+            Number n1 = asNumber(childValues[0], "compare op '", op.sign, "'");
+            Number n2 = asNumber(childValues[1], "compare op '", op.sign, "'");
             if (n1 instanceof Double || n2 instanceof Double) {
                 return n1.doubleValue() > n2.doubleValue();
             }
@@ -68,11 +68,11 @@ class CompareJPE extends JsonPathExpression {
             if (n1 instanceof Integer || n2 instanceof Integer) {
                 return n1.intValue() > n2.intValue();
             }
-            throw new IllegalStateException("unsupported numbers " + n1.getClass() + " and " + n2.getClass());
+            throw new IllegalStateException("unsupported number type " + n1.getClass() + " and/or " + n2.getClass());
         }
         case LE: {
-            Number n1 = asNumber(childValues[0]);
-            Number n2 = asNumber(childValues[1]);
+            Number n1 = asNumber(childValues[0], "compare op '", op.sign, "'");
+            Number n2 = asNumber(childValues[1], "compare op '", op.sign, "'");
             if (n1 instanceof Double || n2 instanceof Double) {
                 return n1.doubleValue() <= n2.doubleValue();
             }
@@ -82,11 +82,11 @@ class CompareJPE extends JsonPathExpression {
             if (n1 instanceof Integer || n2 instanceof Integer) {
                 return n1.intValue() <= n2.intValue();
             }
-            throw new IllegalStateException("unsupported numbers " + n1.getClass() + " and " + n2.getClass());
+            throw new IllegalStateException("unsupported number type " + n1.getClass() + " and/or " + n2.getClass());
         }
         case LT: {
-            Number n1 = asNumber(childValues[0]);
-            Number n2 = asNumber(childValues[1]);
+            Number n1 = asNumber(childValues[0], "compare op '", op.sign, "'");
+            Number n2 = asNumber(childValues[1], "compare op '", op.sign, "'");
             if (n1 instanceof Double || n2 instanceof Double) {
                 return n1.intValue() < n2.intValue();
             }
@@ -96,7 +96,7 @@ class CompareJPE extends JsonPathExpression {
             if (n1 instanceof Integer || n2 instanceof Integer) {
                 return n1.intValue() < n2.intValue();
             }
-            throw new IllegalStateException("unsupported numbers " + n1.getClass() + " and " + n2.getClass());
+            throw new IllegalStateException("unsupported number type " + n1.getClass() + " and/or " + n2.getClass());
         }
         default:
             throw new IllegalStateException("unsupported op " + op);

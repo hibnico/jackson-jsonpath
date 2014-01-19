@@ -49,12 +49,13 @@ public class JsonPathExpressionParser {
         buffer.skipWhiteSpace();
         Character c = buffer.readAhead();
         if (c != null && c == '?') {
+            int p = buffer.pos;
             buffer.skip();
             JsonPathExpression onTrueExpr = readExpr();
             buffer.skipWhiteSpace();
             buffer.readExpected(':', "ternary expression");
             JsonPathExpression onFalseExpr = readExpr();
-            expr = new TernaryJPE(expr, onTrueExpr, onFalseExpr);
+            expr = new TernaryJPE(p, expr, onTrueExpr, onFalseExpr);
         }
 
         return expr;
@@ -67,9 +68,10 @@ public class JsonPathExpressionParser {
         Character c1 = buffer.readAhead();
         Character c2 = buffer.readAhead(2);
         if (c1 != null && c2 != null && c1 == '|' && c2 == '|') {
+            int p = buffer.pos;
             buffer.skip(2);
-            JsonPathExpression rightExpr = readConditionnalAndExpr();
-            expr = new BooleanJPE(BooleanOp.OR, expr, rightExpr);
+            JsonPathExpression rightExpr = readConditionnalInclusiveOrExpr();
+            expr = new BooleanJPE(p, BooleanOp.OR, expr, rightExpr);
         }
 
         return expr;
@@ -82,9 +84,10 @@ public class JsonPathExpressionParser {
         Character c1 = buffer.readAhead();
         Character c2 = buffer.readAhead(2);
         if (c1 != null && c2 != null && c1 == '&' && c2 == '&') {
+            int p = buffer.pos;
             buffer.skip(2);
-            JsonPathExpression rightExpr = readInclusiveOrExpr();
-            expr = new BooleanJPE(BooleanOp.AND, expr, rightExpr);
+            JsonPathExpression rightExpr = readConditionnalAndExpr();
+            expr = new BooleanJPE(p, BooleanOp.AND, expr, rightExpr);
         }
 
         return expr;
@@ -95,10 +98,12 @@ public class JsonPathExpressionParser {
 
         buffer.skipWhiteSpace();
         Character c = buffer.readAhead();
-        if (c != null && c == '|') {
+        Character c2 = buffer.readAhead(2);
+        if (c != null && c == '|' && (c2 == null || c2 != '|')) {
+            int p = buffer.pos;
             buffer.skip();
-            JsonPathExpression rightExpr = readExclusiveOrExpr();
-            expr = new BitwiseJPE(BitwiseOp.OR, expr, rightExpr);
+            JsonPathExpression rightExpr = readInclusiveOrExpr();
+            expr = new BitwiseJPE(p, BitwiseOp.OR, expr, rightExpr);
         }
 
         return expr;
@@ -109,10 +114,12 @@ public class JsonPathExpressionParser {
 
         buffer.skipWhiteSpace();
         Character c = buffer.readAhead();
-        if (c != null && c == '^') {
+        Character c2 = buffer.readAhead(2);
+        if (c != null && c == '^' && (c2 == null || c2 != '^')) {
+            int p = buffer.pos;
             buffer.skip();
-            JsonPathExpression rightExpr = readAndExpr();
-            expr = new BitwiseJPE(BitwiseOp.XOR, expr, rightExpr);
+            JsonPathExpression rightExpr = readExclusiveOrExpr();
+            expr = new BitwiseJPE(p, BitwiseOp.XOR, expr, rightExpr);
         }
 
         return expr;
@@ -123,10 +130,12 @@ public class JsonPathExpressionParser {
 
         buffer.skipWhiteSpace();
         Character c = buffer.readAhead();
-        if (c != null && c == '&') {
+        Character c2 = buffer.readAhead(2);
+        if (c != null && c == '&' && (c2 == null || c2 != '&')) {
+            int p = buffer.pos;
             buffer.skip();
-            JsonPathExpression rightExpr = readEqualityExpr();
-            expr = new BitwiseJPE(BitwiseOp.AND, expr, rightExpr);
+            JsonPathExpression rightExpr = readAndExpr();
+            expr = new BitwiseJPE(p, BitwiseOp.AND, expr, rightExpr);
         }
 
         return expr;
@@ -140,13 +149,15 @@ public class JsonPathExpressionParser {
         Character c2 = buffer.readAhead(2);
         if (c1 != null && c2 != null) {
             if (c1 == '=' && c2 == '=') {
+                int p = buffer.pos;
                 buffer.skip(2);
-                JsonPathExpression rightExpr = readRelationalExpr();
-                expr = new CompareJPE(CompareOp.EQ, expr, rightExpr);
+                JsonPathExpression rightExpr = readEqualityExpr();
+                expr = new CompareJPE(p, CompareOp.EQ, expr, rightExpr);
             } else if (c1 == '!' && c2 == '=') {
+                int p = buffer.pos;
                 buffer.skip(2);
-                JsonPathExpression rightExpr = readRelationalExpr();
-                expr = new CompareJPE(CompareOp.NE, expr, rightExpr);
+                JsonPathExpression rightExpr = readEqualityExpr();
+                expr = new CompareJPE(p, CompareOp.NE, expr, rightExpr);
             }
         }
 
@@ -161,21 +172,25 @@ public class JsonPathExpressionParser {
         Character c2 = buffer.readAhead(2);
         if (c1 != null && c2 != null) {
             if (c1 == '<' && c2 == '=') {
+                int p = buffer.pos;
                 buffer.skip(2);
-                JsonPathExpression rightExpr = readShiftExpr();
-                expr = new CompareJPE(CompareOp.LE, expr, rightExpr);
+                JsonPathExpression rightExpr = readRelationalExpr();
+                expr = new CompareJPE(p, CompareOp.LE, expr, rightExpr);
             } else if (c1 == '<') {
+                int p = buffer.pos;
                 buffer.skip();
-                JsonPathExpression rightExpr = readShiftExpr();
-                expr = new CompareJPE(CompareOp.LT, expr, rightExpr);
+                JsonPathExpression rightExpr = readRelationalExpr();
+                expr = new CompareJPE(p, CompareOp.LT, expr, rightExpr);
             } else if (c1 == '>' && c2 == '=') {
+                int p = buffer.pos;
                 buffer.skip(2);
-                JsonPathExpression rightExpr = readShiftExpr();
-                expr = new CompareJPE(CompareOp.GE, expr, rightExpr);
+                JsonPathExpression rightExpr = readRelationalExpr();
+                expr = new CompareJPE(p, CompareOp.GE, expr, rightExpr);
             } else if (c1 == '>') {
+                int p = buffer.pos;
                 buffer.skip();
-                JsonPathExpression rightExpr = readShiftExpr();
-                expr = new CompareJPE(CompareOp.GT, expr, rightExpr);
+                JsonPathExpression rightExpr = readRelationalExpr();
+                expr = new CompareJPE(p, CompareOp.GT, expr, rightExpr);
             }
         }
 
@@ -191,17 +206,20 @@ public class JsonPathExpressionParser {
         Character c3 = buffer.readAhead(3);
         if (c1 != null && c2 != null) {
             if (c1 == '<' && c2 == '<') {
+                int p = buffer.pos;
                 buffer.skip(2);
-                JsonPathExpression rightExpr = readAdditiveExpr();
-                expr = new ShiftJPE(ShiftOp.LEFT, expr, rightExpr);
+                JsonPathExpression rightExpr = readShiftExpr();
+                expr = new ShiftJPE(p, ShiftOp.LEFT, expr, rightExpr);
             } else if (c3 != null && c1 == '>' && c2 == '>' && c3 == '>') {
+                int p = buffer.pos;
                 buffer.skip(3);
-                JsonPathExpression rightExpr = readAdditiveExpr();
-                expr = new ShiftJPE(ShiftOp.LOGICAL_RIGHT, expr, rightExpr);
+                JsonPathExpression rightExpr = readShiftExpr();
+                expr = new ShiftJPE(p, ShiftOp.LOGICAL_RIGHT, expr, rightExpr);
             } else if (c1 == '>' && c2 == '>') {
+                int p = buffer.pos;
                 buffer.skip(2);
-                JsonPathExpression rightExpr = readAdditiveExpr();
-                expr = new ShiftJPE(ShiftOp.RIGHT, expr, rightExpr);
+                JsonPathExpression rightExpr = readShiftExpr();
+                expr = new ShiftJPE(p, ShiftOp.RIGHT, expr, rightExpr);
             }
         }
 
@@ -215,13 +233,15 @@ public class JsonPathExpressionParser {
         Character c = buffer.readAhead();
         if (c != null) {
             if (c == '+') {
+                int p = buffer.pos;
                 buffer.skip();
-                JsonPathExpression rightExpr = readMultiplicativeExpr();
-                expr = new ArithmeticJPE(ArithmeticOp.PLUS, expr, rightExpr);
+                JsonPathExpression rightExpr = readAdditiveExpr();
+                expr = new ArithmeticJPE(p, ArithmeticOp.PLUS, expr, rightExpr);
             } else if (c == '-') {
+                int p = buffer.pos;
                 buffer.skip();
-                JsonPathExpression rightExpr = readMultiplicativeExpr();
-                expr = new ArithmeticJPE(ArithmeticOp.MINUS, expr, rightExpr);
+                JsonPathExpression rightExpr = readAdditiveExpr();
+                expr = new ArithmeticJPE(p, ArithmeticOp.MINUS, expr, rightExpr);
             }
         }
 
@@ -235,17 +255,20 @@ public class JsonPathExpressionParser {
         Character c = buffer.readAhead();
         if (c != null) {
             if (c == '*') {
+                int p = buffer.pos;
                 buffer.skip();
-                JsonPathExpression rightExpr = readUnaryExpr();
-                expr = new ArithmeticJPE(ArithmeticOp.MULT, expr, rightExpr);
+                JsonPathExpression rightExpr = readMultiplicativeExpr();
+                expr = new ArithmeticJPE(p, ArithmeticOp.MULT, expr, rightExpr);
             } else if (c == '/') {
+                int p = buffer.pos;
                 buffer.skip();
-                JsonPathExpression rightExpr = readUnaryExpr();
-                expr = new ArithmeticJPE(ArithmeticOp.DIV, expr, rightExpr);
+                JsonPathExpression rightExpr = readMultiplicativeExpr();
+                expr = new ArithmeticJPE(p, ArithmeticOp.DIV, expr, rightExpr);
             } else if (c == '%') {
+                int p = buffer.pos;
                 buffer.skip();
-                JsonPathExpression rightExpr = readUnaryExpr();
-                expr = new ArithmeticJPE(ArithmeticOp.MODULO, expr, rightExpr);
+                JsonPathExpression rightExpr = readMultiplicativeExpr();
+                expr = new ArithmeticJPE(p, ArithmeticOp.MODULO, expr, rightExpr);
             }
         }
 
@@ -257,11 +280,13 @@ public class JsonPathExpressionParser {
         Character c = buffer.readAhead();
         JsonPathExpression expr;
         if (c != null && c == '+') {
+            int p = buffer.pos;
             buffer.skip();
-            expr = new UnaryJPE(UnaryOp.PLUS, readUnaryExpr());
+            expr = new UnaryJPE(p, UnaryOp.PLUS, readUnaryExpr());
         } else if (c != null && c == '-') {
+            int p = buffer.pos;
             buffer.skip();
-            expr = new UnaryJPE(UnaryOp.MINUS, readUnaryExpr());
+            expr = new UnaryJPE(p, UnaryOp.MINUS, readUnaryExpr());
         } else {
             expr = readUnaryExprNotPlusMinus();
         }
@@ -273,11 +298,13 @@ public class JsonPathExpressionParser {
         Character c = buffer.readAhead();
         JsonPathExpression expr;
         if (c != null && c == '~') {
+            int p = buffer.pos;
             buffer.skip();
-            expr = new UnaryJPE(UnaryOp.NOT_BITWISE, readUnaryExpr());
+            expr = new UnaryJPE(p, UnaryOp.NOT_BITWISE, readUnaryExpr());
         } else if (c != null && c == '!') {
+            int p = buffer.pos;
             buffer.skip();
-            expr = new UnaryJPE(UnaryOp.NOT, readUnaryExpr());
+            expr = new UnaryJPE(p, UnaryOp.NOT, readUnaryExpr());
         } else {
             expr = readPrimaryExpr();
             expr = readSelectorExpr(expr);
@@ -295,11 +322,13 @@ public class JsonPathExpressionParser {
             buffer.skipWhiteSpace();
             buffer.readExpected(')', "parenthesed expression");
         } else if (c != null && c == '$') {
+            int p = buffer.pos;
             buffer.skip();
-            expr = new RootJPE();
+            expr = new RootJPE(p);
         } else if (c != null && c == '@') {
+            int p = buffer.pos;
             buffer.skip();
-            expr = new ThisJPE();
+            expr = new ThisJPE(p);
         } else {
             expr = readLiteral();
         }
@@ -313,21 +342,24 @@ public class JsonPathExpressionParser {
             return null;
         }
         if (c == '\'') {
+            int p = buffer.pos;
             buffer.skip();
             String value = readEscaped('\'');
             buffer.readExpected('\'', "end of string \'");
-            return new LiteralJPE(JsonNodeFactory.instance.textNode(value));
+            return new LiteralJPE(p, JsonNodeFactory.instance.textNode(value));
         }
         if (c == '"') {
+            int p = buffer.pos;
             buffer.skip();
             String value = readEscaped('"');
             buffer.readExpected('"', "end of string \"");
-            return new LiteralJPE(JsonNodeFactory.instance.textNode(value));
+            return new LiteralJPE(p, JsonNodeFactory.instance.textNode(value));
         }
         Character c2 = buffer.readAhead(2);
         Character c3 = buffer.readAhead(2);
         if (c == '0' && (c2 == 'x' || c2 == 'X')
                 && (c3 != null && (c3 >= '0' && c3 <= '9') || (c3 >= 'A' && c3 < 'F') || (c3 >= 'a' && c3 < 'f'))) {
+            int p = buffer.pos;
             // hexa number
             StringBuilder numberBuffer = new StringBuilder();
             numberBuffer.append(c);
@@ -347,8 +379,9 @@ public class JsonPathExpressionParser {
                 numberBuffer.append(c);
                 buffer.skip();
             }
-            return new LiteralJPE(JsonNodeFactory.instance.numberNode(Long.parseLong(numberBuffer.toString())));
+            return new LiteralJPE(p, JsonNodeFactory.instance.numberNode(Long.parseLong(numberBuffer.toString())));
         } else if (c == '0' && (c2 == 'b' || c2 == 'B') && (c3 == '0' || c3 == '1')) {
+            int p = buffer.pos;
             // binary number
             StringBuilder numberBuffer = new StringBuilder();
             numberBuffer.append(c);
@@ -368,8 +401,9 @@ public class JsonPathExpressionParser {
                 numberBuffer.append(c);
                 buffer.skip();
             }
-            return new LiteralJPE(JsonNodeFactory.instance.numberNode(Long.parseLong(numberBuffer.toString())));
+            return new LiteralJPE(p, JsonNodeFactory.instance.numberNode(Long.parseLong(numberBuffer.toString())));
         } else if (c == '0' && c2 != null && c2 >= '0' && c2 <= '7') {
+            int p = buffer.pos;
             // octal number
             StringBuilder numberBuffer = new StringBuilder();
             numberBuffer.append(c);
@@ -388,28 +422,30 @@ public class JsonPathExpressionParser {
                 numberBuffer.append(c);
                 buffer.skip();
             }
-            return new LiteralJPE(JsonNodeFactory.instance.numberNode(Long.parseLong(numberBuffer.toString())));
+            return new LiteralJPE(p, JsonNodeFactory.instance.numberNode(Long.parseLong(numberBuffer.toString())));
         } else if (c >= '0' && c <= '9') {
+            int p = buffer.pos;
             StringBuilder numberBuffer = startReadNumber();
             if (c == '.') {
                 appendFloatingPoint(numberBuffer);
-                return new LiteralJPE(JsonNodeFactory.instance.numberNode(Double.parseDouble(numberBuffer.toString())));
+                return new LiteralJPE(p, JsonNodeFactory.instance.numberNode(Double.parseDouble(numberBuffer.toString())));
             }
             if (c == 'f' || c == 'F' || c == 'd' || c == 'D') {
                 numberBuffer.append(c);
                 buffer.skip();
-                return new LiteralJPE(JsonNodeFactory.instance.numberNode(Double.parseDouble(numberBuffer.toString())));
+                return new LiteralJPE(p, JsonNodeFactory.instance.numberNode(Double.parseDouble(numberBuffer.toString())));
             }
             if (c == 'l' || c == 'L') {
                 numberBuffer.append(c);
                 buffer.skip();
             }
-            return new LiteralJPE(JsonNodeFactory.instance.numberNode(Long.parseLong(numberBuffer.toString())));
+            return new LiteralJPE(p, JsonNodeFactory.instance.numberNode(Long.parseLong(numberBuffer.toString())));
         } else if (c == '.' && c2 != null && c2 >= '0' && c2 <= '9') {
+            int p = buffer.pos;
             // double number
             StringBuilder numberBuffer = new StringBuilder();
             appendFloatingPoint(numberBuffer);
-            return new LiteralJPE(JsonNodeFactory.instance.numberNode(Double.parseDouble(numberBuffer.toString())));
+            return new LiteralJPE(p, JsonNodeFactory.instance.numberNode(Double.parseDouble(numberBuffer.toString())));
         }
         return null;
     }
@@ -483,61 +519,72 @@ public class JsonPathExpressionParser {
         Character c = buffer.readAhead();
         Character c2 = buffer.readAhead(2);
         if (c != null && c2 != null && c == '.' && c2 == '.') {
+            int p = buffer.pos;
             buffer.skip(2);
-            expr = new DescendingJPE(expr);
+            expr = new DescendingJPE(p, expr);
         } else if (c != null && c2 != null && c == '.' && c2 == '*') {
+            int p = buffer.pos;
             buffer.skip(2);
-            expr = new WildcardJPE(expr);
+            expr = new WildcardJPE(p, expr);
         } else if (c != null && c == '.') {
+            int p = buffer.pos;
             buffer.skip();
             buffer.skipWhiteSpace();
             c = buffer.readAhead();
             if (c != null && c >= '0' && c <= '9') {
                 int i = readInt();
-                expr = new SelectorJPE(expr, i);
+                expr = new SelectorJPE(p, expr, i);
             } else {
                 String id = readIdentifier();
                 List<JsonPathExpression> arguments = readArguments();
                 if (arguments != null) {
-                    expr = new MethodCallJPE(expr, id, arguments);
+                    expr = new MethodCallJPE(p, expr, id, arguments);
                 } else {
-                    expr = new SelectorJPE(expr, id);
+                    expr = new SelectorJPE(p, expr, id);
                 }
             }
         } else if (c != null && c == '[') {
             buffer.skip();
             buffer.skipWhiteSpace();
             c = buffer.readAhead();
+            c2 = buffer.readAhead(2);
             if (c != null && c == '*') {
+                int p = buffer.pos;
                 buffer.skip();
-                expr = new WildcardSelectorJPE(expr);
+                expr = new WildcardSelectorJPE(p, expr);
             } else if (c != null && c2 != null && c == '?' && c2 == '(') {
+                int p = buffer.pos;
                 buffer.skip(2);
                 JsonPathExpression filter = readExpr();
-                expr = new FilterJPE(expr, filter);
-                buffer.readExpected(')', "end of filter");
+                expr = new FilterJPE(p, expr, filter);
+                buffer.readExpected(')', "filter");
             } else if (c != null && c == '(') {
+                int p = buffer.pos;
                 buffer.skip();
                 JsonPathExpression indexExpr = readExpr();
-                expr = new SelectorJPE(expr, indexExpr);
+                expr = new SelectorJPE(p, expr, indexExpr);
                 buffer.skipWhiteSpace();
-                buffer.readExpected(')', "end of expression");
+                buffer.readExpected(')', "expression");
             } else if (c != null && c == '\'') {
+                int p = buffer.pos;
                 buffer.skip();
                 String field = readEscaped('\'');
-                expr = new SelectorJPE(expr, field);
-                buffer.readExpected('\'', "end of string");
+                expr = new SelectorJPE(p, expr, field);
+                buffer.readExpected('\'', "string");
             } else if (c != null && c == '\"') {
+                int p = buffer.pos;
                 buffer.skip();
                 String field = readEscaped('\"');
-                expr = new SelectorJPE(expr, field);
-                buffer.readExpected('\"', "end of string");
+                expr = new SelectorJPE(p, expr, field);
+                buffer.readExpected('\"', "string");
             } else if (c != null && c >= '0' && c <= '9') {
+                int p = buffer.pos;
                 int i = readInt();
-                expr = new SelectorJPE(expr, i);
+                expr = new SelectorJPE(p, expr, i);
             } else {
+                int p = buffer.pos;
                 String field = readIdentifier();
-                expr = new SelectorJPE(expr, field);
+                expr = new SelectorJPE(p, expr, field);
             }
             buffer.skipWhiteSpace();
             buffer.readExpected(']', "array selector");
@@ -568,7 +615,7 @@ public class JsonPathExpressionParser {
         return Integer.parseInt(numberBuffer.toString());
     }
 
-    private String readIdentifier() {
+    private String readIdentifier() throws ParseException {
         StringBuilder name = new StringBuilder();
         Character c = null;
         while ((c = buffer.readAhead()) != null) {
@@ -579,7 +626,7 @@ public class JsonPathExpressionParser {
             name.append(c);
         }
         if (name.length() == 0) {
-            throw new IllegalStateException("Expecting an identifier");
+            throw new ParseException("expecting an identifier", buffer.pos);
         }
         return name.toString();
     }

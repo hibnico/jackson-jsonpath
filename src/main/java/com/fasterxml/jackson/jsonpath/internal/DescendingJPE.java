@@ -20,8 +20,8 @@ import com.fasterxml.jackson.jsonpath.JsonPathValue;
 
 class DescendingJPE extends JsonPathExpression {
 
-    public DescendingJPE(JsonPathExpression object) {
-        super(object);
+    DescendingJPE(int position, JsonPathExpression object) {
+        super(position, object);
     }
 
     @Override

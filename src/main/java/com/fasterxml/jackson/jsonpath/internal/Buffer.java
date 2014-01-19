@@ -20,24 +20,24 @@ class Buffer {
 
     private char[] input;
 
-    public int pos = -1;
+    int pos = -1;
 
     Buffer(String input) {
         this.input = input.toCharArray();
     }
 
-    public Character readAhead() {
+    Character readAhead() {
         return readAhead(1);
     }
 
-    public Character readAhead(int n) {
+    Character readAhead(int n) {
         if (pos + n >= input.length) {
             return null;
         }
         return input[pos + n];
     }
 
-    public Character read() {
+    Character read() {
         Character c = readAhead();
         if (c == null) {
             return null;
@@ -46,15 +46,15 @@ class Buffer {
         return c;
     }
 
-    public void skip() {
+    void skip() {
         skip(1);
     }
 
-    public void skip(int n) {
+    void skip(int n) {
         pos += n;
     }
 
-    public void skipWhiteSpace() {
+    void skipWhiteSpace() {
         Character c = null;
         while ((c = readAhead()) != null) {
             if (c != ' ' && c != '\t') {
@@ -64,7 +64,7 @@ class Buffer {
         }
     }
 
-    public char readAheadNotEnd(String name) throws ParseException {
+    char readAheadNotEnd(String name) throws ParseException {
         Character c = readAhead();
         if (c == null) {
             throw new ParseException("Unexpected end of input in " + name, pos);
@@ -72,7 +72,7 @@ class Buffer {
         return c;
     }
 
-    public char readNotEnd(String name) throws ParseException {
+    char readNotEnd(String name) throws ParseException {
         Character c = read();
         if (c == null) {
             throw new ParseException("Unexpected end of input in " + name, pos);
@@ -80,7 +80,7 @@ class Buffer {
         return c;
     }
 
-    public void readExpected(char expected, String name) throws ParseException {
+    void readExpected(char expected, String name) throws ParseException {
         Character c = read();
         if (c == null) {
             throw new ParseException("Unexpected end of input in " + name, pos);

@@ -24,7 +24,8 @@ class TernaryJPE extends JsonPathExpression {
 
     private JsonPathExpression onFalse;
 
-    public TernaryJPE(JsonPathExpression condition, JsonPathExpression onTrue, JsonPathExpression onFalse) {
+    TernaryJPE(int position, JsonPathExpression condition, JsonPathExpression onTrue, JsonPathExpression onFalse) {
+        super(position);
         this.condition = condition;
         this.onTrue = onTrue;
         this.onFalse = onFalse;
@@ -32,7 +33,7 @@ class TernaryJPE extends JsonPathExpression {
 
     @Override
     public JsonPathValue eval(JsonPathContext context) {
-        boolean c = condition.evalAsBoolean(context);
+        boolean c = condition.evalAsBoolean(context, "condition of ternary expression");
         if (c) {
             return onTrue.eval(context);
         } else {

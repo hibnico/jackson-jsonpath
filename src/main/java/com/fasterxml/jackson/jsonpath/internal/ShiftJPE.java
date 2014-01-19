@@ -30,15 +30,15 @@ class ShiftJPE extends JsonPathExpression {
 
     private ShiftOp op;
 
-    public ShiftJPE(ShiftOp op, JsonPathExpression left, JsonPathExpression right) {
-        super(left, right);
+    ShiftJPE(int position, ShiftOp op, JsonPathExpression left, JsonPathExpression right) {
+        super(position, left, right);
         this.op = op;
     }
 
     @Override
     Object computeObject(JsonPathContext context, JsonNode[] childValues) {
-        Number l = asNumber(childValues[0]);
-        Number r = asNumber(childValues[1]);
+        Number l = asNumber(childValues[0], "shift op '", op.sign, "'");
+        Number r = asNumber(childValues[1], "shift op '", op.sign, "'");
         switch (op) {
         case LEFT:
             if (l instanceof Long) {
@@ -47,7 +47,7 @@ class ShiftJPE extends JsonPathExpression {
                 } else if (r instanceof Integer) {
                     return ((Long) l) << ((Integer) r);
                 } else {
-                    throw new IllegalStateException("invalid right number " + r.getClass());
+                    throw new UnsupportedTypeException(position, op.sign, l, r);
                 }
             } else if (l instanceof Integer) {
                 if (r instanceof Long) {
@@ -55,10 +55,10 @@ class ShiftJPE extends JsonPathExpression {
                 } else if (r instanceof Integer) {
                     return ((Integer) l) << ((Integer) r);
                 } else {
-                    throw new IllegalStateException("invalid right number " + r.getClass());
+                    throw new UnsupportedTypeException(position, op.sign, l, r);
                 }
             } else {
-                throw new IllegalStateException("invalid left number " + l.getClass());
+                throw new UnsupportedTypeException(position, op.sign, l, r);
             }
         case RIGHT:
             if (l instanceof Long) {
@@ -67,7 +67,7 @@ class ShiftJPE extends JsonPathExpression {
                 } else if (r instanceof Integer) {
                     return ((Long) l) >> ((Integer) r);
                 } else {
-                    throw new IllegalStateException("invalid right number " + r.getClass());
+                    throw new UnsupportedTypeException(position, op.sign, l, r);
                 }
             } else if (l instanceof Integer) {
                 if (r instanceof Long) {
@@ -75,10 +75,10 @@ class ShiftJPE extends JsonPathExpression {
                 } else if (r instanceof Integer) {
                     return ((Integer) l) >> ((Integer) r);
                 } else {
-                    throw new IllegalStateException("invalid right number " + r.getClass());
+                    throw new UnsupportedTypeException(position, op.sign, l, r);
                 }
             } else {
-                throw new IllegalStateException("invalid left number " + l.getClass());
+                throw new UnsupportedTypeException(position, op.sign, l, r);
             }
         case LOGICAL_RIGHT:
             if (l instanceof Long) {
@@ -87,7 +87,7 @@ class ShiftJPE extends JsonPathExpression {
                 } else if (r instanceof Integer) {
                     return ((Long) l) >>> ((Integer) r);
                 } else {
-                    throw new IllegalStateException("invalid right number " + r.getClass());
+                    throw new UnsupportedTypeException(position, op.sign, l, r);
                 }
             } else if (l instanceof Integer) {
                 if (r instanceof Long) {
@@ -95,10 +95,10 @@ class ShiftJPE extends JsonPathExpression {
                 } else if (r instanceof Integer) {
                     return ((Integer) l) >>> ((Integer) r);
                 } else {
-                    throw new IllegalStateException("invalid right number " + r.getClass());
+                    throw new UnsupportedTypeException(position, op.sign, l, r);
                 }
             } else {
-                throw new IllegalStateException("invalid left number " + l.getClass());
+                throw new UnsupportedTypeException(position, op.sign, l, r);
             }
         default:
             throw new IllegalStateException("unsupported op " + op);

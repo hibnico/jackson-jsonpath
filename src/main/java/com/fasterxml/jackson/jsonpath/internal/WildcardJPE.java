@@ -16,12 +16,13 @@ package com.fasterxml.jackson.jsonpath.internal;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.jsonpath.JsonPathMultiValue;
+import com.fasterxml.jackson.jsonpath.JsonPathRuntimeException;
 import com.fasterxml.jackson.jsonpath.JsonPathValue;
 
 class WildcardJPE extends JsonPathExpression {
 
-    public WildcardJPE(JsonPathExpression object) {
-        super(object);
+    WildcardJPE(int position, JsonPathExpression object) {
+        super(position, object);
     }
 
     @Override
@@ -34,10 +35,12 @@ class WildcardJPE extends JsonPathExpression {
                     ret.add(value);
                 }
             }
-        } else {
+        } else if (node.isObject()) {
             for (JsonNode subNode : node) {
                 ret.add(subNode);
             }
+        } else {
+            throw new JsonPathRuntimeException("wilcard cannot be applied to " + node.getNodeType(), position);
         }
         return ret;
     }

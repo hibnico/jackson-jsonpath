@@ -20,15 +20,15 @@ class FilterJPE extends JsonPathExpression {
 
     private JsonPathExpression filter;
 
-    public FilterJPE(JsonPathExpression object, JsonPathExpression filter) {
-        super(object);
+    FilterJPE(int position, JsonPathExpression object, JsonPathExpression filter) {
+        super(position, object);
         this.filter = filter;
     }
 
     @Override
     JsonNode computeNode(JsonPathContext context, JsonNode[] childValues) {
         for (JsonNode subNode : childValues[0]) {
-            boolean select = filter.evalAsBoolean(new JsonPathContext(context, subNode));
+            boolean select = filter.evalAsBoolean(new JsonPathContext(context, subNode), "filtering selector");
             if (select) {
                 return subNode;
             }

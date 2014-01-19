@@ -20,7 +20,8 @@ class LiteralJPE extends JsonPathExpression {
 
     private JsonNode literal;
 
-    public LiteralJPE(JsonNode literal) {
+    LiteralJPE(int position, JsonNode literal) {
+        super(position);
         this.literal = literal;
     }
 

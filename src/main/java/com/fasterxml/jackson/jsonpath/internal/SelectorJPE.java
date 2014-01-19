@@ -15,24 +15,23 @@
 package com.fasterxml.jackson.jsonpath.internal;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.jsonpath.JsonPathRuntimeException;
 
 class SelectorJPE extends JsonPathExpression {
 
     private JsonPathExpression index;
 
-    SelectorJPE(JsonPathExpression object, String id) {
-        this(object, new LiteralJPE(JsonNodeFactory.instance.textNode(id)));
+    SelectorJPE(int position, JsonPathExpression object, String id) {
+        this(position, object, new LiteralJPE(position, JsonNodeFactory.instance.textNode(id)));
     }
 
-    SelectorJPE(JsonPathExpression object, int index) {
-        this(object, new LiteralJPE(JsonNodeFactory.instance.numberNode(index)));
+    SelectorJPE(int position, JsonPathExpression object, int index) {
+        this(position, object, new LiteralJPE(position, JsonNodeFactory.instance.numberNode(index)));
     }
 
-    SelectorJPE(JsonPathExpression object, JsonPathExpression index) {
-        super(object);
+    SelectorJPE(int position, JsonPathExpression object, JsonPathExpression index) {
+        super(position, object);
         this.index = index;
     }
 
@@ -41,17 +40,17 @@ class SelectorJPE extends JsonPathExpression {
         JsonNode o = childValues[0];
         JsonNode i = index.eval(context).toNode();
 
-        if (o instanceof ObjectNode) {
+        if (o.isObject()) {
             String si = asLenientString(i);
             if (si != null) {
-                return ((ObjectNode) o).get(si);
+                return o.get(si);
             }
-            return ((ObjectNode) o).get(asInt(i));
+            return o.get(asInt(i, "index of selector"));
         }
-        if (o instanceof ArrayNode) {
-            return ((ArrayNode) o).get(asInt(i));
+        if (o.isArray()) {
+            return o.get(asInt(i, "index of selector"));
         }
-        throw new IllegalStateException("unsupported object type: " + o.getClass());
+        throw new JsonPathRuntimeException("the json selector cannot be applied to " + o.getNodeType(), position);
     }
 
     @Override

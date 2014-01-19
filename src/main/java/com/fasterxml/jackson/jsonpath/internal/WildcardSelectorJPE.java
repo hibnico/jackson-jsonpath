@@ -18,12 +18,13 @@ import java.util.Iterator;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.jsonpath.JsonPathMultiValue;
+import com.fasterxml.jackson.jsonpath.JsonPathRuntimeException;
 import com.fasterxml.jackson.jsonpath.JsonPathValue;
 
 class WildcardSelectorJPE extends JsonPathExpression {
 
-    public WildcardSelectorJPE(JsonPathExpression object) {
-        super(object);
+    WildcardSelectorJPE(int position, JsonPathExpression object) {
+        super(position, object);
     }
 
     @Override
@@ -40,7 +41,7 @@ class WildcardSelectorJPE extends JsonPathExpression {
                 ret.add(JsonNodeUtil.objectNode(field, node.get(field)));
             }
         } else {
-            throw new IllegalStateException("Wildcard cannot apply on: " + node);
+            throw new JsonPathRuntimeException("wildcard selector cannot apply to " + node.getNodeType(), position);
         }
         return ret;
     }

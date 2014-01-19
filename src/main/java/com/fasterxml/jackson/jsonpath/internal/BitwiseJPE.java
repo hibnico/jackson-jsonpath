@@ -30,42 +30,42 @@ class BitwiseJPE extends JsonPathExpression {
 
     private BitwiseOp op;
 
-    public BitwiseJPE(BitwiseOp op, JsonPathExpression left, JsonPathExpression right) {
-        super(left, right);
+    BitwiseJPE(int position, BitwiseOp op, JsonPathExpression left, JsonPathExpression right) {
+        super(position, left, right);
         this.op = op;
     }
 
     @Override
     Object computeObject(JsonPathContext context, JsonNode[] childValues) {
-        Number v1 = asNumber(childValues[0]);
-        Number v2 = asNumber(childValues[1]);
+        Number n1 = asNumber(childValues[0], "bitwise op '", op.sign, "'");
+        Number n2 = asNumber(childValues[1], "bitwise op '", op.sign, "'");
         switch (op) {
         case AND:
-            if (v1 instanceof Long || v2 instanceof Long) {
-                return v1.longValue() & v2.longValue();
+            if (n1 instanceof Long || n2 instanceof Long) {
+                return n1.longValue() & n2.longValue();
             }
-            if (v1 instanceof Integer || v2 instanceof Integer) {
-                return v1.intValue() & v2.intValue();
+            if (n1 instanceof Integer || n2 instanceof Integer) {
+                return n1.intValue() & n2.intValue();
             }
-            throw new IllegalStateException("unsupported types " + v1.getClass() + " and " + v2.getClass());
+            throw new UnsupportedTypeException(position, op.sign, n1, n2);
         case OR:
-            if (v1 instanceof Long || v2 instanceof Long) {
-                return v1.longValue() | v2.longValue();
+            if (n1 instanceof Long || n2 instanceof Long) {
+                return n1.longValue() | n2.longValue();
             }
-            if (v1 instanceof Integer || v2 instanceof Integer) {
-                return v1.intValue() | v2.intValue();
+            if (n1 instanceof Integer || n2 instanceof Integer) {
+                return n1.intValue() | n2.intValue();
             }
-            throw new IllegalStateException("unsupported types " + v1.getClass() + " and " + v2.getClass());
+            throw new UnsupportedTypeException(position, op.sign, n1, n2);
         case XOR:
-            if (v1 instanceof Long || v2 instanceof Long) {
-                return v1.longValue() ^ v2.longValue();
+            if (n1 instanceof Long || n2 instanceof Long) {
+                return n1.longValue() ^ n2.longValue();
             }
-            if (v1 instanceof Integer || v2 instanceof Integer) {
-                return v1.intValue() ^ v2.intValue();
+            if (n1 instanceof Integer || n2 instanceof Integer) {
+                return n1.intValue() ^ n2.intValue();
             }
-            throw new IllegalStateException("unsupported types " + v1.getClass() + " and " + v2.getClass());
+            throw new UnsupportedTypeException(position, op.sign, n1, n2);
         default:
-            throw new IllegalStateException("unsupported op");
+            throw new IllegalStateException("unsupported op: " + op.sign);
         }
     }
 

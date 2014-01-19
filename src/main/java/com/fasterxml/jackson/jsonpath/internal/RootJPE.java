@@ -18,6 +18,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 class RootJPE extends JsonPathExpression {
 
+    RootJPE(int position) {
+        super(position);
+    }
+
     @Override
     JsonNode computeNode(JsonPathContext context, JsonNode[] childValues) {
         return context.getRoot();

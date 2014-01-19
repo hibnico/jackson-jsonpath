@@ -26,9 +26,12 @@ import com.fasterxml.jackson.jsonpath.JsonPathValue;
 
 public abstract class JsonPathExpression {
 
+    int position;
+
     JsonPathExpression[] children;
 
-    JsonPathExpression(JsonPathExpression... children) {
+    JsonPathExpression(int position, JsonPathExpression... children) {
+        this.position = position;
         this.children = children;
     }
 
@@ -113,21 +116,21 @@ public abstract class JsonPathExpression {
         return null;
     }
 
-    Number asNullableNumber(JsonNode node) {
+    Number asNullableNumber(JsonNode node, Object... context) {
         if (node == null || node.isNull()) {
             return null;
         }
         Number n = asLenientNumber(node);
         if (n == null) {
-            throw new IllegalStateException(node.getClass() + " not a number");
+            throw new TypeMismatchException(position, "number", node, context);
         }
         return n;
     }
 
-    Number asNumber(JsonNode JsonNode) {
-        Number n = asNullableNumber(JsonNode);
+    Number asNumber(JsonNode JsonNode, Object... context) {
+        Number n = asNullableNumber(JsonNode, context);
         if (n == null) {
-            throw new IllegalStateException("NPE");
+            throw new NullJsonException(position);
         }
         return n;
     }
@@ -139,27 +142,27 @@ public abstract class JsonPathExpression {
         return null;
     }
 
-    Integer asNullableInt(JsonNode node) {
+    Integer asNullableInt(JsonNode node, Object... context) {
         if (node == null || node.isNull()) {
             return null;
         }
         Integer i = asLenientInt(node);
         if (i == null) {
-            throw new IllegalStateException(node.getClass() + " not int");
+            throw new TypeMismatchException(position, "integer", node, context);
         }
         return i;
     }
 
-    int asInt(JsonNode node) {
-        Integer i = asNullableInt(node);
+    int asInt(JsonNode node, Object... context) {
+        Integer i = asNullableInt(node, context);
         if (i == null) {
-            throw new IllegalStateException("NPE");
+            throw new NullJsonException(position);
         }
         return i;
     }
 
-    int evalAsInt(JsonPathContext context) {
-        return asInt(eval(context).toNode());
+    int evalAsInt(JsonPathContext jpcontext, Object... context) {
+        return asInt(eval(jpcontext).toNode(), context);
     }
 
     Long asLenientLong(JsonNode node) {
@@ -169,27 +172,27 @@ public abstract class JsonPathExpression {
         return null;
     }
 
-    Long asNullableLong(JsonNode node) {
+    Long asNullableLong(JsonNode node, Object... context) {
         if (node == null || node.isNull()) {
             return null;
         }
         Long l = asLenientLong(node);
         if (l == null) {
-            throw new IllegalStateException(node.getClass() + " not long");
+            throw new TypeMismatchException(position, "long", node, context);
         }
         return l;
     }
 
-    long asLong(JsonNode node) {
-        Long l = asNullableLong(node);
+    long asLong(JsonNode node, Object... context) {
+        Long l = asNullableLong(node, context);
         if (l == null) {
-            throw new IllegalStateException("NPE");
+            throw new NullJsonException(position);
         }
         return l;
     }
 
-    long evalAsLong(JsonPathContext context) {
-        return asLong(eval(context).toNode());
+    long evalAsLong(JsonPathContext jpcontext, Object... context) {
+        return asLong(eval(jpcontext).toNode(), context);
     }
 
     Double asLenientDouble(JsonNode node) {
@@ -199,27 +202,27 @@ public abstract class JsonPathExpression {
         return null;
     }
 
-    Double asNullableDouble(JsonNode node) {
+    Double asNullableDouble(JsonNode node, Object... context) {
         if (node == null || node.isNull()) {
             return null;
         }
         Double d = asLenientDouble(node);
         if (d == null) {
-            throw new IllegalStateException(node.getClass() + " not double");
+            throw new TypeMismatchException(position, "double", node, context);
         }
         return d;
     }
 
-    double asDouble(JsonNode node) {
-        Double d = asNullableDouble(node);
+    double asDouble(JsonNode node, Object... context) {
+        Double d = asNullableDouble(node, context);
         if (d == null) {
-            throw new IllegalStateException("NPE");
+            throw new NullJsonException(position);
         }
         return d;
     }
 
-    double evalAsDouble(JsonPathContext context) {
-        return asDouble(eval(context).toNode());
+    double evalAsDouble(JsonPathContext jpcontext, Object... context) {
+        return asDouble(eval(jpcontext).toNode(), context);
     }
 
     String asLenientString(JsonNode node) {
@@ -229,27 +232,27 @@ public abstract class JsonPathExpression {
         return null;
     }
 
-    String asNullableString(JsonNode node) {
+    String asNullableString(JsonNode node, Object... context) {
         if (node == null || node.isNull()) {
             return null;
         }
         String s = asLenientString(node);
         if (s == null) {
-            throw new IllegalStateException(node.getClass() + " not string");
+            throw new TypeMismatchException(position, "string", node, context);
         }
         return s;
     }
 
-    String asString(JsonNode node) {
-        String s = asNullableString(node);
+    String asString(JsonNode node, Object... context) {
+        String s = asNullableString(node, context);
         if (s == null) {
-            throw new IllegalStateException("NPE");
+            throw new NullJsonException(position);
         }
         return s;
     }
 
-    String evalAsString(JsonPathContext context) {
-        return asString(eval(context).toNode());
+    String evalAsString(JsonPathContext jpcontext, Object... context) {
+        return asString(eval(jpcontext).toNode(), context);
     }
 
     Boolean asLenientBoolean(JsonNode node) {
@@ -259,26 +262,26 @@ public abstract class JsonPathExpression {
         return null;
     }
 
-    Boolean asNullableBoolean(JsonNode node) {
+    Boolean asNullableBoolean(JsonNode node, Object... context) {
         if (node == null || node.isNull()) {
             return null;
         }
         Boolean b = asLenientBoolean(node);
         if (b == null) {
-            throw new IllegalStateException(node.getClass() + " not boolean");
+            throw new TypeMismatchException(position, "boolean", node, context);
         }
         return b;
     }
 
-    boolean asBoolean(JsonNode node) {
-        Boolean b = asNullableBoolean(node);
+    boolean asBoolean(JsonNode node, Object... context) {
+        Boolean b = asNullableBoolean(node, context);
         if (b == null) {
-            throw new IllegalStateException("NPE");
+            throw new NullJsonException(position);
         }
         return b;
     }
 
-    boolean evalAsBoolean(JsonPathContext context) {
-        return asBoolean(eval(context).toNode());
+    boolean evalAsBoolean(JsonPathContext jpcontext, Object... context) {
+        return asBoolean(eval(jpcontext).toNode(), context);
     }
 }

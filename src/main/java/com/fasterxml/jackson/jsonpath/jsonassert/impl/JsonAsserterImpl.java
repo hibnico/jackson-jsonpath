@@ -27,6 +27,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.jsonpath.JsonPath;
+import com.fasterxml.jackson.jsonpath.JsonPathRuntimeException;
 import com.fasterxml.jackson.jsonpath.jsonassert.JsonAsserter;
 
 public class JsonAsserterImpl implements JsonAsserter {
@@ -51,7 +52,15 @@ public class JsonAsserterImpl implements JsonAsserter {
         try {
             node = JsonPath.eval(jsonObject, path).toNode();
         } catch (ParseException e) {
-            throw new IllegalArgumentException("Invalid json path: " + e.getMessage(), e);
+            AssertionError error = new AssertionError(String.format("Invalid json path: " + e.getMessage()
+                    + ". Error at:\n" + path + "\n%" + e.getErrorOffset() + "s^", ""));
+            error.initCause(e);
+            throw error;
+        } catch (JsonPathRuntimeException e) {
+            AssertionError error = new AssertionError(String.format("Runtime error: " + e.getMessage()
+                    + ". Error at:\n" + path + "\n%" + e.getPosition() + "s^", ""));
+            error.initCause(e);
+            throw error;
         }
         Object obj = null;
         if (node != null) {
@@ -79,7 +88,15 @@ public class JsonAsserterImpl implements JsonAsserter {
                 throw new AssertionError(format("Document contains the path <%s> but was expected not to.", path));
             }
         } catch (ParseException e) {
-            throw new IllegalArgumentException("Invalid json path: " + e.getMessage(), e);
+            AssertionError error = new AssertionError(String.format("Invalid json path: " + e.getMessage()
+                    + ". Error at:\n" + path + "\n%" + e.getErrorOffset() + "s^", ""));
+            error.initCause(e);
+            throw error;
+        } catch (JsonPathRuntimeException e) {
+            AssertionError error = new AssertionError(String.format("Runtime error: " + e.getMessage()
+                    + ". Error at:\n" + path + "\n%" + e.getPosition() + "s^", ""));
+            error.initCause(e);
+            throw error;
         }
         return this;
     }

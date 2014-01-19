@@ -24,8 +24,8 @@ class MethodCallJPE extends JsonPathExpression {
 
     private List<JsonPathExpression> arguments;
 
-    public MethodCallJPE(JsonPathExpression object, String function, List<JsonPathExpression> arguments) {
-        super(object);
+    MethodCallJPE(int position, JsonPathExpression object, String function, List<JsonPathExpression> arguments) {
+        super(position, object);
         this.function = function;
         this.arguments = arguments;
     }
