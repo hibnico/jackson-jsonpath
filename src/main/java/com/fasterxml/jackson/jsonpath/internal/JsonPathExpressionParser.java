@@ -32,7 +32,12 @@ public class JsonPathExpressionParser {
 
     public static JsonPathExpression parse(String path) throws ParseException {
         JsonPathExpressionParser parser = new JsonPathExpressionParser(new Buffer(path));
-        return parser.readExpr();
+        JsonPathExpression expr = parser.readExpr();
+        parser.buffer.skipWhiteSpace();
+        if (!parser.buffer.isConsumed()) {
+            throw new ParseException("Expected character at end of expression", parser.buffer.pos + 1);
+        }
+        return expr;
     }
 
     public JsonPathExpressionParser(Buffer buffer) {

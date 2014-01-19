@@ -17,20 +17,33 @@ package com.fasterxml.jackson.jsonpath.internal;
 import java.util.Iterator;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.jsonpath.JsonPathMultiValue;
 import com.fasterxml.jackson.jsonpath.JsonPathRuntimeException;
 import com.fasterxml.jackson.jsonpath.JsonPathValue;
+import com.fasterxml.jackson.jsonpath.JsonPathVectorValue;
 
 class WildcardSelectorJPE extends JsonPathExpression {
 
+    private JsonPathExpression object;
+
     WildcardSelectorJPE(int position, JsonPathExpression object) {
-        super(position, object);
+        super(position);
+        this.object = object;
+    }
+
+    @Override
+    boolean isVector() {
+        return true;
+    }
+
+    @Override
+    public JsonPathValue eval(JsonPathContext context) {
+        return evalAsDotProduct(context, object);
     }
 
     @Override
     JsonPathValue compute(JsonPathContext context, JsonNode[] childValues) {
         JsonNode node = childValues[0];
-        JsonPathMultiValue ret = new JsonPathMultiValue();
+        JsonPathVectorValue ret = new JsonPathVectorValue();
         if (node.isArray()) {
             for (int i = 0; i < node.size(); i++) {
                 ret.add(node.get(i));
@@ -49,6 +62,6 @@ class WildcardSelectorJPE extends JsonPathExpression {
 
     @Override
     public String toString() {
-        return children[0].toString() + "[*]";
+        return object.toString() + "[*]";
     }
 }

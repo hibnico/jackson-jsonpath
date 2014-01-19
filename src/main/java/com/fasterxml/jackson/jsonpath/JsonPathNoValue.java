@@ -22,7 +22,7 @@ public class JsonPathNoValue extends JsonPathValue {
     public static final JsonPathNoValue INSTANCE = new JsonPathNoValue();
 
     @Override
-    public void addTo(JsonPathMultiValue ret) {
+    public void addTo(JsonPathVectorValue ret) {
         // nothing to do
     }
 

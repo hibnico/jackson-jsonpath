@@ -17,14 +17,14 @@ package com.fasterxml.jackson.jsonpath.jsonassert.impl;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 
-import com.fasterxml.jackson.jsonpath.JsonPathMultiValue;
+import com.fasterxml.jackson.jsonpath.JsonPathVectorValue;
 import com.fasterxml.jackson.jsonpath.JsonPathValue;
 
 public class IsMultiValueMatcher extends BaseMatcher<JsonPathValue> {
 
     @Override
     public boolean matches(Object item) {
-        return item instanceof JsonPathMultiValue;
+        return item instanceof JsonPathVectorValue;
     }
 
     @Override

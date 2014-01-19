@@ -15,20 +15,33 @@
 package com.fasterxml.jackson.jsonpath.internal;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.jsonpath.JsonPathMultiValue;
 import com.fasterxml.jackson.jsonpath.JsonPathRuntimeException;
 import com.fasterxml.jackson.jsonpath.JsonPathValue;
+import com.fasterxml.jackson.jsonpath.JsonPathVectorValue;
 
 class WildcardJPE extends JsonPathExpression {
 
+    private JsonPathExpression object;
+
     WildcardJPE(int position, JsonPathExpression object) {
-        super(position, object);
+        super(position);
+        this.object = object;
+    }
+
+    @Override
+    boolean isVector() {
+        return true;
+    }
+
+    @Override
+    public JsonPathValue eval(JsonPathContext context) {
+        return evalAsDotProduct(context, object);
     }
 
     @Override
     JsonPathValue compute(JsonPathContext context, JsonNode[] childValues) {
         JsonNode node = childValues[0];
-        JsonPathMultiValue ret = new JsonPathMultiValue();
+        JsonPathVectorValue ret = new JsonPathVectorValue();
         if (node.isArray()) {
             for (JsonNode current : node) {
                 for (JsonNode value : current) {
@@ -48,6 +61,6 @@ class WildcardJPE extends JsonPathExpression {
 
     @Override
     public String toString() {
-        return children[0].toString() + ".*";
+        return object.toString() + ".*";
     }
 }

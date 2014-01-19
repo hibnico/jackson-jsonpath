@@ -25,7 +25,7 @@ public class JsonPathSingleValue extends JsonPathValue {
     }
 
     @Override
-    public void addTo(JsonPathMultiValue ret) {
+    public void addTo(JsonPathVectorValue ret) {
         ret.add(node);
     }
 

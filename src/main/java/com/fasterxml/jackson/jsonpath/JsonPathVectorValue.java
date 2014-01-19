@@ -21,12 +21,12 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 
-public class JsonPathMultiValue extends JsonPathValue {
+public class JsonPathVectorValue extends JsonPathValue {
 
     private List<JsonNode> nodes = new ArrayList<JsonNode>();
 
     @Override
-    public void addTo(JsonPathMultiValue ret) {
+    public void addTo(JsonPathVectorValue ret) {
         for (JsonNode node : nodes) {
             ret.add(node);
         }

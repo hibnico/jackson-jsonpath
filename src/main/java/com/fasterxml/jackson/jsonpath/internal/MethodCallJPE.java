@@ -16,22 +16,30 @@ package com.fasterxml.jackson.jsonpath.internal;
 
 import java.util.List;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.jsonpath.JsonPathValue;
 
 class MethodCallJPE extends JsonPathExpression {
+
+    private JsonPathExpression object;
 
     private String function;
 
     private List<JsonPathExpression> arguments;
 
     MethodCallJPE(int position, JsonPathExpression object, String function, List<JsonPathExpression> arguments) {
-        super(position, object);
+        super(position);
+        this.object = object;
         this.function = function;
         this.arguments = arguments;
     }
 
     @Override
-    Object computeObject(JsonPathContext context, JsonNode[] childValues) {
+    boolean isVector() {
+        return object.isVector();
+    }
+
+    @Override
+    public JsonPathValue eval(JsonPathContext context) {
         throw new IllegalStateException("TODO");
     }
 }

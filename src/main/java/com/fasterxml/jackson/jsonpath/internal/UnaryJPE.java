@@ -15,6 +15,7 @@
 package com.fasterxml.jackson.jsonpath.internal;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.jsonpath.JsonPathValue;
 
 class UnaryJPE extends JsonPathExpression {
 
@@ -30,9 +31,22 @@ class UnaryJPE extends JsonPathExpression {
 
     private UnaryOp op;
 
+    private JsonPathExpression expr;
+
     UnaryJPE(int position, UnaryOp op, JsonPathExpression expr) {
-        super(position, expr);
+        super(position);
         this.op = op;
+        this.expr = expr;
+    }
+
+    @Override
+    boolean isVector() {
+        return expr.isVector();
+    }
+
+    @Override
+    public JsonPathValue eval(JsonPathContext context) {
+        return evalAsDotProduct(context, expr);
     }
 
     @Override
@@ -72,6 +86,6 @@ class UnaryJPE extends JsonPathExpression {
 
     @Override
     public String toString() {
-        return op.sign + children[0].toString();
+        return op.sign + expr.toString();
     }
 }

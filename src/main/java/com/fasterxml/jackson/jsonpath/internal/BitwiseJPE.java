@@ -15,6 +15,7 @@
 package com.fasterxml.jackson.jsonpath.internal;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.jsonpath.JsonPathValue;
 
 class BitwiseJPE extends JsonPathExpression {
 
@@ -30,9 +31,25 @@ class BitwiseJPE extends JsonPathExpression {
 
     private BitwiseOp op;
 
+    private JsonPathExpression left;
+    
+    private JsonPathExpression right;
+
     BitwiseJPE(int position, BitwiseOp op, JsonPathExpression left, JsonPathExpression right) {
-        super(position, left, right);
+        super(position);
         this.op = op;
+        this.left = left;
+        this.right = right;
+    }
+
+    @Override
+    boolean isVector() {
+        return isVectorFromDotProduct(left, right);
+    }
+
+    @Override
+    public JsonPathValue eval(JsonPathContext context) {
+        return evalAsDotProduct(context, left, right);
     }
 
     @Override
@@ -71,6 +88,6 @@ class BitwiseJPE extends JsonPathExpression {
 
     @Override
     public String toString() {
-        return children[0].toString() + ' ' + op.sign + ' ' + children[1].toString();
+        return left.toString() + ' ' + op.sign + ' ' + right.toString();
     }
 }

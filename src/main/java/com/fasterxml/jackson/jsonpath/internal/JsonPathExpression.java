@@ -14,51 +14,124 @@
  */
 package com.fasterxml.jackson.jsonpath.internal;
 
+import java.util.List;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.BooleanNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.NumericNode;
 import com.fasterxml.jackson.databind.node.TextNode;
-import com.fasterxml.jackson.jsonpath.JsonPathMultiValue;
 import com.fasterxml.jackson.jsonpath.JsonPathNoValue;
+import com.fasterxml.jackson.jsonpath.JsonPathRuntimeException;
 import com.fasterxml.jackson.jsonpath.JsonPathSingleValue;
 import com.fasterxml.jackson.jsonpath.JsonPathValue;
+import com.fasterxml.jackson.jsonpath.JsonPathVectorValue;
 
 public abstract class JsonPathExpression {
 
     int position;
 
-    JsonPathExpression[] children;
+    private Boolean isVector = null;
 
-    JsonPathExpression(int position, JsonPathExpression... children) {
+    JsonPathExpression(int position) {
         this.position = position;
-        this.children = children;
     }
 
-    public JsonPathValue eval(JsonPathContext context) {
+    public abstract JsonPathValue eval(JsonPathContext context);
+
+    abstract boolean isVector();
+
+    boolean isVectorFromDotProduct(JsonPathExpression... children) {
+        for (JsonPathExpression child : children) {
+            if (child.isVector()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean isVectorCached() {
+        if (isVector == null) {
+            isVector = isVector();
+        }
+        return isVector;
+    }
+
+    JsonPathValue evalAsDotProduct(JsonPathContext context, JsonPathExpression... children) {
         JsonPathValue[] values = new JsonPathValue[children.length];
+        JsonNode[] nodes = new JsonNode[children.length];
+
+        Integer vectorLength = null;
+
         for (int i = 0; i < children.length; i++) {
             values[i] = children[i].eval(context);
+            if (values[i] instanceof JsonPathVectorValue) {
+                List<JsonNode> subNodes = ((JsonPathVectorValue) values[i]).getNodes();
+                if (vectorLength == null) {
+                    vectorLength = subNodes.size();
+                } else if (vectorLength != subNodes.size()) {
+                    throw new JsonPathRuntimeException("dot product of incompatible sizes: " + vectorLength + " vs "
+                            + subNodes.size(), position);
+                }
+            } else {
+                nodes[i] = values[i].toNode();
+            }
         }
-        JsonNode[] nodes = new JsonNode[children.length];
-        return explodedCompute(context, values, 0, nodes);
-    }
 
-    private JsonPathValue explodedCompute(JsonPathContext context, JsonPathValue[] values, int i, JsonNode[] nodes) {
-        if (i == values.length) {
+        if (vectorLength == null) {
             return compute(context, nodes);
         }
-        if (values[i] instanceof JsonPathMultiValue) {
-            JsonPathMultiValue ret = new JsonPathMultiValue();
-            for (JsonNode node : ((JsonPathMultiValue) values[i]).getNodes()) {
-                nodes[i] = node;
-                JsonPathValue value = explodedCompute(context, values, i + 1, nodes);
-                value.addTo(ret);
+
+        JsonPathVectorValue ret = new JsonPathVectorValue();
+        for (int i = 0; i < vectorLength; i++) {
+
+            for (int j = 0; j < values.length; j++) {
+                if (values[j] instanceof JsonPathVectorValue) {
+                    List<JsonNode> subNodes = ((JsonPathVectorValue) values[j]).getNodes();
+                    nodes[j] = subNodes.get(i);
+                }
             }
-            return ret;
+
+            JsonPathValue value = compute(context, nodes);
+            value.addTo(ret);
         }
-        nodes[i] = values[i].toNode();
-        return explodedCompute(context, values, i + 1, nodes);
+        return ret;
+    }
+
+    private JsonPathValue dotProduct(JsonPathContext context, JsonPathExpression[] children, JsonPathValue[] values,
+            int iChild, JsonNode[] nodes, JsonPathVectorValue vector, Integer vectorLength, int iVector) {
+
+        if (values[iChild] instanceof JsonPathVectorValue) {
+            List<JsonNode> subNodes = ((JsonPathVectorValue) values[iChild]).getNodes();
+            if (vectorLength == null) {
+                vectorLength = subNodes.size();
+            } else if (vectorLength != subNodes.size()) {
+                throw new JsonPathRuntimeException("dot product is of incompatible sizes: " + vectorLength + " vs "
+                        + subNodes.size(), position);
+            }
+            nodes[iChild] = subNodes.get(iVector);
+        } else {
+            nodes[iChild] = values[iChild].toNode();
+        }
+
+        if (iChild == values.length - 1) {
+            // every child has been computed
+            JsonPathValue value = compute(context, nodes);
+            if (vector == null) {
+                return value;
+            } else {
+                value.addTo(vector);
+                if (vectorLength != null && iVector == vectorLength - 1) {
+                    // dot product completely computed
+                    return vector;
+                }
+                // iterate over the dot product
+                return dotProduct(context, children, values, 0, nodes, vector, vectorLength, iVector + 1);
+            }
+        }
+
+        // continue with the next child
+        return dotProduct(context, children, values, iChild + 1, nodes, vector, vectorLength, iVector);
     }
 
     JsonPathValue compute(JsonPathContext context, JsonNode[] childValues) {

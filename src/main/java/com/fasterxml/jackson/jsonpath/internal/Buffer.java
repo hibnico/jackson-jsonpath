@@ -90,4 +90,8 @@ class Buffer {
         }
     }
 
+    boolean isConsumed() {
+        return pos >= input.length - 1;
+    }
+
 }

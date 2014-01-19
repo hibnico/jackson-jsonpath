@@ -15,23 +15,36 @@
 package com.fasterxml.jackson.jsonpath.internal;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.jsonpath.JsonPathMultiValue;
 import com.fasterxml.jackson.jsonpath.JsonPathValue;
+import com.fasterxml.jackson.jsonpath.JsonPathVectorValue;
 
 class DescendingJPE extends JsonPathExpression {
 
+    private JsonPathExpression object;
+
     DescendingJPE(int position, JsonPathExpression object) {
-        super(position, object);
+        super(position);
+        this.object = object;
+    }
+
+    @Override
+    boolean isVector() {
+        return true;
+    }
+
+    @Override
+    public JsonPathValue eval(JsonPathContext context) {
+        return evalAsDotProduct(context, object);
     }
 
     @Override
     JsonPathValue compute(JsonPathContext context, JsonNode[] childValues) {
-        JsonPathMultiValue ret = new JsonPathMultiValue();
+        JsonPathVectorValue ret = new JsonPathVectorValue();
         descend(childValues[0], ret);
         return ret;
     }
 
-    private void descend(JsonNode node, JsonPathMultiValue result) {
+    private void descend(JsonNode node, JsonPathVectorValue result) {
         if (node.isContainerNode()) {
             result.add(node);
             for (JsonNode value : node) {
@@ -42,6 +55,6 @@ class DescendingJPE extends JsonPathExpression {
 
     @Override
     public String toString() {
-        return children[0].toString() + "..";
+        return object.toString() + "..";
     }
 }

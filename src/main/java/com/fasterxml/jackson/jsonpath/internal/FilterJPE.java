@@ -15,23 +15,32 @@
 package com.fasterxml.jackson.jsonpath.internal;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.jsonpath.JsonPathMultiValue;
 import com.fasterxml.jackson.jsonpath.JsonPathValue;
+import com.fasterxml.jackson.jsonpath.JsonPathVectorValue;
 
 class FilterJPE extends JsonPathExpression {
+
+    private JsonPathExpression object;
 
     private JsonPathExpression filter;
 
     FilterJPE(int position, JsonPathExpression object, JsonPathExpression filter) {
-        super(position, object);
+        super(position);
+        this.object = object;
         this.filter = filter;
     }
 
     @Override
-    JsonPathValue compute(JsonPathContext context, JsonNode[] childValues) {
-        JsonPathMultiValue ret = new JsonPathMultiValue();
+    boolean isVector() {
+        return true;
+    }
+
+    @Override
+    public JsonPathValue eval(JsonPathContext context) {
+        JsonNode node = object.eval(context).toNode();
+        JsonPathVectorValue ret = new JsonPathVectorValue();
         int i = 0;
-        for (JsonNode subNode : childValues[0]) {
+        for (JsonNode subNode : node) {
             boolean select = filter.evalAsBoolean(new JsonPathContext(context, subNode, i), "filtering selector");
             if (select) {
                 ret.add(subNode);
@@ -43,6 +52,6 @@ class FilterJPE extends JsonPathExpression {
 
     @Override
     public String toString() {
-        return children[0].toString() + "[?(" + filter.toString() + ")]";
+        return object.toString() + "[?(" + filter.toString() + ")]";
     }
 }

@@ -15,6 +15,7 @@
 package com.fasterxml.jackson.jsonpath.internal;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.jsonpath.JsonPathValue;
 
 class BooleanJPE extends JsonPathExpression {
 
@@ -30,20 +31,45 @@ class BooleanJPE extends JsonPathExpression {
 
     private BooleanOp op;
 
+    private JsonPathExpression left;
+    
+    private JsonPathExpression right;
+
     BooleanJPE(int position, BooleanOp op, JsonPathExpression left, JsonPathExpression right) {
-        super(position, left, right);
+        super(position);
         this.op = op;
+        this.left = left;
+        this.right = right;
+    }
+
+    @Override
+    boolean isVector() {
+        return isVectorFromDotProduct(left, right);
+    }
+
+    @Override
+    public JsonPathValue eval(JsonPathContext context) {
+        return evalAsDotProduct(context, left, right);
     }
 
     @Override
     Object computeObject(JsonPathContext context, JsonNode[] childValues) {
         boolean b1 = asBoolean(childValues[0], "boolean op '", op.sign, "'");
-        boolean b2 = asBoolean(childValues[1], "boolean op '", op.sign, "'");
         switch (op) {
-        case AND:
-            return b1 && b2;
-        case OR:
-            return b1 || b2;
+        case AND: {
+            if (!b1) {
+                return false;
+            }
+            boolean b2 = asBoolean(childValues[1], "boolean op '", op.sign, "'");
+            return b2;
+        }
+        case OR: {
+            if (b1) {
+                return true;
+            }
+            boolean b2 = asBoolean(childValues[1], "boolean op '", op.sign, "'");
+            return b2;
+        }
         default:
             throw new IllegalStateException("unsupported op " + op);
         }
@@ -51,6 +77,6 @@ class BooleanJPE extends JsonPathExpression {
 
     @Override
     public String toString() {
-        return children[0].toString() + ' ' + op.sign + ' ' + children[1].toString();
+        return left.toString() + ' ' + op.sign + ' ' + right.toString();
     }
 }

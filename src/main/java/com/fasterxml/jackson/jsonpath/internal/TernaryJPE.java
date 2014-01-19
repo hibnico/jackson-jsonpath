@@ -14,6 +14,8 @@
  */
 package com.fasterxml.jackson.jsonpath.internal;
 
+import java.text.ParseException;
+
 import com.fasterxml.jackson.jsonpath.JsonPathValue;
 
 class TernaryJPE extends JsonPathExpression {
@@ -24,11 +26,19 @@ class TernaryJPE extends JsonPathExpression {
 
     private JsonPathExpression onFalse;
 
-    TernaryJPE(int position, JsonPathExpression condition, JsonPathExpression onTrue, JsonPathExpression onFalse) {
+    TernaryJPE(int position, JsonPathExpression condition, JsonPathExpression onTrue, JsonPathExpression onFalse) throws ParseException {
         super(position);
         this.condition = condition;
         this.onTrue = onTrue;
         this.onFalse = onFalse;
+        if (onTrue.isVector() != onFalse.isVector()) {
+            throw new ParseException("Incompatible dimension of onTrue and onFalse", position);
+        }
+    }
+
+    @Override
+    boolean isVector() {
+        return onTrue.isVector();
     }
 
     @Override

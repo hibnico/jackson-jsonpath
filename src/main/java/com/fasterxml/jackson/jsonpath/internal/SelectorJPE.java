@@ -17,8 +17,11 @@ package com.fasterxml.jackson.jsonpath.internal;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.jsonpath.JsonPathRuntimeException;
+import com.fasterxml.jackson.jsonpath.JsonPathValue;
 
 class SelectorJPE extends JsonPathExpression {
+
+    private JsonPathExpression object;
 
     private JsonPathExpression index;
 
@@ -31,8 +34,19 @@ class SelectorJPE extends JsonPathExpression {
     }
 
     SelectorJPE(int position, JsonPathExpression object, JsonPathExpression index) {
-        super(position, object);
+        super(position);
+        this.object = object;
         this.index = index;
+    }
+
+    @Override
+    boolean isVector() {
+        return object.isVector();
+    }
+
+    @Override
+    public JsonPathValue eval(JsonPathContext context) {
+        return evalAsDotProduct(context, object);
     }
 
     @Override
@@ -56,6 +70,6 @@ class SelectorJPE extends JsonPathExpression {
 
     @Override
     public String toString() {
-        return children[0].toString() + "[(" + index.toString() + ")]";
+        return object.toString() + "[(" + index.toString() + ")]";
     }
 }

@@ -15,6 +15,8 @@
 package com.fasterxml.jackson.jsonpath.internal;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.jsonpath.JsonPathSingleValue;
+import com.fasterxml.jackson.jsonpath.JsonPathValue;
 
 class LiteralJPE extends JsonPathExpression {
 
@@ -26,8 +28,13 @@ class LiteralJPE extends JsonPathExpression {
     }
 
     @Override
-    JsonNode computeNode(JsonPathContext context, JsonNode[] childValues) {
-        return literal;
+    boolean isVector() {
+        return false;
+    }
+
+    @Override
+    public JsonPathValue eval(JsonPathContext context) {
+        return new JsonPathSingleValue(literal);
     }
 
     @Override

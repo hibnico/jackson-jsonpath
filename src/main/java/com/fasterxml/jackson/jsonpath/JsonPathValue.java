@@ -18,7 +18,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 public abstract class JsonPathValue {
 
-    public abstract void addTo(JsonPathMultiValue value);
+    public abstract void addTo(JsonPathVectorValue value);
 
     public abstract JsonNode toNode();
 

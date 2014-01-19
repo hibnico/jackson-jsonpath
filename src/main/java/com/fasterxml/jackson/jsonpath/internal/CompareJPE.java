@@ -14,7 +14,10 @@
  */
 package com.fasterxml.jackson.jsonpath.internal;
 
+import java.text.ParseException;
+
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.jsonpath.JsonPathValue;
 
 class CompareJPE extends JsonPathExpression {
 
@@ -30,9 +33,55 @@ class CompareJPE extends JsonPathExpression {
 
     private CompareOp op;
 
-    CompareJPE(int position, CompareOp op, JsonPathExpression left, JsonPathExpression right) {
-        super(position, left, right);
+    private JsonPathExpression left;
+
+    private JsonPathExpression right;
+
+    CompareJPE(int position, CompareOp op, JsonPathExpression left, JsonPathExpression right) throws ParseException {
+        super(position);
         this.op = op;
+        this.left = left;
+        this.right = right;
+
+        // check vector compliance
+        switch (op) {
+        case EQ:
+        case NE:
+            // OK
+            break;
+        case GE:
+        case GT:
+        case LE:
+        case LT:
+            if (left.isVector() && right.isVector()) {
+                throw new ParseException("left and right cannot be both vectors on comparaison operator " + op.sign,
+                        position);
+            }
+            break;
+        default:
+            throw new IllegalStateException("unsupported op " + op);
+        }
+    }
+
+    @Override
+    boolean isVector() {
+        switch (op) {
+        case EQ:
+        case NE:
+            return left.isVector() || right.isVector();
+        case GE:
+        case GT:
+        case LE:
+        case LT:
+            return left.isVector() && !right.isVector() || !left.isVector() && right.isVector();
+        default:
+            throw new IllegalStateException("unsupported op " + op);
+        }
+    }
+
+    @Override
+    public JsonPathValue eval(JsonPathContext context) {
+        return evalAsDotProduct(context, left, right);
     }
 
     @Override
@@ -105,6 +154,6 @@ class CompareJPE extends JsonPathExpression {
 
     @Override
     public String toString() {
-        return children[0].toString() + ' ' + op.sign + ' ' + children[1].toString();
+        return left.toString() + ' ' + op.sign + ' ' + right.toString();
     }
 }
