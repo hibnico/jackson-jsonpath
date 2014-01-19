@@ -14,7 +14,7 @@
  */
 package com.fasterxml.jackson.jsonpath;
 
-import static com.fasterxml.jackson.jsonpath.jsonassert.JsonAssert.with;
+import static com.fasterxml.jackson.jsonpath.jsonassert.JsonAssert.*;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
@@ -49,12 +49,12 @@ public class ComplianceTest {
     public void test0() throws Exception {
         // @formatter:off
         with(jsonTest.get(0).get("o"))
-            .assertThat("$.a", equalTo("a"))
-            .assertThat("$['a']", equalTo("a"))
-            .assertThat("$['c d']", equalTo("e"))
-            .assertThat("$.*", hasItems("a", "b", "e"))
-            .assertThat("$['*']", equalTo(null))
-            .assertThat("$[*]", allOf(hasEntry("a", "a"), hasEntry("b", "b"), hasEntry("c d", "e")));
+            .assertThat("$.a", asObject(equalTo("a")))
+            .assertThat("$['a']", asObject(equalTo("a")))
+            .assertThat("$['c d']", asObject(equalTo("e")))
+            .assertThat("$.*", asObject(hasItems("a", "b", "e")))
+            .assertThat("$['*']", asObject(equalTo(null)))
+            .assertThat("$[*]", asObject(hasItems(hasEntry("a", "a"), hasEntry("b", "b"), hasEntry("c d", "e"))));
         // @formatter:on
     }
 
@@ -62,10 +62,10 @@ public class ComplianceTest {
     public void test1() throws Exception {
         // @formatter:off
         with(jsonTest.get(1).get("o"))
-            .assertThat("$[0]", equalTo(1))
-            .assertThat("$[4]", equalTo(null))
-            .assertThat("$[*]", hasItems(1, "2", 3.14d, true, (Serializable) null))
-            .assertThat("$[-1:]", nullValue());
+            .assertThat("$[0]", asObject(equalTo(1)))
+            .assertThat("$[4]", asObject(equalTo(null)))
+            .assertThat("$[*]", asObject(hasItems(1, "2", 3.14d, true, (Serializable) null)))
+            .assertThat("$[-1:]", asObject(nullValue()));
         // @formatter:on
     }
 
@@ -73,13 +73,13 @@ public class ComplianceTest {
     public void test2() throws Exception {
         // @formatter:off
         with(jsonTest.get(2).get("o"))
-            .assertThat("$.points[1]", allOf(hasEntry("id", "i2"), hasEntry("x", -2), hasEntry("y", 2), hasEntry("z", 1)))
-            .assertThat("$.points[4].x", equalTo(0))
-            .assertThat("$.points[?(@.id=='i4')].x", hasItem(-6))
-            .assertThat("$.points[*].x", hasItems(4, -2, 8, -6, 0, 1))
-            .assertThat("$['points'][?(@.x*@.x+@.y*@.y > 50)].id", hasItem("i3"))
-            .assertThat("$.points[?(@.z)].id", hasItems("i2", "i5"))
-            .assertThat("$.points[(@.length-1)].id", hasItem("i6"));
+            .assertThat("$.points[1]", asObject(allOf(hasEntry("id", "i2"), hasEntry("x", -2), hasEntry("y", 2), hasEntry("z", 1))))
+            .assertThat("$.points[4].x", asObject(equalTo(0)))
+            .assertThat("$.points[?(@.id=='i4')].x", asObject(hasItem(-6)))
+            .assertThat("$.points[*].x", asObject(hasItems(4, -2, 8, -6, 0, 1)))
+            .assertThat("$['points'][?(@.x*@.x+@.y*@.y > 50)].id", asObject(hasItem("i3")))
+            .assertThat("$.points[?(@.z)].id", asObject(hasItems("i2", "i5")))
+            .assertThat("$.points[(@.length-1)].id", asObject(hasItem("i6")));
         // @formatter:on
     }
 
@@ -87,10 +87,10 @@ public class ComplianceTest {
     public void test3() throws Exception {
         // @formatter:off
         with(jsonTest.get(3).get("o"))
-            .assertThat("$.menu.items[?(@ && @.id && !@.label)].id", hasItems("Open", "Quality", "Pause", "Mute", "Copy", "Help"))
-            .assertThat("$.menu.items[?(@ && @.label && /SVG/.test(@.label))].id", hasItems("CopySVG", "ViewSVG"))
-            .assertThat("$.menu.items[?(!@)]", hasItems((Integer) null, null, null, null)) // FIXME
-            .assertThat("$..[0]", hasEntry("id", "Open"));
+            .assertThat("$.menu.items[?(@ && @.id && !@.label)].id", asObject(hasItems("Open", "Quality", "Pause", "Mute", "Copy", "Help")))
+            .assertThat("$.menu.items[?(@ && @.label && /SVG/.test(@.label))].id", asObject(hasItems("CopySVG", "ViewSVG")))
+            .assertThat("$.menu.items[?(!@)]", asObject(hasItems((Integer) null, null, null, null)))
+            .assertThat("$..[0]", asObject(hasEntry("id", "Open")));
         // @formatter:on
     }
 
@@ -98,9 +98,9 @@ public class ComplianceTest {
     public void test4() throws Exception {
         // @formatter:off
         with(jsonTest.get(4).get("o"))
-            .assertThat("$..[0]", hasItems(1, 5))
-            .assertThat("$..[-1:]", hasItems(4, 8))
-            .assertThat("$..[?(@%2==0)]", hasItems(2, 4, 6, 8));
+            .assertThat("$..[0]", asObject(hasItems(1, 5)))
+            .assertThat("$..[-1:]", asObject(hasItems(4, 8)))
+            .assertThat("$..[?(@%2==0)]", asObject(hasItems(2, 4, 6, 8)));
         // @formatter:on
     }
 
@@ -108,8 +108,8 @@ public class ComplianceTest {
     public void test5() throws Exception {
         // @formatter:off
         with(jsonTest.get(5).get("o"))
-            .assertThat("$[?(@.color != null)].x", hasItems(2, 5, 2))
-            .assertThat("$['lin','cir'].color", hasItems("red", "blue"));
+            .assertThat("$[?(@.color != null)].x", asObject(hasItems(2, 5, 2)))
+            .assertThat("$['lin','cir'].color", asObject(hasItems("red", "blue")));
         // @formatter:on
     }
 
@@ -117,8 +117,8 @@ public class ComplianceTest {
     public void test6() throws Exception {
         // @formatter:off
         with(jsonTest.get(6).get("o"))
-            .assertThat("$.text[?(@.length > 5)]", hasItem("world2.0"))
-            .assertThat("$.text[?(@.charAt(0) == 'h')]", hasItem("hello"));
+            .assertThat("$.text[?(@.length > 5)]", asObject(hasItem("world2.0")))
+            .assertThat("$.text[?(@.charAt(0) == 'h')]", asObject(hasItem("hello")));
         // @formatter:on
     }
 
@@ -126,7 +126,7 @@ public class ComplianceTest {
     public void test7() throws Exception {
         // @formatter:off
         with(jsonTest.get(7).get("o"))
-            .assertThat("$..a", hasItem(6));
+            .assertThat("$..a", asObject(hasItem(6)));
         // @formatter:on
     }
 
@@ -134,8 +134,8 @@ public class ComplianceTest {
     public void test8() throws Exception {
         // @formatter:off
         with(jsonTest.get(8).get("o"))
-            .assertThat("$.a[?(@['\\@']==3)]", hasItem(6))
-            .assertThat("$.a[?(@['$']==5)]", hasItem(7));
+            .assertThat("$.a[?(@['\\@']==3)]", asObject(hasItem(6)))
+            .assertThat("$.a[?(@['$']==5)]", asObject(hasItem(7)));
         // @formatter:on
     }
 

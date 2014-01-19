@@ -23,8 +23,8 @@ public interface JsonAsserter {
      * the matcher and failing value. Example:
      * <p/>
      * <code>
-     * with(json).assertThat("items[0].name", equalTo("Bobby"))
-     * .assertThat("items[0].age" , equalTo(24L))
+     * with(json).assertThat("items[0].name", asObject(equalTo("Bobby")))
+     * .assertThat("items[0].age" , asObject(equalTo(24L)))
      * </code>
      * 
      * @param path the json path specifying the value being compared
@@ -73,7 +73,7 @@ public interface JsonAsserter {
      * <p/>
      * <p/>
      * <code>
-     * with(json).assertThat("firstName", is(equalTo("Bobby"))).and().assertThat("lastName", is(equalTo("Ewing")))
+     * with(json).assertThat("firstName", asObject(is(equalTo("Bobby")))).and().assertThat("lastName", asObject(is(equalTo("Ewing"))))
      * </code>
      * 
      * @return this to allow fluent assertion chains

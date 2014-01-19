@@ -12,18 +12,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.fasterxml.jackson.jsonpath;
+package com.fasterxml.jackson.jsonpath.jsonassert.impl;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import org.hamcrest.BaseMatcher;
+import org.hamcrest.Description;
 
-public abstract class JsonPathValue {
+import com.fasterxml.jackson.jsonpath.JsonPathNoValue;
+import com.fasterxml.jackson.jsonpath.JsonPathValue;
 
-    public abstract void addTo(JsonPathMultiValue value);
-
-    public abstract JsonNode toNode();
+public class IsNoValueMatcher extends BaseMatcher<JsonPathValue> {
 
     @Override
-    public String toString() {
-        return toNode().toString();
+    public boolean matches(Object item) {
+        return item instanceof JsonPathNoValue;
     }
+
+    @Override
+    public void describeTo(Description description) {
+        description.appendText("an jsonpath without value");
+    }
+
 }

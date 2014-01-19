@@ -23,34 +23,24 @@ import java.text.ParseException;
 
 import org.hamcrest.Matcher;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.jsonpath.JsonPath;
 import com.fasterxml.jackson.jsonpath.JsonPathRuntimeException;
+import com.fasterxml.jackson.jsonpath.JsonPathValue;
 import com.fasterxml.jackson.jsonpath.jsonassert.JsonAsserter;
 
 public class JsonAsserterImpl implements JsonAsserter {
 
     private final JsonNode jsonObject;
 
-    private final ObjectMapper mapper;
-
-    /**
-     * Instantiates a new JSONAsserter
-     * 
-     * @param jsonObject
-     *            the object to make asserts on
-     */
-    public JsonAsserterImpl(JsonNode jsonObject, ObjectMapper mapper) {
+    public JsonAsserterImpl(JsonNode jsonObject) {
         this.jsonObject = jsonObject;
-        this.mapper = mapper;
     }
 
     public <T> JsonAsserter assertThat(String path, Matcher<T> matcher) {
-        JsonNode node;
+        JsonPathValue value;
         try {
-            node = JsonPath.eval(jsonObject, path).toNode();
+            value = JsonPath.eval(jsonObject, path);
         } catch (ParseException e) {
             AssertionError error = new AssertionError(String.format("Invalid json path: " + e.getMessage()
                     + ". Error at:\n" + path + "\n%" + e.getErrorOffset() + "s^", ""));
@@ -62,17 +52,9 @@ public class JsonAsserterImpl implements JsonAsserter {
             error.initCause(e);
             throw error;
         }
-        Object obj = null;
-        if (node != null) {
-            try {
-                obj = mapper.treeToValue(node, Object.class);
-            } catch (JsonProcessingException e) {
-                throw new RuntimeException(e);
-            }
-        }
-        if (!matcher.matches(obj)) {
+        if (!matcher.matches(value)) {
             throw new AssertionError(String.format("JSON doesn't match.\nExpected:\n%s\nActual:\n%s",
-                    matcher.toString(), obj));
+                    matcher.toString(), value));
         }
         return this;
     }

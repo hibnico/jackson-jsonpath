@@ -46,4 +46,5 @@ public class JsonPathMultiValue extends JsonPathValue {
     public List<JsonNode> getNodes() {
         return nodes;
     }
+
 }
