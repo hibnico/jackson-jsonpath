@@ -356,7 +356,7 @@ public class JsonPathExpressionParser {
             return new LiteralJPE(p, JsonNodeFactory.instance.textNode(value));
         }
         Character c2 = buffer.readAhead(2);
-        Character c3 = buffer.readAhead(2);
+        Character c3 = buffer.readAhead(3);
         if (c == '0' && (c2 == 'x' || c2 == 'X')
                 && (c3 != null && (c3 >= '0' && c3 <= '9') || (c3 >= 'A' && c3 < 'F') || (c3 >= 'a' && c3 < 'f'))) {
             int p = buffer.pos;
@@ -380,7 +380,8 @@ public class JsonPathExpressionParser {
                 buffer.skip();
             }
             return new LiteralJPE(p, JsonNodeFactory.instance.numberNode(Long.parseLong(numberBuffer.toString())));
-        } else if (c == '0' && (c2 == 'b' || c2 == 'B') && (c3 == '0' || c3 == '1')) {
+        }
+        if (c == '0' && (c2 == 'b' || c2 == 'B') && (c3 == '0' || c3 == '1')) {
             int p = buffer.pos;
             // binary number
             StringBuilder numberBuffer = new StringBuilder();
@@ -402,7 +403,8 @@ public class JsonPathExpressionParser {
                 buffer.skip();
             }
             return new LiteralJPE(p, JsonNodeFactory.instance.numberNode(Long.parseLong(numberBuffer.toString())));
-        } else if (c == '0' && c2 != null && c2 >= '0' && c2 <= '7') {
+        }
+        if (c == '0' && c2 != null && c2 >= '0' && c2 <= '7') {
             int p = buffer.pos;
             // octal number
             StringBuilder numberBuffer = new StringBuilder();
@@ -423,29 +425,39 @@ public class JsonPathExpressionParser {
                 buffer.skip();
             }
             return new LiteralJPE(p, JsonNodeFactory.instance.numberNode(Long.parseLong(numberBuffer.toString())));
-        } else if (c >= '0' && c <= '9') {
+        }
+        if (c >= '0' && c <= '9') {
             int p = buffer.pos;
             StringBuilder numberBuffer = startReadNumber();
             if (c == '.') {
                 appendFloatingPoint(numberBuffer);
-                return new LiteralJPE(p, JsonNodeFactory.instance.numberNode(Double.parseDouble(numberBuffer.toString())));
+                return new LiteralJPE(p,
+                        JsonNodeFactory.instance.numberNode(Double.parseDouble(numberBuffer.toString())));
             }
             if (c == 'f' || c == 'F' || c == 'd' || c == 'D') {
                 numberBuffer.append(c);
                 buffer.skip();
-                return new LiteralJPE(p, JsonNodeFactory.instance.numberNode(Double.parseDouble(numberBuffer.toString())));
+                return new LiteralJPE(p,
+                        JsonNodeFactory.instance.numberNode(Double.parseDouble(numberBuffer.toString())));
             }
             if (c == 'l' || c == 'L') {
                 numberBuffer.append(c);
                 buffer.skip();
             }
             return new LiteralJPE(p, JsonNodeFactory.instance.numberNode(Long.parseLong(numberBuffer.toString())));
-        } else if (c == '.' && c2 != null && c2 >= '0' && c2 <= '9') {
+        }
+        if (c == '.' && c2 != null && c2 >= '0' && c2 <= '9') {
             int p = buffer.pos;
             // double number
             StringBuilder numberBuffer = new StringBuilder();
             appendFloatingPoint(numberBuffer);
             return new LiteralJPE(p, JsonNodeFactory.instance.numberNode(Double.parseDouble(numberBuffer.toString())));
+        }
+        Character c4 = buffer.readAhead(4);
+        if (c != null && c2 != null && c3 != null && c4 != null && c == 'n' && c2 == 'u' && c3 == 'l' && c4 == 'l') {
+            int p = buffer.pos;
+            buffer.skip(4);
+            return new LiteralJPE(p, JsonNodeFactory.instance.nullNode());
         }
         return null;
     }
