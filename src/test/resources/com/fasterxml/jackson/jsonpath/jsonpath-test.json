@@ -86,15 +86,6 @@
            "$['lin','cir'].color"
          ]
   },
-  { "o": { "lin": {"color":"red", "x":2, "y":3},
-           "cir": {"color":"blue", "x":5, "y":2, "r":1 },
-           "arc": {"color":"green", "x":2, "y":4, "r":2, "phi0":30, "dphi":120 },
-           "pnt": {"x":0, "y":7 }
-         },
-    "p": [ "$.'?(@.color)'.x",
-           "$['lin','arc'].color"
-         ]
-  },
   { "o": { "text": [ "hello", "world2.0"] },
     "p": [ "$.text[?(@.length > 5)]",
            "$.text[?(@.charAt(0) == 'h')]"
