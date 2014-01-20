@@ -96,7 +96,7 @@ public abstract class JsonPathExpression {
 
     JsonPathValue compute(JsonPathContext context, JsonNode[] childValues) {
         JsonNode node = computeNode(context, childValues);
-        if (node == null || node.isMissingNode()) {
+        if (node.isMissingNode()) {
             return JsonPathNoValue.INSTANCE;
         }
         return new JsonPathSingleValue(node);
@@ -108,7 +108,7 @@ public abstract class JsonPathExpression {
             return (JsonNode) v;
         }
         if (v == null) {
-            return null;
+            return JsonNodeFactory.instance.nullNode();
         }
         if (v instanceof String) {
             return JsonNodeFactory.instance.textNode((String) v);
@@ -150,7 +150,7 @@ public abstract class JsonPathExpression {
     }
 
     Number asNullableNumber(JsonNode node, Object... context) {
-        if (node == null || node.isNull()) {
+        if (node.isNull()) {
             return null;
         }
         Number n = asLenientNumber(node);
@@ -176,7 +176,7 @@ public abstract class JsonPathExpression {
     }
 
     Integer asNullableInt(JsonNode node, Object... context) {
-        if (node == null || node.isNull()) {
+        if (node.isNull()) {
             return null;
         }
         Integer i = asLenientInt(node);
@@ -206,7 +206,7 @@ public abstract class JsonPathExpression {
     }
 
     Long asNullableLong(JsonNode node, Object... context) {
-        if (node == null || node.isNull()) {
+        if (node.isNull()) {
             return null;
         }
         Long l = asLenientLong(node);
@@ -236,7 +236,7 @@ public abstract class JsonPathExpression {
     }
 
     Double asNullableDouble(JsonNode node, Object... context) {
-        if (node == null || node.isNull()) {
+        if (node.isNull()) {
             return null;
         }
         Double d = asLenientDouble(node);
@@ -266,7 +266,7 @@ public abstract class JsonPathExpression {
     }
 
     String asNullableString(JsonNode node, Object... context) {
-        if (node == null || node.isNull()) {
+        if (node.isNull()) {
             return null;
         }
         String s = asLenientString(node);
@@ -288,33 +288,17 @@ public abstract class JsonPathExpression {
         return asString(eval(jpcontext).toNode(), context);
     }
 
-    Boolean asLenientBoolean(JsonNode node) {
+    boolean asBoolean(JsonNode node) {
         if (node instanceof BooleanNode) {
             return ((BooleanNode) node).asBoolean();
         }
-        return null;
+        if (node.isMissingNode()) {
+            return false;
+        }
+        return true;
     }
 
-    Boolean asNullableBoolean(JsonNode node, Object... context) {
-        if (node == null || node.isNull()) {
-            return null;
-        }
-        Boolean b = asLenientBoolean(node);
-        if (b == null) {
-            throw new TypeMismatchException(position, "boolean", node, context);
-        }
-        return b;
-    }
-
-    boolean asBoolean(JsonNode node, Object... context) {
-        Boolean b = asNullableBoolean(node, context);
-        if (b == null) {
-            throw new NullJsonException(position);
-        }
-        return b;
-    }
-
-    boolean evalAsBoolean(JsonPathContext jpcontext, Object... context) {
-        return asBoolean(eval(jpcontext).toNode(), context);
+    boolean evalAsBoolean(JsonPathContext jpcontext) {
+        return asBoolean(eval(jpcontext).toNode());
     }
 }

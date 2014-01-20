@@ -39,7 +39,7 @@ class TernaryJPE extends JsonPathExpression {
 
     @Override
     public JsonPathValue eval(JsonPathContext context) {
-        boolean c = condition.evalAsBoolean(context, "condition of ternary expression");
+        boolean c = condition.evalAsBoolean(context);
         if (c) {
             return onTrue.eval(context);
         } else {

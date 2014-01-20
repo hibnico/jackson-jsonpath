@@ -55,20 +55,20 @@ class BooleanJPE extends JsonPathExpression {
     }
 
     private boolean computePartial(JsonPathContext context) {
-        boolean b1 = left.evalAsBoolean(context, "boolean op '", op.sign, "'");
+        boolean b1 = left.evalAsBoolean(context);
         switch (op) {
         case AND: {
             if (!b1) {
                 return false;
             }
-            boolean b2 = right.evalAsBoolean(context, "boolean op '", op.sign, "'");
+            boolean b2 = right.evalAsBoolean(context);
             return b2;
         }
         case OR: {
             if (b1) {
                 return true;
             }
-            boolean b2 = right.evalAsBoolean(context, "boolean op '", op.sign, "'");
+            boolean b2 = right.evalAsBoolean(context);
             return b2;
         }
         default:
@@ -78,8 +78,8 @@ class BooleanJPE extends JsonPathExpression {
 
     @Override
     Object computeObject(JsonPathContext context, JsonNode[] childValues) {
-        boolean b1 = asBoolean(childValues[0], "boolean op '", op.sign, "'");
-        boolean b2 = asBoolean(childValues[1], "boolean op '", op.sign, "'");
+        boolean b1 = asBoolean(childValues[0]);
+        boolean b2 = asBoolean(childValues[1]);
         switch (op) {
         case AND: {
             return b1 && b2;

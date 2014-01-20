@@ -21,6 +21,7 @@ import org.hamcrest.Matcher;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.jsonpath.JsonPathNoValue;
 import com.fasterxml.jackson.jsonpath.JsonPathValue;
 
 public class AsObjectMatcher extends BaseMatcher<JsonPathValue> {
@@ -36,6 +37,9 @@ public class AsObjectMatcher extends BaseMatcher<JsonPathValue> {
     @Override
     public boolean matches(Object item) {
         if (!(item instanceof JsonPathValue)) {
+            return false;
+        }
+        if (item instanceof JsonPathNoValue) {
             return false;
         }
         JsonNode node = ((JsonPathValue) item).toNode();

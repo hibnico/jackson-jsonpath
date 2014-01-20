@@ -48,7 +48,7 @@ class UnaryJPE extends JsonPathExpression {
     Object computeObject(JsonPathContext context, JsonNode[] childValues) {
         switch (op) {
         case NOT:
-            return !asBoolean(childValues[0], "unary op '", op.sign, "'");
+            return !asBoolean(childValues[0]);
         case MINUS: {
             Number n = asNumber(childValues[0], "unary op '", op.sign, "'");
             if (n instanceof Double) {

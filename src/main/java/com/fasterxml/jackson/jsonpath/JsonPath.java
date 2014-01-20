@@ -38,10 +38,9 @@ public class JsonPath {
     }
 
     public JsonPathValue eval(JsonNode node) {
-        if (node == null || node.isNull()) {
-            return JsonPathNoValue.INSTANCE;
+        if (node == null) {
+            throw new NullPointerException();
         }
-
         return expr.eval(new JsonPathContext(node));
     }
 

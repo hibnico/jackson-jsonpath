@@ -53,7 +53,7 @@ public class ComplianceTest {
             .assertThat("$['a']", asObject(equalTo("a")))
             .assertThat("$['c d']", asObject(equalTo("e")))
             .assertThat("$.*", asObject(hasItems("a", "b", "e")))
-            .assertThat("$['*']", asObject(equalTo(null)))
+            .assertThat("$['*']", isNoValue())
             .assertThat("$[*]", asObject(hasItems(hasEntry("a", "a"), hasEntry("b", "b"), hasEntry("c d", "e"))));
         // @formatter:on
     }
@@ -89,10 +89,11 @@ public class ComplianceTest {
     public void test3() throws Exception {
         // @formatter:off
         with(jsonTest.get(3).get("o"))
-            .assertThat("$.menu.items[?(@ != null && @.id != null && @.label == null)].id", asObject(hasItems("Open", "Quality", "Pause", "Mute", "Copy", "Help")))
+            .assertThat("$.menu.items[?(@ != null && @.id && !@.label)].id", asObject(hasItems("Open", "Quality", "Pause", "Mute", "Copy", "Help")))
             // .assertThat("$.menu.items[?(@!= null  && @.label != null && /SVG/.test(@.label))].id", asObject(hasItems("CopySVG", "ViewSVG"))) TODO
             .assertThat("$.menu.items[?(@ == null)]", asObject(hasItems((Integer) null, null, null, null)))
-            .assertThat("$..[3]", asObject(hasEntry("id", "Open")));
+            // .assertThat("$..*[?(pos()==3)]", asObject(hasEntry("id", "Open"))) TODO
+            ;
         // @formatter:on
     }
 
@@ -100,7 +101,7 @@ public class ComplianceTest {
     public void test4() throws Exception {
         // @formatter:off
         with(jsonTest.get(4).get("o"))
-            .assertThat("$..[0]", asObject(hasItems(1, 5)))
+            .assertThat("$..*[0]", asObject(hasItems(1, 5)))
             //.assertThat("$..[-1:]", asObject(hasItems(4, 8))) TODO
             //.assertThat("$..[?(@%2==0)]", asObject(hasItems(2, 4, 6, 8))) TODO
             ;
@@ -131,7 +132,7 @@ public class ComplianceTest {
     public void test7() throws Exception {
         // @formatter:off
         with(jsonTest.get(7).get("o"))
-            .assertThat("$...a", asObject(hasItem(6)));
+            .assertThat("$..*.a", asObject(hasItem(6)));
         // @formatter:on
     }
 

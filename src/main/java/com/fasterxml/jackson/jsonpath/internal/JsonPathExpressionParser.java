@@ -535,10 +535,28 @@ public class JsonPathExpressionParser {
         buffer.skipWhiteSpace();
         Character c = buffer.readAhead();
         Character c2 = buffer.readAhead(2);
-        if (c != null && c2 != null && c == '.' && c2 == '.') {
+        Character c3 = buffer.readAhead(3);
+        if (c != null && c2 != null && c3 != null && c == '.' && c2 == '.' && c3 == '*') {
+            int p = buffer.pos;
+            buffer.skip(3);
+            expr = new DescendingJPE(p, expr, null);
+        } else if (c != null && c2 != null && c3 != null && c == '.' && c2 == '.'
+                && (isAlpha(c3) || c3 == '\'' || c3 == '\"')) {
             int p = buffer.pos;
             buffer.skip(2);
-            expr = new DescendingJPE(p, expr);
+            String field;
+            if (c3 == '\'') {
+                buffer.skip();
+                field = readEscaped('\'');
+                buffer.readExpected('\'', "identifier");
+            } else if (c3 == '\"') {
+                buffer.skip();
+                field = readEscaped('\"');
+                buffer.readExpected('\"', "identifier");
+            } else {
+                field = readIdentifier();
+            }
+            expr = new DescendingJPE(p, expr, field);
         } else if (c != null && c2 != null && c == '.' && c2 == '*') {
             int p = buffer.pos;
             buffer.skip(2);

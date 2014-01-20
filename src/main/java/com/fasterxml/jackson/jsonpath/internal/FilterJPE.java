@@ -36,7 +36,7 @@ class FilterJPE extends JsonPathExpression {
         JsonPathVectorValue ret = new JsonPathVectorValue();
         int i = 0;
         for (JsonNode subNode : node) {
-            boolean select = filter.evalAsBoolean(new JsonPathContext(context, subNode, i), "filtering selector");
+            boolean select = filter.evalAsBoolean(new JsonPathContext(context, subNode, i));
             if (select) {
                 ret.add(subNode);
             }

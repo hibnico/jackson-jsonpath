@@ -15,9 +15,7 @@
 package com.fasterxml.jackson.jsonpath.internal;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.jsonpath.JsonPathNoValue;
 import com.fasterxml.jackson.jsonpath.JsonPathRuntimeException;
-import com.fasterxml.jackson.jsonpath.JsonPathSingleValue;
 import com.fasterxml.jackson.jsonpath.JsonPathValue;
 
 class IndexSelectorJPE extends JsonPathExpression {
@@ -34,16 +32,17 @@ class IndexSelectorJPE extends JsonPathExpression {
 
     @Override
     public JsonPathValue eval(JsonPathContext context) {
-        JsonNode o = object.eval(context).toNode();
+        return evalAsDotProduct(context, object);
+    }
+
+    @Override
+    JsonNode computeNode(JsonPathContext context, JsonNode[] childValues) {
+        JsonNode o = childValues[0];
         if (!o.isArray()) {
             throw new JsonPathRuntimeException("index selector must apply on an array, not a "
                     + o.getNodeType().toString().toLowerCase(), position);
         }
-        JsonNode res = o.get(index);
-        if (res == null) {
-            return JsonPathNoValue.INSTANCE;
-        }
-        return new JsonPathSingleValue(res);
+        return o.path(index);
     }
 
     @Override

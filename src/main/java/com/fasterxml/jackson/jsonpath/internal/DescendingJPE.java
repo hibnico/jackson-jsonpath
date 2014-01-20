@@ -22,9 +22,12 @@ class DescendingJPE extends JsonPathExpression {
 
     private JsonPathExpression object;
 
-    DescendingJPE(int position, JsonPathExpression object) {
+    private String field;
+
+    DescendingJPE(int position, JsonPathExpression object, String field) {
         super(position, true);
         this.object = object;
+        this.field = field;
     }
 
     @Override
@@ -41,7 +44,11 @@ class DescendingJPE extends JsonPathExpression {
 
     private void descend(JsonNode node, JsonPathVectorValue result) {
         if (node.isContainerNode()) {
-            result.add(node);
+            if (field == null) {
+                result.add(node);
+            } else if (node.has(field)) {
+                result.add(node.get(field));
+            }
             for (JsonNode value : node) {
                 descend(value, result);
             }
