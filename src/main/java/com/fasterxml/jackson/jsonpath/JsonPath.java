@@ -67,7 +67,11 @@ public class JsonPath {
     }
 
     public static JsonPath compile(String path) throws ParseException {
-        return new JsonPath(JsonPathExpressionParser.parse(path));
+        return new JsonPath(JsonPathExpressionParser.parse(path, JsonPathFunctionRegistry.DEFAULT));
+    }
+
+    public static JsonPath compile(String path, JsonPathFunctionRegistry functionRegistry) throws ParseException {
+        return new JsonPath(JsonPathExpressionParser.parse(path, functionRegistry));
     }
 
     public static JsonPathValue eval(JsonNode node, String path) throws ParseException {

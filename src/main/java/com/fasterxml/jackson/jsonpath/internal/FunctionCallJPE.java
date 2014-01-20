@@ -14,27 +14,33 @@
  */
 package com.fasterxml.jackson.jsonpath.internal;
 
+import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.jsonpath.JsonPathFunction;
 import com.fasterxml.jackson.jsonpath.JsonPathValue;
 
-class MethodCallJPE extends JsonPathExpression {
+class FunctionCallJPE extends JsonPathExpression {
 
-    private JsonPathExpression object;
-
-    private String function;
+    private JsonPathFunction function;
 
     private List<JsonPathExpression> arguments;
 
-    MethodCallJPE(int position, JsonPathExpression object, String function, List<JsonPathExpression> arguments) {
-        super(position, object.isVector());
-        this.object = object;
+    FunctionCallJPE(int position, JsonPathFunction function, List<JsonPathExpression> arguments) throws ParseException {
+        super(position, function.isVector(arguments));
         this.function = function;
         this.arguments = arguments;
+        function.check(position, arguments);
     }
 
     @Override
     public JsonPathValue eval(JsonPathContext context) {
-        throw new IllegalStateException("TODO");
+        List<JsonNode> args = new ArrayList<JsonNode>();
+        for (JsonPathExpression e : arguments) {
+            args.add(e.eval(context).toNode());
+        }
+        return function.call(context, args);
     }
 }

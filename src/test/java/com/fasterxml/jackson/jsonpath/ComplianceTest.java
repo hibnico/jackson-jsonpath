@@ -14,13 +14,14 @@
  */
 package com.fasterxml.jackson.jsonpath;
 
-import static com.fasterxml.jackson.jsonpath.jsonassert.JsonAssert.*;
+import static com.fasterxml.jackson.jsonpath.jsonassert.JsonAssert.asObject;
+import static com.fasterxml.jackson.jsonpath.jsonassert.JsonAssert.isNoValue;
+import static com.fasterxml.jackson.jsonpath.jsonassert.JsonAssert.with;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasItems;
-import static org.hamcrest.Matchers.nullValue;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -92,8 +93,7 @@ public class ComplianceTest {
             .assertThat("$.menu.items[?(@ != null && @.id && !@.label)].id", asObject(hasItems("Open", "Quality", "Pause", "Mute", "Copy", "Help")))
             // .assertThat("$.menu.items[?(@!= null  && @.label != null && /SVG/.test(@.label))].id", asObject(hasItems("CopySVG", "ViewSVG"))) TODO
             .assertThat("$.menu.items[?(@ == null)]", asObject(hasItems((Integer) null, null, null, null)))
-            // .assertThat("$..*[?(pos()==3)]", asObject(hasEntry("id", "Open"))) TODO
-            ;
+            .assertThat("$..*[?(pos()==3)]", asObject(hasItem(hasEntry("id", "Open"))));
         // @formatter:on
     }
 
@@ -101,7 +101,7 @@ public class ComplianceTest {
     public void test4() throws Exception {
         // @formatter:off
         with(jsonTest.get(4).get("o"))
-            //.assertThat("$..*[?(typeof(@) == 'array')][0]", asObject(hasItems(1, 5))) TODO
+            .assertThat("$..*[?(typeof(@) == 'array')][0]", asObject(hasItems(1, 5)))
             //.assertThat("$..[-1:]", asObject(hasItems(4, 8))) TODO
             //.assertThat("$..[?(@%2==0)]", asObject(hasItems(2, 4, 6, 8))) TODO
             ;
@@ -122,7 +122,7 @@ public class ComplianceTest {
     public void test6() throws Exception {
         // @formatter:off
         with(jsonTest.get(6).get("o"))
-            //.assertThat("$.text[?(@.length > 5)]", asObject(hasItem("world2.0"))) TODO
+            .assertThat("$.text[?(len(@) > 5)]", asObject(hasItem("world2.0")))
             //.assertThat("$.text[?(@.charAt(0) == 'h')]", asObject(hasItem("hello"))) TODO
             ;
         // @formatter:on

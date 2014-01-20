@@ -19,6 +19,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.jsonpath.JsonPathFunction;
+import com.fasterxml.jackson.jsonpath.JsonPathFunctionRegistry;
 import com.fasterxml.jackson.jsonpath.internal.ArithmeticJPE.ArithmeticOp;
 import com.fasterxml.jackson.jsonpath.internal.BitwiseJPE.BitwiseOp;
 import com.fasterxml.jackson.jsonpath.internal.BooleanJPE.BooleanOp;
@@ -28,10 +30,9 @@ import com.fasterxml.jackson.jsonpath.internal.UnaryJPE.UnaryOp;
 
 public class JsonPathExpressionParser {
 
-    private Buffer buffer;
-
-    public static JsonPathExpression parse(String path) throws ParseException {
-        JsonPathExpressionParser parser = new JsonPathExpressionParser(new Buffer(path));
+    public static JsonPathExpression parse(String path, JsonPathFunctionRegistry functionRegistry)
+            throws ParseException {
+        JsonPathExpressionParser parser = new JsonPathExpressionParser(new Buffer(path), functionRegistry);
         JsonPathExpression expr = parser.readExpr();
         parser.buffer.skipWhiteSpace();
         if (!parser.buffer.isConsumed()) {
@@ -40,8 +41,13 @@ public class JsonPathExpressionParser {
         return expr;
     }
 
-    public JsonPathExpressionParser(Buffer buffer) {
+    private Buffer buffer;
+
+    private JsonPathFunctionRegistry functionRegistry;
+
+    public JsonPathExpressionParser(Buffer buffer, JsonPathFunctionRegistry functionRegistry) {
         this.buffer = buffer;
+        this.functionRegistry = functionRegistry;
     }
 
     private JsonPathExpression readExpr() throws ParseException {
@@ -464,6 +470,15 @@ public class JsonPathExpressionParser {
             buffer.skip(4);
             return new LiteralJPE(p, JsonNodeFactory.instance.nullNode());
         }
+        if (isAlpha(c)) {
+            String id = readIdentifier();
+            List<JsonPathExpression> arguments = readArguments();
+            JsonPathFunction function = functionRegistry.getFunctions().get(id);
+            if (function == null) {
+                throw new ParseException("unknown function '" + id + "'", buffer.pos);
+            }
+            return new FunctionCallJPE(buffer.pos, function, arguments);
+        }
         return null;
     }
 
@@ -571,12 +586,7 @@ public class JsonPathExpressionParser {
                 expr = new IndexSelectorJPE(p, expr, i);
             } else {
                 String id = readIdentifier();
-                List<JsonPathExpression> arguments = readArguments();
-                if (arguments != null) {
-                    expr = new MethodCallJPE(p, expr, id, arguments);
-                } else {
-                    expr = new FieldSelectorJPE(p, expr, id);
-                }
+                expr = new FieldSelectorJPE(p, expr, id);
             }
         } else if (c != null && c == '[') {
             buffer.skip();
@@ -676,19 +686,22 @@ public class JsonPathExpressionParser {
 
     private List<JsonPathExpression> readArguments() throws ParseException {
         buffer.skipWhiteSpace();
-        Character c = buffer.readAhead();
-        List<JsonPathExpression> arguments;
-        if (c != null && c == '(') {
-            arguments = new ArrayList<JsonPathExpression>();
-            do {
+        buffer.readExpected('(', "start of function call");
+        List<JsonPathExpression> arguments = new ArrayList<JsonPathExpression>();
+        while (true) {
+            JsonPathExpression argument = readExpr();
+            if (argument == null) {
+                break;
+            }
+            arguments.add(argument);
+            buffer.skipWhiteSpace();
+            if (buffer.readAhead() == ',') {
                 buffer.skip();
-                JsonPathExpression argument = readExpr();
-                arguments.add(argument);
-                buffer.skipWhiteSpace();
-            } while (buffer.readAhead() == ',');
-        } else {
-            arguments = null;
+            } else {
+                break;
+            }
         }
+        buffer.readExpected(')', "end of function call");
         return arguments;
     }
 
