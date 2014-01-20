@@ -30,7 +30,7 @@ public class JsonPathSingleValue extends JsonPathValue {
     }
 
     @Override
-    public JsonNode toNode() {
+    public JsonNode asNode() {
         return node;
     }
 }

@@ -64,7 +64,7 @@ public class JsonPathTask extends Task {
         }
         JsonNode result;
         try {
-            result = jsonPath.eval(json).toNode();
+            result = jsonPath.eval(json).asNode();
         } catch (JsonProcessingException e) {
             throw new BuildException("Invalid json: " + e.getMessage(), e);
         } catch (IOException e) {

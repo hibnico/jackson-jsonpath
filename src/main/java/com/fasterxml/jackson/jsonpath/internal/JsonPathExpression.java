@@ -14,9 +14,8 @@
  */
 package com.fasterxml.jackson.jsonpath.internal;
 
-import java.util.List;
-
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.BooleanNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.NumericNode;
@@ -62,7 +61,7 @@ public abstract class JsonPathExpression {
         for (int i = 0; i < children.length; i++) {
             values[i] = children[i].eval(context);
             if (values[i] instanceof JsonPathVectorValue) {
-                List<JsonNode> subNodes = ((JsonPathVectorValue) values[i]).getNodes();
+                ArrayNode subNodes = ((JsonPathVectorValue) values[i]).asNode();
                 if (vectorLength == null) {
                     vectorLength = subNodes.size();
                 } else if (vectorLength != subNodes.size()) {
@@ -70,7 +69,7 @@ public abstract class JsonPathExpression {
                             + subNodes.size(), position);
                 }
             } else {
-                nodes[i] = values[i].toNode();
+                nodes[i] = values[i].asNode();
             }
         }
 
@@ -83,7 +82,7 @@ public abstract class JsonPathExpression {
 
             for (int j = 0; j < values.length; j++) {
                 if (values[j] instanceof JsonPathVectorValue) {
-                    List<JsonNode> subNodes = ((JsonPathVectorValue) values[j]).getNodes();
+                    ArrayNode subNodes = ((JsonPathVectorValue) values[j]).asNode();
                     nodes[j] = subNodes.get(i);
                 }
             }
@@ -195,7 +194,7 @@ public abstract class JsonPathExpression {
     }
 
     int evalAsInt(JsonPathContext jpcontext, Object... context) {
-        return asInt(eval(jpcontext).toNode(), context);
+        return asInt(eval(jpcontext).asNode(), context);
     }
 
     Long asLenientLong(JsonNode node) {
@@ -225,7 +224,7 @@ public abstract class JsonPathExpression {
     }
 
     long evalAsLong(JsonPathContext jpcontext, Object... context) {
-        return asLong(eval(jpcontext).toNode(), context);
+        return asLong(eval(jpcontext).asNode(), context);
     }
 
     Double asLenientDouble(JsonNode node) {
@@ -255,7 +254,7 @@ public abstract class JsonPathExpression {
     }
 
     double evalAsDouble(JsonPathContext jpcontext, Object... context) {
-        return asDouble(eval(jpcontext).toNode(), context);
+        return asDouble(eval(jpcontext).asNode(), context);
     }
 
     String asLenientString(JsonNode node) {
@@ -285,7 +284,7 @@ public abstract class JsonPathExpression {
     }
 
     String evalAsString(JsonPathContext jpcontext, Object... context) {
-        return asString(eval(jpcontext).toNode(), context);
+        return asString(eval(jpcontext).asNode(), context);
     }
 
     boolean asBoolean(JsonNode node) {
@@ -299,6 +298,6 @@ public abstract class JsonPathExpression {
     }
 
     boolean evalAsBoolean(JsonPathContext jpcontext) {
-        return asBoolean(eval(jpcontext).toNode());
+        return asBoolean(eval(jpcontext).asNode());
     }
 }

@@ -39,7 +39,7 @@ class FunctionCallJPE extends JsonPathExpression {
     public JsonPathValue eval(JsonPathContext context) {
         List<JsonNode> args = new ArrayList<JsonNode>();
         for (JsonPathExpression e : arguments) {
-            args.add(e.eval(context).toNode());
+            args.add(e.eval(context).asNode());
         }
         return function.call(context, args);
     }

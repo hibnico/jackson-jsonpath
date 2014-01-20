@@ -32,7 +32,7 @@ class FilterJPE extends JsonPathExpression {
 
     @Override
     public JsonPathValue eval(JsonPathContext context) {
-        JsonNode node = object.eval(context).toNode();
+        JsonNode node = object.eval(context).asNode();
         JsonPathVectorValue ret = new JsonPathVectorValue();
         int i = 0;
         for (JsonNode subNode : node) {

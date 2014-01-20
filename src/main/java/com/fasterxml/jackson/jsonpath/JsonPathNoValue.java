@@ -27,7 +27,7 @@ public class JsonPathNoValue extends JsonPathValue {
     }
 
     @Override
-    public JsonNode toNode() {
+    public JsonNode asNode() {
         return MissingNode.getInstance();
     }
 }

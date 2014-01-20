@@ -26,13 +26,13 @@ public class IssuesTest {
     public void issue_7() throws Exception {
         String json = "{ \"foo\" : [\n" + "  { \"id\": 1 },  \n" + "  { \"id\": 2 },  \n" + "  { \"id\": 3 }\n"
                 + "  ] }";
-        assertTrue(JsonPath.eval(json, "$.foo.id").toNode().isNull());
+        assertTrue(JsonPath.eval(json, "$.foo.id").asNode().isNull());
     }
 
     @Test
     public void issue_11() throws Exception {
         String json = "{ \"foo\" : [] }";
-        JsonNode result = JsonPath.eval(json, "$.foo[?(@.rel= 'item')][0].uri").toNode();
+        JsonNode result = JsonPath.eval(json, "$.foo[?(@.rel= 'item')][0].uri").asNode();
         assertTrue(result.size() == 0);
     }
 

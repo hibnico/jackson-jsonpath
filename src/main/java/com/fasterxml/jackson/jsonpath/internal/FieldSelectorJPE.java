@@ -47,7 +47,7 @@ class FieldSelectorJPE extends JsonPathExpression {
             throw new JsonPathRuntimeException("field selector must apply on an object, not a "
                     + o.getNodeType().toString().toLowerCase(), position);
         }
-        JsonNode i = index.eval(context).toNode();
+        JsonNode i = index.eval(context).asNode();
         return o.path(asString(i, "index of selector"));
     }
 

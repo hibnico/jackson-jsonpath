@@ -14,16 +14,13 @@
  */
 package com.fasterxml.jackson.jsonpath;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 
 public class JsonPathVectorValue extends JsonPathValue {
 
-    private List<JsonNode> nodes = new ArrayList<JsonNode>();
+    private ArrayNode nodes = JsonNodeFactory.instance.arrayNode();
 
     @Override
     public void addTo(JsonPathVectorValue ret) {
@@ -37,13 +34,7 @@ public class JsonPathVectorValue extends JsonPathValue {
     }
 
     @Override
-    public ArrayNode toNode() {
-        ArrayNode array = JsonNodeFactory.instance.arrayNode();
-        array.addAll(nodes);
-        return array;
-    }
-
-    public List<JsonNode> getNodes() {
+    public ArrayNode asNode() {
         return nodes;
     }
 

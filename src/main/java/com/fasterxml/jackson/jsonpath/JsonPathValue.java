@@ -20,10 +20,10 @@ public abstract class JsonPathValue {
 
     public abstract void addTo(JsonPathVectorValue value);
 
-    public abstract JsonNode toNode();
+    public abstract JsonNode asNode();
 
     @Override
     public String toString() {
-        return toNode().toString();
+        return asNode().toString();
     }
 }

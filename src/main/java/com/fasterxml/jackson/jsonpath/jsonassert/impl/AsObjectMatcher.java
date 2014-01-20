@@ -42,7 +42,7 @@ public class AsObjectMatcher extends BaseMatcher<JsonPathValue> {
         if (item instanceof JsonPathNoValue) {
             return false;
         }
-        JsonNode node = ((JsonPathValue) item).toNode();
+        JsonNode node = ((JsonPathValue) item).asNode();
         Object obj;
         try {
             obj = mapper.treeToValue(node, Object.class);

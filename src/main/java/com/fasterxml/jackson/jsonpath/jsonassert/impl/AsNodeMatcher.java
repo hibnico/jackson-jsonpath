@@ -34,7 +34,7 @@ public class AsNodeMatcher extends BaseMatcher<JsonPathValue> {
         if (!(item instanceof JsonPathValue)) {
             return false;
         }
-        return nodeMatcher.matches(((JsonPathValue) item).toNode());
+        return nodeMatcher.matches(((JsonPathValue) item).asNode());
     }
 
     @Override
