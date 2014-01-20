@@ -101,7 +101,7 @@ public class ComplianceTest {
     public void test4() throws Exception {
         // @formatter:off
         with(jsonTest.get(4).get("o"))
-            .assertThat("$..*[0]", asObject(hasItems(1, 5)))
+            //.assertThat("$..*[?(typeof(@) == 'array')][0]", asObject(hasItems(1, 5))) TODO
             //.assertThat("$..[-1:]", asObject(hasItems(4, 8))) TODO
             //.assertThat("$..[?(@%2==0)]", asObject(hasItems(2, 4, 6, 8))) TODO
             ;
