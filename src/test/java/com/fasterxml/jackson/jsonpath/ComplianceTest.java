@@ -55,8 +55,7 @@ public class ComplianceTest {
             .assertThat("$['a']", asObject(equalTo("a")))
             .assertThat("$['c d']", asObject(equalTo("e")))
             .assertThat("$.*", asObject(hasItems("a", "b", "e")))
-            .assertThat("$['*']", isNoValue())
-            .assertThat("$[*]", asObject(hasItems(hasEntry("a", "a"), hasEntry("b", "b"), hasEntry("c d", "e"))));
+            .assertThat("$['*']", isNoValue());
         // @formatter:on
     }
 
@@ -111,7 +110,7 @@ public class ComplianceTest {
         // @formatter:off
         with(jsonTest.get(5).get("o"))
             .assertThat("$.*[?(@.color != null)].x", asObject(hasItems(2, 5, 2)))
-            .assertThat("$['lin','cir'].color", asObject(hasItems("red", "blue")));
+            .assertThat("$.*[?(name() == 'lin' || name() == 'cir')].color", asObject(hasItems("red", "blue")));
         // @formatter:on
     }
 

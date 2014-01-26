@@ -19,11 +19,11 @@ import com.fasterxml.jackson.jsonpath.JsonPathRuntimeException;
 import com.fasterxml.jackson.jsonpath.JsonPathValue;
 import com.fasterxml.jackson.jsonpath.JsonPathVectorValue;
 
-class WildcardJPE extends JsonPathExpression {
+class WildcardArrayJPE extends JsonPathExpression {
 
     private JsonPathExpression object;
 
-    WildcardJPE(int position, JsonPathExpression object) {
+    WildcardArrayJPE(int position, JsonPathExpression object) {
         super(position, true);
         this.object = object;
     }
@@ -37,12 +37,12 @@ class WildcardJPE extends JsonPathExpression {
     JsonPathValue compute(JsonPathContext context, JsonNode[] childValues) {
         JsonNode node = childValues[0];
         JsonPathVectorValue ret = new JsonPathVectorValue();
-        if (node.isObject()) {
-            for (JsonNode subNode : node) {
-                ret.add(subNode);
+        if (node.isArray()) {
+            for (int i = 0; i < node.size(); i++) {
+                ret.add(node.get(i), Integer.toString(i));
             }
         } else {
-            throw new JsonPathRuntimeException("wilcard cannot be applied to "
+            throw new JsonPathRuntimeException("wildcard selector cannot apply to "
                     + node.getNodeType().toString().toLowerCase(), position);
         }
         return ret;
@@ -50,6 +50,6 @@ class WildcardJPE extends JsonPathExpression {
 
     @Override
     public String toString() {
-        return object.toString() + ".*";
+        return object.toString() + "[*]";
     }
 }

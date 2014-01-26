@@ -28,4 +28,5 @@ public abstract class JsonPathValue {
     public String toString() {
         return asNode().toString();
     }
+
 }

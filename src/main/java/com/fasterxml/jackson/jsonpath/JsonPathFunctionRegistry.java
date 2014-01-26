@@ -6,6 +6,7 @@ import java.util.Map;
 import com.fasterxml.jackson.jsonpath.internal.func.CharAtJPFP;
 import com.fasterxml.jackson.jsonpath.internal.func.EndsWithJPFP;
 import com.fasterxml.jackson.jsonpath.internal.func.LenJPFP;
+import com.fasterxml.jackson.jsonpath.internal.func.NameJPFP;
 import com.fasterxml.jackson.jsonpath.internal.func.PosJPFP;
 import com.fasterxml.jackson.jsonpath.internal.func.RegexpMatchJPFP;
 import com.fasterxml.jackson.jsonpath.internal.func.StartsWithJPFP;
@@ -25,6 +26,7 @@ public class JsonPathFunctionRegistry {
     public void registerDefaultFunctions() {
         register(TypeOfJPFP.instance);
         register(PosJPFP.instance);
+        register(NameJPFP.instance);
         register(LenJPFP.instance);
         register(CharAtJPFP.instance);
         register(SubstringJPFP.instance);

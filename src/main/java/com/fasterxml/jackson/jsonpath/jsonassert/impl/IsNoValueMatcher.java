@@ -17,14 +17,16 @@ package com.fasterxml.jackson.jsonpath.jsonassert.impl;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 
-import com.fasterxml.jackson.jsonpath.JsonPathNoValue;
 import com.fasterxml.jackson.jsonpath.JsonPathValue;
 
 public class IsNoValueMatcher extends BaseMatcher<JsonPathValue> {
 
     @Override
     public boolean matches(Object item) {
-        return item instanceof JsonPathNoValue;
+        if (!(item instanceof JsonPathValue)) {
+            return false;
+        }
+        return !((JsonPathValue) item).getNodes().iterator().hasNext();
     }
 
     @Override

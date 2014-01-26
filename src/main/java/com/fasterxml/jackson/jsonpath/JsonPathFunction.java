@@ -15,7 +15,7 @@ public abstract class JsonPathFunction {
     public JsonPathValue call(JsonPathContext context, List<JsonNode> args) {
         JsonNode node = callAsNode(context, args);
         if (node == null || node.isMissingNode()) {
-            return JsonPathNoValue.INSTANCE;
+            return JsonPathSingleValue.EMPTY;
         }
         return new JsonPathSingleValue(node);
     }

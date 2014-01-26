@@ -14,6 +14,8 @@
  */
 package com.fasterxml.jackson.jsonpath.internal;
 
+import java.util.Iterator;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.jsonpath.JsonPathValue;
 import com.fasterxml.jackson.jsonpath.JsonPathVectorValue;
@@ -22,12 +24,9 @@ class DescendingJPE extends JsonPathExpression {
 
     private JsonPathExpression object;
 
-    private String field;
-
-    DescendingJPE(int position, JsonPathExpression object, String field) {
+    DescendingJPE(int position, JsonPathExpression object) {
         super(position, true);
         this.object = object;
-        this.field = field;
     }
 
     @Override
@@ -38,19 +37,23 @@ class DescendingJPE extends JsonPathExpression {
     @Override
     JsonPathValue compute(JsonPathContext context, JsonNode[] childValues) {
         JsonPathVectorValue ret = new JsonPathVectorValue();
-        descend(childValues[0], ret);
+        descend(childValues[0], ret, null);
         return ret;
     }
 
-    private void descend(JsonNode node, JsonPathVectorValue result) {
+    private void descend(JsonNode node, JsonPathVectorValue result, String elementName) {
         if (node.isContainerNode()) {
-            if (field == null) {
-                result.add(node);
-            } else if (node.has(field)) {
-                result.add(node.get(field));
-            }
-            for (JsonNode value : node) {
-                descend(value, result);
+            result.add(node, elementName);
+            if (node.isArray()) {
+                int n = 0;
+                for (JsonNode value : node) {
+                    descend(value, result, Integer.toString(n++));
+                }
+            } else {
+                for (Iterator<String> fields = node.fieldNames(); fields.hasNext();) {
+                    String field = fields.next();
+                    descend(node.get(field), result, field);
+                }
             }
         }
     }

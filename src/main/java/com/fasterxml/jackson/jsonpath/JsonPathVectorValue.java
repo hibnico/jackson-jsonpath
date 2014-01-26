@@ -14,23 +14,34 @@
  */
 package com.fasterxml.jackson.jsonpath;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 
 public class JsonPathVectorValue extends JsonPathValue {
 
+    public static final JsonPathVectorValue EMPTY = new JsonPathVectorValue();
+
     private ArrayNode nodes = JsonNodeFactory.instance.arrayNode();
+
+    private List<String> names = new ArrayList<String>();
 
     @Override
     public void addTo(JsonPathVectorValue ret) {
+        int i = 0;
         for (JsonNode node : nodes) {
-            ret.add(node);
+            ret.add(node, names.get(i++));
         }
     }
 
-    public void add(JsonNode node) {
-        nodes.add(node);
+    public void add(JsonNode node, String name) {
+        if (!node.isMissingNode()) {
+            nodes.add(node);
+            names.add(name);
+        }
     }
 
     @Override
@@ -42,4 +53,9 @@ public class JsonPathVectorValue extends JsonPathValue {
     public Iterable<JsonNode> getNodes() {
         return nodes;
     }
+
+    public String getName(int i) {
+        return names.get(i);
+    }
+
 }

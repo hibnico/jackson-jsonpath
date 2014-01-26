@@ -556,28 +556,11 @@ public class JsonPathExpressionParser {
         if (c != null && c2 != null && c3 != null && c == '.' && c2 == '.' && c3 == '*') {
             int p = buffer.pos;
             buffer.skip(3);
-            expr = new DescendingJPE(p, expr, null);
-        } else if (c != null && c2 != null && c3 != null && c == '.' && c2 == '.'
-                && (isAlpha(c3) || c3 == '\'' || c3 == '\"')) {
-            int p = buffer.pos;
-            buffer.skip(2);
-            String field;
-            if (c3 == '\'') {
-                buffer.skip();
-                field = readEscaped('\'');
-                buffer.readExpected('\'', "identifier");
-            } else if (c3 == '\"') {
-                buffer.skip();
-                field = readEscaped('\"');
-                buffer.readExpected('\"', "identifier");
-            } else {
-                field = readIdentifier();
-            }
-            expr = new DescendingJPE(p, expr, field);
+            expr = new DescendingJPE(p, expr);
         } else if (c != null && c2 != null && c == '.' && c2 == '*') {
             int p = buffer.pos;
             buffer.skip(2);
-            expr = new WildcardJPE(p, expr);
+            expr = new WildcardFieldJPE(p, expr);
         } else if (c != null && c == '.') {
             int p = buffer.pos;
             buffer.skip();
@@ -598,7 +581,7 @@ public class JsonPathExpressionParser {
             if (c != null && c == '*') {
                 int p = buffer.pos;
                 buffer.skip();
-                expr = new WildcardSelectorJPE(p, expr);
+                expr = new WildcardArrayJPE(p, expr);
             } else if (c != null && c2 != null && c == '?' && c2 == '(') {
                 int p = buffer.pos;
                 buffer.skip(2);

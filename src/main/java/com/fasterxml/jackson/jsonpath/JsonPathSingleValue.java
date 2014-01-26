@@ -17,8 +17,11 @@ package com.fasterxml.jackson.jsonpath;
 import java.util.Collections;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.MissingNode;
 
 public class JsonPathSingleValue extends JsonPathValue {
+
+    public static final JsonPathSingleValue EMPTY = new JsonPathSingleValue(MissingNode.getInstance());
 
     private JsonNode node;
 
@@ -28,7 +31,9 @@ public class JsonPathSingleValue extends JsonPathValue {
 
     @Override
     public void addTo(JsonPathVectorValue ret) {
-        ret.add(node);
+        if (!node.isMissingNode()) {
+            ret.add(node, null);
+        }
     }
 
     @Override
@@ -38,6 +43,9 @@ public class JsonPathSingleValue extends JsonPathValue {
 
     @Override
     public Iterable<JsonNode> getNodes() {
-        return Collections.singleton(node);
+        if (node.isMissingNode()) {
+            return Collections.emptyList();
+        }
+        return Collections.singletonList(node);
     }
 }

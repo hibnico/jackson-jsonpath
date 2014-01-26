@@ -21,7 +21,6 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.JsonNodeType;
 import com.fasterxml.jackson.databind.node.NumericNode;
 import com.fasterxml.jackson.databind.node.TextNode;
-import com.fasterxml.jackson.jsonpath.JsonPathNoValue;
 import com.fasterxml.jackson.jsonpath.JsonPathRuntimeException;
 import com.fasterxml.jackson.jsonpath.JsonPathSingleValue;
 import com.fasterxml.jackson.jsonpath.JsonPathValue;
@@ -97,7 +96,7 @@ public abstract class JsonPathExpression {
     JsonPathValue compute(JsonPathContext context, JsonNode[] childValues) {
         JsonNode node = computeNode(context, childValues);
         if (node.isMissingNode()) {
-            return JsonPathNoValue.INSTANCE;
+            return JsonPathSingleValue.EMPTY;
         }
         return new JsonPathSingleValue(node);
     }
