@@ -29,10 +29,9 @@ class FunctionCallJPE extends JsonPathExpression {
     private List<JsonPathExpression> arguments;
 
     FunctionCallJPE(int position, JsonPathFunction function, List<JsonPathExpression> arguments) throws ParseException {
-        super(position, function.isVector(arguments));
+        super(position, function.isVector());
         this.function = function;
         this.arguments = arguments;
-        function.check(position, arguments);
     }
 
     @Override

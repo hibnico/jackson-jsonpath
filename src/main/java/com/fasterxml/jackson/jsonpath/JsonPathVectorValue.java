@@ -38,4 +38,8 @@ public class JsonPathVectorValue extends JsonPathValue {
         return nodes;
     }
 
+    @Override
+    public Iterable<JsonNode> getNodes() {
+        return nodes;
+    }
 }

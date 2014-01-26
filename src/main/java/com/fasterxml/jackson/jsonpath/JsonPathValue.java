@@ -22,6 +22,8 @@ public abstract class JsonPathValue {
 
     public abstract JsonNode asNode();
 
+    public abstract Iterable<JsonNode> getNodes();
+
     @Override
     public String toString() {
         return asNode().toString();

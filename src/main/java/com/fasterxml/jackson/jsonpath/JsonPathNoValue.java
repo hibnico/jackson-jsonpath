@@ -14,6 +14,8 @@
  */
 package com.fasterxml.jackson.jsonpath;
 
+import java.util.Collections;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.MissingNode;
 
@@ -29,5 +31,10 @@ public class JsonPathNoValue extends JsonPathValue {
     @Override
     public JsonNode asNode() {
         return MissingNode.getInstance();
+    }
+
+    @Override
+    public Iterable<JsonNode> getNodes() {
+        return Collections.emptySet();
     }
 }

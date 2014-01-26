@@ -22,6 +22,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasItems;
+import static org.hamcrest.Matchers.nullValue;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -66,8 +67,7 @@ public class ComplianceTest {
             .assertThat("$[0]", asObject(equalTo(1)))
             .assertThat("$[4]", asObject(equalTo(null)))
             .assertThat("$[*]", asObject(hasItems(1, "2", 3.14d, true, (Serializable) null)))
-            // .assertThat("$[-1:]", asObject(nullValue())) TODO
-            ;
+            .assertThat("$[-1:]", asObject(hasItems(nullValue())));
         // @formatter:on
     }
 
@@ -77,12 +77,11 @@ public class ComplianceTest {
         with(jsonTest.get(2).get("o"))
             .assertThat("$.points[1]", asObject(allOf(hasEntry("id", "i2"), hasEntry("x", -2), hasEntry("y", 2), hasEntry("z", 1))))
             .assertThat("$.points[4].x", asObject(equalTo(0)))
-            .assertThat("$.points[?(@.id=='i4')].x", asObject(hasItem(-6)))
+            .assertThat("$.points[*][?(@.id=='i4')].x", asObject(hasItem(-6)))
             .assertThat("$.points[*].x", asObject(hasItems(4, -2, 8, -6, 0, 1)))
-            .assertThat("$['points'][?(@.x*@.x+@.y*@.y > 50)].id", asObject(hasItem("i3")))
-            .assertThat("$.points[?(@.z != null)].id", asObject(hasItems("i2", "i5")))
-            // .assertThat("$.points[(@.length-1)].id", asObject(hasItem("i6"))) TODO
-            ;
+            .assertThat("$['points'][*][?(@.x*@.x+@.y*@.y > 50)].id", asObject(hasItem("i3")))
+            .assertThat("$.points[*][?(@.z != null)].id", asObject(hasItems("i2", "i5")))
+            .assertThat("$.points[-1].id", asObject(equalTo("i6")));
         // @formatter:on
     }
 
@@ -90,9 +89,9 @@ public class ComplianceTest {
     public void test3() throws Exception {
         // @formatter:off
         with(jsonTest.get(3).get("o"))
-            .assertThat("$.menu.items[?(@ != null && @.id && !@.label)].id", asObject(hasItems("Open", "Quality", "Pause", "Mute", "Copy", "Help")))
-            // .assertThat("$.menu.items[?(@!= null  && @.label != null && /SVG/.test(@.label))].id", asObject(hasItems("CopySVG", "ViewSVG"))) TODO
-            .assertThat("$.menu.items[?(@ == null)]", asObject(hasItems((Integer) null, null, null, null)))
+            .assertThat("$.menu.items[*][?(@ != null && @.id && !@.label)].id", asObject(hasItems("Open", "Quality", "Pause", "Mute", "Copy", "Help")))
+            .assertThat("$.menu.items[*][?(@!= null  && @.label != null && regexpMatch('.*SVG', @.label))].id", asObject(hasItems("CopySVG", "ViewSVG")))
+            .assertThat("$.menu.items[*][?(@ == null)]", asObject(hasItems((Integer) null, null, null, null)))
             .assertThat("$..*[?(pos()==3)]", asObject(hasItem(hasEntry("id", "Open"))));
         // @formatter:on
     }
@@ -102,9 +101,8 @@ public class ComplianceTest {
         // @formatter:off
         with(jsonTest.get(4).get("o"))
             .assertThat("$..*[?(typeof(@) == 'array')][0]", asObject(hasItems(1, 5)))
-            //.assertThat("$..[-1:]", asObject(hasItems(4, 8))) TODO
-            //.assertThat("$..[?(@%2==0)]", asObject(hasItems(2, 4, 6, 8))) TODO
-            ;
+            .assertThat("$.*[-1:]", asObject(hasItems(hasItems(4), hasItems(8))))
+            .assertThat("$.*[*][?(pos()%2==0)]", asObject(hasItems(1, 3, 5, 7)));
         // @formatter:on
     }
 
@@ -112,9 +110,8 @@ public class ComplianceTest {
     public void test5() throws Exception {
         // @formatter:off
         with(jsonTest.get(5).get("o"))
-            .assertThat("$[?(@.color != null)].x", asObject(hasItems(2, 5, 2)))
-            //.assertThat("$['lin','cir'].color", asObject(hasItems("red", "blue"))) TODO
-            ;
+            .assertThat("$.*[?(@.color != null)].x", asObject(hasItems(2, 5, 2)))
+            .assertThat("$['lin','cir'].color", asObject(hasItems("red", "blue")));
         // @formatter:on
     }
 
@@ -122,9 +119,8 @@ public class ComplianceTest {
     public void test6() throws Exception {
         // @formatter:off
         with(jsonTest.get(6).get("o"))
-            .assertThat("$.text[?(len(@) > 5)]", asObject(hasItem("world2.0")))
-            //.assertThat("$.text[?(@.charAt(0) == 'h')]", asObject(hasItem("hello"))) TODO
-            ;
+            .assertThat("$.text[*][?(len(@) > 5)]", asObject(hasItem("world2.0")))
+            .assertThat("$.text[*][?(charAt(@, 0) == 'h')]", asObject(hasItem("hello")));
         // @formatter:on
     }
 
@@ -140,8 +136,8 @@ public class ComplianceTest {
     public void test8() throws Exception {
         // @formatter:off
         with(jsonTest.get(8).get("o"))
-            .assertThat("$.a[?(@['\\@']==3)].a", asObject(hasItem(6)))
-            .assertThat("$.a[?(@['$']==5)].a", asObject(hasItem(7)));
+            .assertThat("$.a[*][?(@['\\@']==3)].a", asObject(hasItem(6)))
+            .assertThat("$.a[*][?(@['$']==5)].a", asObject(hasItem(7)));
         // @formatter:on
     }
 

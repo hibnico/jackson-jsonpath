@@ -18,7 +18,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.jsonpath.JsonPathSingleValue;
 import com.fasterxml.jackson.jsonpath.JsonPathValue;
 
-class LiteralJPE extends JsonPathExpression {
+public class LiteralJPE extends JsonPathExpression {
 
     private JsonNode literal;
 
@@ -35,5 +35,9 @@ class LiteralJPE extends JsonPathExpression {
     @Override
     public String toString() {
         return literal.toString();
+    }
+
+    public JsonNode getLiteral() {
+        return literal;
     }
 }

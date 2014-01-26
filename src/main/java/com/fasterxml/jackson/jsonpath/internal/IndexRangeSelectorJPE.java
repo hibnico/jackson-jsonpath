@@ -14,20 +14,34 @@
  */
 package com.fasterxml.jackson.jsonpath.internal;
 
+import java.text.ParseException;
+
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.jsonpath.JsonPathRuntimeException;
 import com.fasterxml.jackson.jsonpath.JsonPathValue;
 
-class IndexSelectorJPE extends JsonPathExpression {
+class IndexRangeSelectorJPE extends JsonPathExpression {
 
     private JsonPathExpression object;
 
-    private int index;
+    private int start;
 
-    IndexSelectorJPE(int position, JsonPathExpression object, int index) {
+    private Integer end;
+
+    private int step;
+
+    IndexRangeSelectorJPE(int position, JsonPathExpression object, int start, Integer end, Integer step)
+            throws ParseException {
         super(position, object.isVector());
         this.object = object;
-        this.index = index;
+        this.start = start;
+        this.end = end;
+        this.step = step == null ? 1 : step;
+        if (this.step == 0) {
+            throw new ParseException("the step in a range must be different from 0", position);
+        }
     }
 
     @Override
@@ -42,20 +56,29 @@ class IndexSelectorJPE extends JsonPathExpression {
             throw new JsonPathRuntimeException("index selector must apply on an array, not a "
                     + o.getNodeType().toString().toLowerCase(), position);
         }
-        if (index >= o.size()) {
-            throw new JsonPathRuntimeException("index out of bound " + index + " > " + (o.size() - 1), position);
+        ArrayNode ret = JsonNodeFactory.instance.arrayNode();
+        int s = start >= 0 ? start : o.size() + start;
+        int e = end != null ? end : (step > 0 ? o.size() - 1 : 0);
+        if (step > 0) {
+            if (s > e) {
+                throw new JsonPathRuntimeException("start is greater than end in the range", position);
+            }
+            for (int i = s; i <= e; i += step) {
+                ret.add(o.get(i));
+            }
+        } else {
+            if (s < e) {
+                throw new JsonPathRuntimeException("start is lower than end in the reversed range", position);
+            }
+            for (int i = s; i >= e; i += step) {
+                ret.add(o.get(i));
+            }
         }
-        if (index < -o.size()) {
-            throw new JsonPathRuntimeException("index out of bound " + index + " < " + (-o.size()), position);
-        }
-        if (index < 0) {
-            return o.path(o.size() + index);
-        }
-        return o.path(index);
+        return ret;
     }
 
     @Override
     public String toString() {
-        return object.toString() + "[" + index + "]";
+        return object.toString() + "[" + start + ":" + (end == null ? "" : end) + ":" + step + "]";
     }
 }

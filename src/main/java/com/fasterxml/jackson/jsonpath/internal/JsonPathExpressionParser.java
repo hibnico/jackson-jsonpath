@@ -20,6 +20,7 @@ import java.util.List;
 
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.jsonpath.JsonPathFunction;
+import com.fasterxml.jackson.jsonpath.JsonPathFunctionParser;
 import com.fasterxml.jackson.jsonpath.JsonPathFunctionRegistry;
 import com.fasterxml.jackson.jsonpath.internal.ArithmeticJPE.ArithmeticOp;
 import com.fasterxml.jackson.jsonpath.internal.BitwiseJPE.BitwiseOp;
@@ -473,10 +474,11 @@ public class JsonPathExpressionParser {
         if (isAlpha(c)) {
             String id = readIdentifier();
             List<JsonPathExpression> arguments = readArguments();
-            JsonPathFunction function = functionRegistry.getFunctions().get(id);
-            if (function == null) {
+            JsonPathFunctionParser factory = functionRegistry.getFunctions().get(id);
+            if (factory == null) {
                 throw new ParseException("unknown function '" + id + "'", buffer.pos);
             }
+            JsonPathFunction function = factory.parse(buffer.pos, arguments);
             return new FunctionCallJPE(buffer.pos, function, arguments);
         }
         return null;
@@ -622,10 +624,34 @@ public class JsonPathExpressionParser {
                 String field = readEscaped('\"');
                 expr = new FieldSelectorJPE(p, expr, field);
                 buffer.readExpected('\"', "string");
-            } else if (c != null && c >= '0' && c <= '9') {
+            } else if (c != null && (c == '-' || c >= '0' && c <= '9')) {
                 int p = buffer.pos;
                 int i = readInt();
-                expr = new IndexSelectorJPE(p, expr, i);
+                buffer.skipWhiteSpace();
+                c = buffer.readAhead();
+                if (c != null && c == ':') {
+                    buffer.skip();
+                    buffer.skipWhiteSpace();
+                    Integer end = null;
+                    Integer step = null;
+                    c = buffer.readAhead();
+                    if (c != null && (c == '-' || c >= '0' && c <= '9')) {
+                        end = readInt();
+                    }
+                    buffer.skipWhiteSpace();
+                    c = buffer.readAhead();
+                    if (c != null && c == ':') {
+                        buffer.skip();
+                        buffer.skipWhiteSpace();
+                        c = buffer.readAhead();
+                        if (c != null && (c == '-' || c >= '0' && c <= '9')) {
+                            step = readInt();
+                        }
+                    }
+                    expr = new IndexRangeSelectorJPE(p, expr, i, end, step);
+                } else {
+                    expr = new IndexSelectorJPE(p, expr, i);
+                }
             } else {
                 int p = buffer.pos;
                 String field = readIdentifier();
@@ -656,8 +682,19 @@ public class JsonPathExpressionParser {
     }
 
     private int readInt() {
+        boolean negative = false;
+        Character c = buffer.readAhead();
+        if (c == '-') {
+            buffer.skip();
+            buffer.skipWhiteSpace();
+            negative = true;
+        }
         StringBuilder numberBuffer = startReadNumber();
-        return Integer.parseInt(numberBuffer.toString());
+        int n = Integer.parseInt(numberBuffer.toString());
+        if (negative) {
+            return -n;
+        }
+        return n;
     }
 
     private String readIdentifier() throws ParseException {

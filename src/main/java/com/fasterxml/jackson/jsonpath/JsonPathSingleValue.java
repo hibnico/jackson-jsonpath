@@ -14,6 +14,8 @@
  */
 package com.fasterxml.jackson.jsonpath;
 
+import java.util.Collections;
+
 import com.fasterxml.jackson.databind.JsonNode;
 
 public class JsonPathSingleValue extends JsonPathValue {
@@ -32,5 +34,10 @@ public class JsonPathSingleValue extends JsonPathValue {
     @Override
     public JsonNode asNode() {
         return node;
+    }
+
+    @Override
+    public Iterable<JsonNode> getNodes() {
+        return Collections.singleton(node);
     }
 }

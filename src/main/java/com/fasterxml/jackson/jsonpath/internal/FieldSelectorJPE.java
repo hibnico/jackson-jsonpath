@@ -16,6 +16,7 @@ package com.fasterxml.jackson.jsonpath.internal;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.JsonNodeType;
 import com.fasterxml.jackson.jsonpath.JsonPathRuntimeException;
 import com.fasterxml.jackson.jsonpath.JsonPathValue;
 
@@ -43,12 +44,32 @@ class FieldSelectorJPE extends JsonPathExpression {
     @Override
     JsonNode computeNode(JsonPathContext context, JsonNode[] childValues) {
         JsonNode o = childValues[0];
-        if (!o.isObject()) {
-            throw new JsonPathRuntimeException("field selector must apply on an object, not a "
-                    + o.getNodeType().toString().toLowerCase(), position);
-        }
         JsonNode i = index.eval(context).asNode();
-        return o.path(asString(i, "index of selector"));
+        if (i.isTextual()) {
+            if (!o.isObject()) {
+                throw new JsonPathRuntimeException("field selector must apply on an object, not a "
+                        + o.getNodeType().toString().toLowerCase(), position);
+            }
+            return o.path(asString(i, "index of selector"));
+        }
+        if (i.isNumber()) {
+            if (!o.isArray()) {
+                throw new JsonPathRuntimeException("field selector must apply on an array, not a "
+                        + o.getNodeType().toString().toLowerCase(), position);
+            }
+            int n = i.asInt();
+            if (n >= o.size()) {
+                throw new JsonPathRuntimeException("index out of bound " + n + " > " + (o.size() - 1), position);
+            }
+            if (n < -o.size()) {
+                throw new JsonPathRuntimeException("index out of bound " + n + " < " + (-o.size()), position);
+            }
+            if (n < 0) {
+                return o.get(o.size() + n);
+            }
+            return o.get(n);
+        }
+        throw new TypeMismatchException(position, JsonNodeType.NUMBER, o, "the index of the array");
     }
 
     @Override

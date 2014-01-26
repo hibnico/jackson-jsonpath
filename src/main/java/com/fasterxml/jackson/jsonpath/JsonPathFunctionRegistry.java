@@ -3,26 +3,41 @@ package com.fasterxml.jackson.jsonpath;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.fasterxml.jackson.jsonpath.internal.func.LenJPF;
-import com.fasterxml.jackson.jsonpath.internal.func.PosJPF;
-import com.fasterxml.jackson.jsonpath.internal.func.TypeOfJPF;
+import com.fasterxml.jackson.jsonpath.internal.func.CharAtJPFP;
+import com.fasterxml.jackson.jsonpath.internal.func.EndsWithJPFP;
+import com.fasterxml.jackson.jsonpath.internal.func.LenJPFP;
+import com.fasterxml.jackson.jsonpath.internal.func.PosJPFP;
+import com.fasterxml.jackson.jsonpath.internal.func.RegexpMatchJPFP;
+import com.fasterxml.jackson.jsonpath.internal.func.StartsWithJPFP;
+import com.fasterxml.jackson.jsonpath.internal.func.SubstringJPFP;
+import com.fasterxml.jackson.jsonpath.internal.func.TypeOfJPFP;
 
 public class JsonPathFunctionRegistry {
 
-    public static final JsonPathFunctionRegistry DEFAULT = new JsonPathFunctionRegistry();
-    static {
-        DEFAULT.register(TypeOfJPF.instance);
-        DEFAULT.register(PosJPF.instance);
-        DEFAULT.register(LenJPF.instance);
+    public static final JsonPathFunctionRegistry DEFAULT = new JsonPathFunctionRegistry() {
+        {
+            registerDefaultFunctions();
+        }
+    };
+
+    private final Map<String, JsonPathFunctionParser> functions = new HashMap<String, JsonPathFunctionParser>();
+
+    public void registerDefaultFunctions() {
+        register(TypeOfJPFP.instance);
+        register(PosJPFP.instance);
+        register(LenJPFP.instance);
+        register(CharAtJPFP.instance);
+        register(SubstringJPFP.instance);
+        register(StartsWithJPFP.instance);
+        register(EndsWithJPFP.instance);
+        register(RegexpMatchJPFP.instance);
     }
 
-    private final Map<String, JsonPathFunction> functions = new HashMap<String, JsonPathFunction>();
-
-    public void register(JsonPathFunction function) {
+    public void register(JsonPathFunctionParser function) {
         functions.put(function.getName(), function);
     }
 
-    public Map<String, JsonPathFunction> getFunctions() {
+    public Map<String, JsonPathFunctionParser> getFunctions() {
         return functions;
     }
 }

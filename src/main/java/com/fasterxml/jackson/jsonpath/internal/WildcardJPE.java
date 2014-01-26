@@ -37,13 +37,7 @@ class WildcardJPE extends JsonPathExpression {
     JsonPathValue compute(JsonPathContext context, JsonNode[] childValues) {
         JsonNode node = childValues[0];
         JsonPathVectorValue ret = new JsonPathVectorValue();
-        if (node.isArray()) {
-            for (JsonNode current : node) {
-                for (JsonNode value : current) {
-                    ret.add(value);
-                }
-            }
-        } else if (node.isObject()) {
+        if (node.isObject()) {
             for (JsonNode subNode : node) {
                 ret.add(subNode);
             }

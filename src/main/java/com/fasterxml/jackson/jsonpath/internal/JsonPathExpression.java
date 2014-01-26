@@ -18,6 +18,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.BooleanNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.JsonNodeType;
 import com.fasterxml.jackson.databind.node.NumericNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import com.fasterxml.jackson.jsonpath.JsonPathNoValue;
@@ -154,7 +155,7 @@ public abstract class JsonPathExpression {
         }
         Number n = asLenientNumber(node);
         if (n == null) {
-            throw new TypeMismatchException(position, "number", node, context);
+            throw new TypeMismatchException(position, JsonNodeType.NUMBER, node, context);
         }
         return n;
     }
@@ -180,7 +181,7 @@ public abstract class JsonPathExpression {
         }
         Integer i = asLenientInt(node);
         if (i == null) {
-            throw new TypeMismatchException(position, "integer", node, context);
+            throw new TypeMismatchException(position, JsonNodeType.NUMBER, node, context);
         }
         return i;
     }
@@ -210,7 +211,7 @@ public abstract class JsonPathExpression {
         }
         Long l = asLenientLong(node);
         if (l == null) {
-            throw new TypeMismatchException(position, "long", node, context);
+            throw new TypeMismatchException(position, JsonNodeType.NUMBER, node, context);
         }
         return l;
     }
@@ -240,7 +241,7 @@ public abstract class JsonPathExpression {
         }
         Double d = asLenientDouble(node);
         if (d == null) {
-            throw new TypeMismatchException(position, "double", node, context);
+            throw new TypeMismatchException(position, JsonNodeType.NUMBER, node, context);
         }
         return d;
     }
@@ -270,7 +271,7 @@ public abstract class JsonPathExpression {
         }
         String s = asLenientString(node);
         if (s == null) {
-            throw new TypeMismatchException(position, "string", node, context);
+            throw new TypeMismatchException(position, JsonNodeType.STRING, node, context);
         }
         return s;
     }

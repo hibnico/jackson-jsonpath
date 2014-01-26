@@ -1,27 +1,16 @@
 package com.fasterxml.jackson.jsonpath;
 
-import java.text.ParseException;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.jsonpath.internal.JsonPathContext;
-import com.fasterxml.jackson.jsonpath.internal.JsonPathExpression;
 
 public abstract class JsonPathFunction {
 
-    public abstract String getName();
-
-    public abstract void check(int position, List<JsonPathExpression> arguments) throws ParseException;
-
-    protected void checkArgNumber(int position, List<JsonPathExpression> arguments, int n) throws ParseException {
-        if (arguments.size() != n) {
-            throw new ParseException(getName() + " is expecting exactly " + n + " argument" + (n > 1 ? "s" : "")
-                    + " but got " + arguments.size(), position);
-        }
+    public boolean isVector() {
+        return false;
     }
-
-    public abstract boolean isVector(List<JsonPathExpression> arguments);
 
     public JsonPathValue call(JsonPathContext context, List<JsonNode> args) {
         JsonNode node = callAsNode(context, args);
@@ -54,12 +43,16 @@ public abstract class JsonPathFunction {
         if (v instanceof Boolean) {
             return JsonNodeFactory.instance.booleanNode((Boolean) v);
         }
+        if (v instanceof Character) {
+            return JsonNodeFactory.instance.textNode(new String(new char[] { (Character) v }));
+        }
         throw new IllegalStateException("Unsupported object " + v.getClass().getName());
     }
 
     protected Object callAsObject(JsonPathContext context, List<JsonNode> args) {
-        throw new IllegalStateException("one of call, callAsNode or callAsObject must be implemented in function '"
-                + getName() + "' (" + getClass().getName() + ")");
+        throw new IllegalStateException(
+                "one of call, callAsNode or callAsObject must be implemented in function implementation "
+                        + getClass().getName());
     }
 
 }
